@@ -1,0 +1,5 @@
+pandas 
+seaborn 
+openpyxl 
+streamlit-aggrid 
+streamlit_option_menu 
