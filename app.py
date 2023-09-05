@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
+from io import BytesIO
 from st_aggrid import AgGrid
 from pathlib import Path
 import os 
@@ -206,15 +207,22 @@ if selected == "data entry":
         instrument_type = st.selectbox("Instrument Type", ("BM", "EP1"), index =0)
         st.session_state['instrument_type'] =  instrument_type
     
-    assignment_file = st.selectbox(label="Assignment File:", options=assignment_files)
-    st.session_state['assignment_file'] =  assignment_file
-    assignment_df = pd.read_excel(assignment_file)
-    st.dataframe(assignment_df)
-    
-    data_file = st.selectbox(label="Data File:", options=data_files)
-    df_data = pd.read_csv(data_file, on_bad_lines="skip")
-    st.session_state['data_file'] =  data_file
-    st.dataframe(df_data)
+    assignment_file = st.file_uploader("Upload Assignment File:", type=["xlsx"])
+    if assignment_file is not None:
+        assignment_df = pd.read_excel(BytesIO(assignment_file.read()))
+        st.session_state['assignment_file'] = assignment_file.name
+        st.dataframe(assignment_df)
+    else:
+        st.warning("Please upload an Assignment File.")
+
+    # File uploader for the data file
+    data_file = st.file_uploader("Upload Data File:", type=["csv"])
+    if data_file is not None:
+        df_data = pd.read_csv(BytesIO(data_file.read()), on_bad_lines="skip")
+        st.session_state['data_file'] = data_file.name
+        st.dataframe(df_data)
+    else:
+        st.warning("Please upload a Data File.")
 elif selected == 'analysis':
     probe_df, reference_df, bkgd_ref_df, bkgd_probe_df = load_data(ifc=st.session_state["ifc"], instrument_type = st.session_state['instrument_type'],csv_file=st.session_state["data_file"] )
     timepoints = len(probe_df.columns.tolist()[1:])-1
