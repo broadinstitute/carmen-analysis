@@ -177,24 +177,15 @@ def plt_heatmap(df_dict, samplelist, assaylist, tp,exp_name, out_folder, instrum
     axes.hlines(h_lines, colors = 'silver',alpha=0.9,linewidths = 0.35,*axes.get_xlim())
     axes.vlines(v_lines, colors = 'silver',alpha=0.9,linewidths = 0.35,*axes.get_ylim())
     st.pyplot(fig)
-    if save_fig:
-        buffer = BytesIO()
-        plt.savefig(buffer, format='png', bbox_inches='tight', dpi=400)
-        buffer.seek(0)
-        
-        # Convert the byte stream to base64
-        img_str = base64.b64encode(buffer.read()).decode()
-
-        # Streamlit download button
-        st.download_button(
-            label=f"Download Heatmap for {tp}",
-            data=base64.decodebytes(img_str.encode()),
-            file_name=f"{exp_name}_{instrument_type}_heatmap_{tp}.png",
-            mime="image/png"
-        )
-
-        buffer.close()
-    
+    fn = f"{exp_name}_{instrument_type}_heatmap_{tp}.png"
+    img = BytesIO()
+    plt.savefig(img, format='png')
+    btn = st.download_button(
+    label="Download image",
+    data=img,
+    file_name=fn,
+    mime="image/png"
+)
 
 st.set_page_config(
     page_title="CARMEN RVP",
