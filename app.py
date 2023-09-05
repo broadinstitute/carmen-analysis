@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
 from io import BytesIO
+import base64
 from st_aggrid import AgGrid
 from pathlib import Path
 import os 
@@ -153,7 +154,7 @@ def create_tlist(ifc, count_tp, signal_df, assays, samples):
         med_frames[name] = time_med
     return med_frames, assay_list, sample_list
 
-def plt_heatmap(df_dict, samplelist, assaylist, tp,exp_name, out_folder, instrument_type):
+def plt_heatmap(df_dict, samplelist, assaylist, tp,exp_name, out_folder, instrument_type, save_fig=True):
     frame = df_dict[f't{tp}'][samplelist].reindex(assaylist)
     fig, axes = plt.subplots(1,1,figsize=(len(frame.columns.values)*0.5,len(frame.index.values)*1.0))
     ax = sns.heatmap(frame,cmap='Reds',square = True,cbar_kws={'pad':0.002}, annot_kws={"size": 20})
@@ -176,7 +177,24 @@ def plt_heatmap(df_dict, samplelist, assaylist, tp,exp_name, out_folder, instrum
     axes.hlines(h_lines, colors = 'silver',alpha=0.9,linewidths = 0.35,*axes.get_xlim())
     axes.vlines(v_lines, colors = 'silver',alpha=0.9,linewidths = 0.35,*axes.get_ylim())
     st.pyplot(fig)
-    plt.savefig(exp_name + '_'+instrument_type +'2_heatmap_'+str(tp)+'.png', format='png', bbox_inches='tight', dpi=400)
+    if save_fig:
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png', bbox_inches='tight', dpi=400)
+        buffer.seek(0)
+        
+        # Convert the byte stream to base64
+        img_str = base64.b64encode(buffer.read()).decode()
+
+        # Streamlit download button
+        st.download_button(
+            label=f"Download Heatmap for {tp}",
+            data=base64.decodebytes(img_str.encode()),
+            file_name=f"{exp_name}_{instrument_type}_heatmap_{tp}.png",
+            mime="image/png"
+        )
+
+        buffer.close()
+    
 
 st.set_page_config(
     page_title="CARMEN RVP",
