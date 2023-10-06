@@ -26,25 +26,38 @@ def gettime(tname):
     return (realt)
 
 
-def load_data(ifc, instrument_type, csv_file ):
+def load_data(ifc, instrument_type, csv_file, phrases_to_find):
+    # Read the CSV file once to locate the indices of the phrases
+    with open(csv_file, 'r') as file:
+        indices = {}
+        for idx, line in enumerate(file):
+            if any(phrase in line for phrase in phrases_to_find):
+                indices[line.strip()] = idx
+
+    # Determine the number of rows based on detected indices
+    nrows = {phrase: indices[phrase] - start_idx for phrase, start_idx in zip(phrases_to_find, [18449, 9231, 27667, 36885])}
+
     if instrument_type == 'BM':
         if ifc == '96':
-            probe_df = pd.read_csv(csv_file,header = 18449, nrows = 9216) # FAM
-            reference_df = pd.read_csv(csv_file, header = 9231, nrows = 9216) # ROX
-            bkgd_ref_df = pd.read_csv(csv_file, header = 27667, nrows = 9216)
-            bkgd_probe_df = pd.read_csv(csv_file,header = 36885, nrows = 9216)
+            probe_df = pd.read_csv(csv_file, header=18449, nrows=nrows['Raw Data for Probe FAM-MGB'])
+            reference_df = pd.read_csv(csv_file, header=9231, nrows=nrows['Raw Data for Passive Reference ROX'])
+            bkgd_ref_df = pd.read_csv(csv_file, header=27667, nrows=nrows['Bkgd Data for Passive Reference ROX'])
+            bkgd_probe_df = pd.read_csv(csv_file, header=36885, nrows=nrows['Bkgd Data for Probe FAM-MGB'])
         if ifc == '192':
-            probe_df = pd.read_csv(csv_file,header = 9233, nrows = 4608)
-            reference_df = pd.read_csv(csv_file, header = 4623, nrows = 4608)
-            bkgd_ref_df = pd.read_csv(csv_file, header = 13843, nrows = 4608)
-            bkgd_probe_df = pd.read_csv(csv_file,header = 18453, nrows = 4608)
+            probe_df = pd.read_csv(csv_file, header=9233, nrows=nrows['Raw Data for Probe FAM-MGB'])
+            reference_df = pd.read_csv(csv_file, header=4623, nrows=nrows['Raw Data for Passive Reference ROX'])
+            bkgd_ref_df = pd.read_csv(csv_file, header=13843, nrows=nrows['Bkgd Data for Passive Reference ROX'])
+            bkgd_probe_df = pd.read_csv(csv_file, header=18453, nrows=nrows['Bkgd Data for Probe FAM-MGB'])
     elif instrument_type == 'EP1':
         if ifc == '192':
-            probe_df = pd.read_csv(csv_file,header = 9238, nrows = 4608)
-            reference_df = pd.read_csv(csv_file, header = 4628, nrows = 4608)
-            bkgd_ref_df = pd.read_csv(csv_file, header = 18458, nrows = 4608)
-            bkgd_probe_df = pd.read_csv(csv_file,header = 23068, nrows = 4608)
+            probe_df = pd.read_csv(csv_file, header=9238, nrows=nrows['Raw Data for Probe FAM-MGB'])
+            reference_df = pd.read_csv(csv_file, header=4628, nrows=nrows['Raw Data for Passive Reference ROX'])
+            bkgd_ref_df = pd.read_csv(csv_file, header=18458, nrows=nrows['Bkgd Data for Passive Reference ROX'])
+            bkgd_probe_df = pd.read_csv(csv_file, header=23068, nrows=nrows['Bkgd Data for Probe FAM-MGB'])
     return probe_df, reference_df, bkgd_ref_df, bkgd_probe_df
+
+
+
 
 def clean_data(probe_df, reference_df, bkgd_ref_df, bkgd_probe_df, count_tp):
     c_to_drop = 'Unnamed: ' + str(count_tp+1)
@@ -233,7 +246,13 @@ if selected == "data entry":
     else:
         st.warning("Please upload a Data File.")
 elif selected == 'analysis':
-    probe_df, reference_df, bkgd_ref_df, bkgd_probe_df = load_data(ifc=st.session_state["ifc"], instrument_type = st.session_state['instrument_type'],csv_file=st.session_state["data_file"] )
+    phrases_to_find = [
+        "Raw Data for Passive Reference ROX",
+        "Raw Data for Probe FAM-MGB",
+        "Bkgd Data for Passive Reference ROX",
+        "Bkgd Data for Probe FAM-MGB"
+    ]
+    probe_df, reference_df, bkgd_ref_df, bkgd_probe_df = load_data(ifc=st.session_state["ifc"], instrument_type = st.session_state['instrument_type'],csv_file=st.session_state["data_file"], phrases_to_find = phrases_to_find )
     timepoints = len(probe_df.columns.tolist()[1:])-1
     st.session_state['timepoints'] =  timepoints
     st.success('Loading Data', icon="✅")
