@@ -41,6 +41,8 @@ with st.sidebar:
     
 
 if selected == "data entry":
+    st.header("Data Entry")
+    st.divider()
     path = Path(os.getcwd())
     path_dir = path
     all_files = set(map(os.path.basename, path_dir.glob('*')))
@@ -72,7 +74,7 @@ if selected == "data entry":
             s= match.group(1)
         barcode_assignment = match.group(1)
         #st.warning(f"This is my data file name {assignment_file_name}")
-        st.info(f"This is my IFC barcode: {barcode_assignment}")
+        st.info(f"IFC barcode: {barcode_assignment}")
     else:
         st.warning("Please upload an Assignment File.")
     
@@ -109,10 +111,10 @@ if selected == "data entry":
                 #st.dataframe(df)
     else:
         st.warning("Please upload a Data File.")
+    st.divider()
     if data_file is not None and assignment_file is not None:
         processor = DataProcessor()
         normalized_dataframes = processor.background_processing(st.session_state['dataframes'])
-        st.divider()
         st.success('Download Normalized Files Below:')
         for norm in normalized_dataframes:
             st.write(norm)
@@ -150,8 +152,20 @@ if selected == "data entry":
         st.info(body = "click on outputs tab to visualize and get final data", icon="⬅️")
         
 if selected == "outputs":
+        st.header("Outputs")
         timepoints = list(st.session_state['final_med_frames'].keys())
-
+        last_key = list(st.session_state['final_med_frames'].keys())[-1]
+        csv = convert_df(st.session_state['final_med_frames'][last_key])
+        st.divider()
+        st.download_button(
+            f"Press to Download t13.csv",
+            csv,
+            f"t13.csv",
+            "text/csv",
+            key=f'download-t13',
+            type="primary"
+            )
+        st.divider()
         # Slider for selecting the timepoint
         selected_timepoint = st.slider(
             label='Select Timepoint',
@@ -169,19 +183,9 @@ if selected == "outputs":
 
             # Display the dataframe
         st.write(f"Displaying data for timepoint: {timepoint}")
-        #print(st.session_state['final_med_frames'][timepoint].head())
         st.dataframe(st.session_state['final_med_frames'][timepoint], height=(len(st.session_state['final_med_frames'][timepoint]) + 1) * 35 + 3, use_container_width=True)
-        last_key = list(st.session_state['final_med_frames'].keys())[-1]
-        csv = convert_df(st.session_state['final_med_frames'][last_key])
-        #print(st.session_state['final_med_frames'][timepoint].head())
 
-        st.download_button(
-            f"Press to Download t13.csv",
-            csv,
-            f"t13.csv",
-            "text/csv",
-            key=f'download-t13'
-            )
+       
         
         tresholder  = Thresholder()
         tresholder.raw_thresholder(st.session_state['assigned_lists']['assay_list'],st.session_state['final_med_frames'][last_key]) 
