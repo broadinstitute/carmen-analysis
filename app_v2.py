@@ -47,6 +47,14 @@ if selected == "data entry":
     assignment_files = sorted([fname for fname in all_files if (fname.endswith(".xlsx"))])
     data_files = sorted([fname for fname in all_files if (fname.endswith(".csv"))])
     # Instantiate the DataReader
+
+    col1, col2 = st.columns(2)
+    with col1: 
+        ifc = st.selectbox('ChipDIM', ('96','192'), index = 1)
+        st.session_state['ifc'] = ifc
+    with col2: 
+        instrument_type = st.selectbox("Instrument Type", ("BM", "EP1"), index =0)
+        st.session_state['instrument_type'] =  instrument_type
     
     assignment_file = st.file_uploader("Upload Assignment File:", type=["xlsx"])
     if assignment_file is not None:
@@ -139,10 +147,9 @@ if selected == "data entry":
             median = MedianSort(crRNA_list=None)
             final_med_frames = median.create_median(assigned_norms['signal_norm_raw'])
             st.session_state['final_med_frames'] = final_med_frames 
-        st.info(body = "click on outputs tab to visualize and get final data", icon="outputs")
+        st.info(body = "click on outputs tab to visualize and get final data", icon="⬅️")
         
 if selected == "outputs":
-        print('i made it here')
         timepoints = list(st.session_state['final_med_frames'].keys())
 
         # Slider for selecting the timepoint
@@ -167,6 +174,7 @@ if selected == "outputs":
         last_key = list(st.session_state['final_med_frames'].keys())[-1]
         csv = convert_df(st.session_state['final_med_frames'][last_key])
         #print(st.session_state['final_med_frames'][timepoint].head())
+
         st.download_button(
             f"Press to Download t13.csv",
             csv,
