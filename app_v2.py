@@ -153,41 +153,48 @@ if selected == "data entry":
         
 if selected == "outputs":
         st.header("Outputs")
-        timepoints = list(st.session_state['final_med_frames'].keys())
-        last_key = list(st.session_state['final_med_frames'].keys())[-1]
-        csv = convert_df(st.session_state['final_med_frames'][last_key])
-        st.divider()
-        st.download_button(
-            f"Press to Download t13.csv",
-            csv,
-            f"t13.csv",
-            "text/csv",
-            key=f'download-t13',
-            type="primary"
+        if 'data_file' not in st.session_state and 'assignment_file' not in st.session_state:
+             st.warning("please go back to data entry page and upload both a data file and an assignment file")
+        elif 'data_file' not in st.session_state:
+             st.warning("please go back to data entry page and upload a data file")
+        elif 'assignment_file' not in st.session_state:
+             st.warning("please go back to data entry page and upload an assignment file")
+        else:
+            timepoints = list(st.session_state['final_med_frames'].keys())
+            last_key = list(st.session_state['final_med_frames'].keys())[-1]
+            csv = convert_df(st.session_state['final_med_frames'][last_key])
+            st.divider()
+            st.download_button(
+                f"Press to Download t13.csv",
+                csv,
+                f"t13.csv",
+                "text/csv",
+                key=f'download-t13',
+                type="primary"
+                )
+            st.divider()
+            # Slider for selecting the timepoint
+            selected_timepoint = st.slider(
+                label='Select Timepoint',
+                min_value=1,
+                max_value=len(timepoints),
+                value=1,
+                format="%d",
+                step=1,
+                help="Slide to select different timepoints."
             )
-        st.divider()
-        # Slider for selecting the timepoint
-        selected_timepoint = st.slider(
-            label='Select Timepoint',
-            min_value=1,
-            max_value=len(timepoints),
-            value=1,
-            format="%d",
-            step=1,
-            help="Slide to select different timepoints."
-        )
 
-            # Get the selected timepoint
+                # Get the selected timepoint
 
-        timepoint = timepoints[selected_timepoint-1]
+            timepoint = timepoints[selected_timepoint-1]
 
-            # Display the dataframe
-        st.write(f"Displaying data for timepoint: {timepoint}")
-        st.dataframe(st.session_state['final_med_frames'][timepoint], height=(len(st.session_state['final_med_frames'][timepoint]) + 1) * 35 + 3, use_container_width=True)
+                # Display the dataframe
+            st.write(f"Displaying data for timepoint: {timepoint}")
+            st.dataframe(st.session_state['final_med_frames'][timepoint], height=(len(st.session_state['final_med_frames'][timepoint]) + 1) * 35 + 3, use_container_width=True)
 
-       
         
-        tresholder  = Thresholder()
-        tresholder.raw_thresholder(st.session_state['assigned_lists']['assay_list'],st.session_state['final_med_frames'][last_key]) 
+            
+            tresholder  = Thresholder()
+            tresholder.raw_thresholder(st.session_state['assigned_lists']['assay_list'],st.session_state['final_med_frames'][last_key]) 
         
 
