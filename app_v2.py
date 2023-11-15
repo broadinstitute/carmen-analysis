@@ -23,7 +23,6 @@ from matcher import DataMatcher
 from median_frame import MedianSort
 from threshold import Thresholder
 
-@st.cache_data
 def convert_df(df):
     return df.to_csv(encoding='utf-8')
 
@@ -73,6 +72,7 @@ if selected == "data entry":
         if match:
             s= match.group(1)
         barcode_assignment = match.group(1)
+        st.session_state["barcode_assignment"] = barcode_assignment
         #st.warning(f"This is my data file name {assignment_file_name}")
         st.info(f"IFC barcode: {barcode_assignment}")
     else:
@@ -164,12 +164,13 @@ if selected == "outputs":
             last_key = list(st.session_state['final_med_frames'].keys())[-1]
             csv = convert_df(st.session_state['final_med_frames'][last_key])
             st.divider()
+            ifc_barcode = st.session_state["barcode_assignment"]
             st.download_button(
-                f"Press to Download t13.csv",
+                f"Press to Download {ifc_barcode}_t13.csv",
                 csv,
-                f"t13.csv",
+                f'{ifc_barcode}_t13.csv',
                 "text/csv",
-                key=f'download-t13',
+                key=f'{ifc_barcode}_download-t13',
                 type="primary"
                 )
             st.divider()
@@ -183,6 +184,14 @@ if selected == "outputs":
                 step=1,
                 help="Slide to select different timepoints."
             )
+            st.download_button(
+                f"Press to Download {ifc_barcode}_t{selected_timepoint}.csv",
+                csv,
+                f'{ifc_barcode}_t{selected_timepoint}.csv',
+                "text/csv",
+                key=f'{ifc_barcode}_download-t{selected_timepoint-1}',
+                type="secondary"
+                )
 
                 # Get the selected timepoint
 
