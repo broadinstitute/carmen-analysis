@@ -170,7 +170,7 @@ if selected == "outputs":
                 csv,
                 f'{ifc_barcode}_t13.csv',
                 "text/csv",
-                key=f'{ifc_barcode}_download-t13',
+                key=f'{ifc_barcode}_download-t13_direct',
                 type="primary"
                 )
             st.divider()
@@ -184,12 +184,13 @@ if selected == "outputs":
                 step=1,
                 help="Slide to select different timepoints."
             )
+            csv_specific = convert_df(st.session_state['final_med_frames'][f't{selected_timepoint}'])
             st.download_button(
                 f"Press to Download {ifc_barcode}_t{selected_timepoint}.csv",
-                csv,
+                csv_specific,
                 f'{ifc_barcode}_t{selected_timepoint}.csv',
                 "text/csv",
-                key=f'{ifc_barcode}_download-t{selected_timepoint-1}',
+                key=f'{ifc_barcode}_download-t{selected_timepoint}',
                 type="secondary"
                 )
 
