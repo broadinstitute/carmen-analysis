@@ -47,6 +47,7 @@ if selected == "data entry":
     all_files = set(map(os.path.basename, path_dir.glob('*')))
     assignment_files = sorted([fname for fname in all_files if (fname.endswith(".xlsx"))])
     data_files = sorted([fname for fname in all_files if (fname.endswith(".csv"))])
+    
     # Instantiate the DataReader
 
     col1, col2 = st.columns(2)
@@ -112,6 +113,7 @@ if selected == "data entry":
     else:
         st.warning("Please upload a Data File.")
     st.divider()
+
     if data_file is not None and assignment_file is not None:
         processor = DataProcessor()
         normalized_dataframes = processor.background_processing(st.session_state['dataframes'])
@@ -127,7 +129,9 @@ if selected == "data entry":
             "text/csv",
             key=f'download-{norm}'
             )
+
         st.divider()
+        
         matcher = DataMatcher()
         assigned_norms, assigned_lists = matcher.assign_assays(assignment_file,normalized_dataframes['ref_norm'],normalized_dataframes['signal_norm'],st.session_state['ifc'])
         st.session_state['assigned_lists'] = assigned_lists

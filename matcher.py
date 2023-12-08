@@ -1,6 +1,5 @@
 import pandas as pd 
 import numpy as np
-import streamlit as st
 from os import path
 import io
 
@@ -18,11 +17,10 @@ class DataMatcher:
         return flat_list
     
 
-
-    def assign_assays(self,assignment_file,ref_norm,signal_norm,ifc):
+    def assign_assays(self,assignment_file,ref_norm,signal_norm):
         #content_io = io.StringIO(assignment_file)
-        samples_layout = pd.read_excel(assignment_file,sheet_name='layout_samples').applymap(str)
-        assays_layout = pd.read_excel(assignment_file,sheet_name='layout_assays').applymap(str)
+        samples_layout = pd.read_excel(assignment_file,sheet_name='layout_samples').map(str)
+        assays_layout = pd.read_excel(assignment_file,sheet_name='layout_assays').map(str)
 
         # Create a dictionary with assay/sample numbers and their actual crRNA / target name
         assays = pd.read_excel(assignment_file,sheet_name='assays')
@@ -31,22 +29,17 @@ class DataMatcher:
         samples = pd.read_excel(assignment_file,sheet_name='samples')
         samples_dict = dict(zip(samples_layout.values.reshape(-1),samples.values.reshape(-1)))
 
-        #st.write(samples_dict)
-        #st.write(assay_dict)
-
-        # mapp assay and sample names to signal df
+        # map assay and sample names to signal_norm df
         signal_norm['assay'] = signal_norm['assayID'].map(assay_dict)
         signal_norm['sample'] = signal_norm['sampleID'].map(samples_dict)
 
-        # mapp assay and sample names to reference df
+        # map assay and sample names to reference_norm df
         ref_norm['assay'] = ref_norm['assayID'].map(assay_dict)
         ref_norm['sample'] = ref_norm['sampleID'].map(samples_dict)
-
 
         assigned_norms = {}
         assigned_norms['signal_norm_raw'] = signal_norm
         assigned_norms['ref_norm_raw'] = ref_norm
-        
         
         assays = pd.read_excel(assignment_file,sheet_name='assays')
         samples = pd.read_excel(assignment_file,sheet_name='samples')
@@ -57,9 +50,11 @@ class DataMatcher:
         assay_list = self.extract_and_stack(assays)
         #mathching layout samples to samples 
         samples_list = self.extract_and_stack(samples)
+
         assigned_lists = {}
         assigned_lists['assay_list'] = assay_list 
         assigned_lists['samples_list'] = samples_list 
-        st.info(f"Number of crRNAs: {len(assay_list)}")
-        st.info(f"Number of identified samples: {len(samples_list)}")
+
+        print(f"Number of crRNAs: {len(assay_list)}")
+        print(f"Number of identified samples: {len(samples_list)}")
         return assigned_norms, assigned_lists
