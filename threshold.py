@@ -1,6 +1,6 @@
 import numpy as np 
 import pandas as pd 
-import streamlit as st
+
 class Thresholder:
     def __init__(self):
         pass
@@ -8,27 +8,40 @@ class Thresholder:
     def convert_df(self,df):
         return df.to_csv(index=False).encode('utf-8')
     
-    def raw_thresholder(self, assay_list,t13_df):
-        #st.dataframe(assay_list)
-        #st.data_editor(t13_df)
+    def raw_thresholder(self, t13_df):
+        # Filter rows containing 'NTC' in any column, produces df
+        ntc_PerAssay = t13_df[t13_df.index.str.contains('NTC')]
 
-        # Filter rows containing 'NTC' in any column
-        ntc_rows = t13_df[t13_df.index.str.contains('NTC')]
-        #st.dataframe(ntc_rows)
-        
+        # Collapse any columns that have the same name in the NTCs df 
+        ntc_PerAssay = ntc_PerAssay.T.groupby(by=ntc_PerAssay.columns).mean()
 
-        # Compute the mean of the filtered rows
-        raw_thresholds = ntc_rows.mean() * 1.8
-        
-        '''
-        #st.dataframe(t13_df)
-        csv = self.convert_df(assay_list)
-        st.download_button(
-        f"Press to Download t13.csv",
-        csv,
-        f"t13.csv",
-        "text/csv",
-        key=f'download-t13'
-        )
-        '''
-        return assay_list
+        # Calculate mean of each column
+        mean_ntc = ntc_PerAssay.mean(axis=1)
+
+        # Make a new df with these mean values
+        ntc_mean_df = pd.DataFrame({'NTC Mean': mean_ntc})
+
+        # Transpose the results to have assays as columns
+        ntc_mean_df = ntc_mean_df.transpose()
+
+        # Scale the NTC mean by 1.8 to generate thresholds
+        raw_thresholds_df = ntc_mean_df * 1.8
+
+        # Binary
+        binary = ['positive', 'negative']
+       
+        for col_name, col_data in t13_df.items():
+            for index, value in col_data.items():
+                threshold = raw_thresholds_df.loc['NTC Mean', col_name]
+
+                t13_df[col_name] = t13_df[col_name].map(str)
+                # Compare the value with the threshold and assign positive/negative accordingly
+                if value >= threshold:
+                    #t13_df.loc[t13_df[index, col_name]] = 'positive'
+                    t13_df.at[index, col_name] = binary[0]
+                else:
+                    t13_df.at[index, col_name] = binary[1]
+       
+        return t13_df
+
+    
