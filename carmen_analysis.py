@@ -20,9 +20,10 @@ from matcher import DataMatcher
 from median_frame import MedianSort
 from threshold import Thresholder
 from ntcnorm import Normalized
+from summary import Summarized
+from plotting import Plotter
+from tqdm import tqdm
 
-#def convert_df(df):
-#    return df.to_csv(encoding='utf-8')
 
 all_files = list(Path(os.getcwd()).glob('*'))
 
@@ -100,8 +101,7 @@ assigned_norms['signal_norm_raw'].to_csv(os.path.join(output_folder, 'assigned_s
 assigned_norms['ref_norm_raw'].to_csv(os.path.join(output_folder, 'assigned_ref_norm.csv'), index=True)
 
 
-#crRNA_assays = pd.read_excel(assignment_files[0],sheet_name='assays')
-#crRNA_array = crRNA_assays.values.flatten()
+samples_list = assigned_lists['samples_list']
 crRNA_assays = assigned_lists['assay_list']
 
 median = MedianSort(crRNA_assays)
@@ -110,14 +110,14 @@ final_med_frames = median.create_median(assigned_norms['signal_norm_raw'])
 
 timepoints = list(final_med_frames.keys())
 for i, t in enumerate(timepoints, start=1):
-    #csv = convert_df(final_med_frames[t])
     filename = os.path.join(output_folder, f't{i}_{barcode_assignment}.csv')
     csv = final_med_frames[t].to_csv(filename, index=True)
 
 # since we want to explicitly manipulate t13_csv, it is helpful to have the t13 df referenced outside of the for loop
 last_key = list(final_med_frames.keys())[-1]
-t13_dataframe = final_med_frames[last_key]
-t13_dataframe_copy = final_med_frames[last_key].copy(deep=True)
+t13_dataframe_orig = final_med_frames[last_key]
+t13_dataframe_copy1 = pd.DataFrame(t13_dataframe_orig)
+t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig)
 
 # at this point, we have created a t1 thru t13 dataframe and exported all these dataframes as csv files in our output folder
 # now we need to threshold the t13 csv and mark signals >= threshold as positive and < threshold as negative
@@ -127,19 +127,44 @@ thresholdr = Thresholder()
 
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
-t13_hit_output = thresholdr.raw_thresholder(t13_dataframe)
+ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(t13_dataframe_copy1)
+
+ntc_thresholds_output_file_path = os.path.join(output_folder, f'NTC_thresholds_{barcode_assignment}.csv')
 hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hit_output.csv')
+
+ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
 t13_hit_output.to_csv(hit_output_file_path, index=True)
 
 # instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
-
+ 
 # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
-t13_quant_hit_norm = ntcNorm.normalizr(t13_dataframe_copy)
-quant_hit_output_ntcNorm_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_quant_hit_output_ntcNorm.csv')
+t13_quant_hit_norm = ntcNorm.normalizr(t13_dataframe_copy2)
+quant_hit_output_ntcNorm_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_quant_ntcNorm.csv')
 t13_quant_hit_norm.to_csv(quant_hit_output_ntcNorm_file_path, index=True)
 
+# instantiate Summarized from summary.py
+# apply summarizer to the t13_dataframe to produce a new dataframe tabulating all of the positive samples
+summary = Summarized()
+summary_samples_df = summary.summarizer(t13_hit_output)
+summary_pos_samples_file_path = os.path.join(output_folder, f'Positives_Summary_{barcode_assignment}.csv')
+summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
 
+# instantiate Plotter from plotting.py
+heatmap_generator = Plotter()
 
+tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
+# tp = list of timepoints (t1, t2, etc)
+unique_crRNA_assays = list(set(crRNA_assays))
+heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
+
+# save heatmap per timepoint
+for i, t in enumerate(timepoints, start=1):
+    #csv = convert_df(final_med_frames[t])
+    heatmap_filename = os.path.join(output_folder, f'Heatmap_t{i}_{barcode_assignment}.png')
+    fig = heatmap[t].savefig(heatmap_filename, bbox_inches = 'tight', dpi=80)
+    plt.close(fig)
+
+print(f"The heatmap plots saved to the folder, {output_folder}")
 
 

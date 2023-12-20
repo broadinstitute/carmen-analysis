@@ -9,6 +9,7 @@ class Thresholder:
         return df.to_csv(index=False).encode('utf-8')
     
     def raw_thresholder(self, t13_df):
+
         # Filter rows containing 'NTC' in any column, produces df
         ntc_PerAssay = t13_df[t13_df.index.str.contains('NTC')]
 
@@ -27,6 +28,11 @@ class Thresholder:
         # Scale the NTC mean by 1.8 to generate thresholds
         raw_thresholds_df = ntc_mean_df * 1.8
 
+        # Append the threshold to ntc_mean_df
+        ntc_mean_df = pd.concat([ntc_mean_df, raw_thresholds_df], ignore_index=True, axis=0)
+        ntc_mean_df.index = ['NTC Mean', 'NTC Threshold']
+
+
         # Binary
         binary = ['positive', 'negative']
        
@@ -37,11 +43,13 @@ class Thresholder:
                 t13_df[col_name] = t13_df[col_name].map(str)
                 # Compare the value with the threshold and assign positive/negative accordingly
                 if value >= threshold:
-                    #t13_df.loc[t13_df[index, col_name]] = 'positive'
                     t13_df.at[index, col_name] = binary[0]
                 else:
                     t13_df.at[index, col_name] = binary[1]
        
-        return t13_df
+        # Create a new row called 'Summary' at the bottom of the hit output sheet
+        t13_df.loc['Summary'] = t13_df.apply(lambda col: col.value_counts().get('positive', 0))
+ 
+        return ntc_mean_df, t13_df
 
     

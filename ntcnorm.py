@@ -6,6 +6,7 @@ class Normalized:
         pass
 
     def normalizr(self, t13_df):
+        
         # Filter rows containing 'NTC' in any column, produces df
         ntc_PerAssay = t13_df[t13_df.index.str.contains('NTC')]
 
@@ -30,6 +31,9 @@ class Normalized:
                 t13_df.at[index, col_name] = value/ntc_mean
         
         return t13_df
+    
+    
+
         
 
 
