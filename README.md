@@ -26,10 +26,10 @@ Now that you have a high-level understanding of the directories you need to crea
 
 1. Open Terminal on your computer. 
 
-2. Change the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in the working directory.) It is recommended that 
+2. Change the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in the working directory.) 
 
 3. Clone the repository. 
-From your terminal, type ``git clone https://github.com/cwilkason/carmen-streamlit-v1``
+From your terminal, type ``git clone git@github.com:cwilkason/carmen-streamlit-v1.git``
 
 4. Launch a virtual environment in your cloned directory. Follow the delineated steps to install needed dependencies:
 * Run the following command from your terminal to create a virtual environment in your cloned directory: ``python -m venv carmen-env``
