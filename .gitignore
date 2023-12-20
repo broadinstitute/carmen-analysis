@@ -3,3 +3,4 @@
 *.xlsx
 *.pyc
 /carmen-env
+*.png
