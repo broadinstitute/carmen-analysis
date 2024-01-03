@@ -91,10 +91,12 @@ NOTE: Remove all other .csv files from the current working directory by running 
 4. If there are other .csv files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec mv {} /pathToAnotherFolder \;``
 
 ## Usage and Running the Analysis
-Launch a virtual environment in your cloned directory. Follow the delineated steps to install needed dependencies:
+Launch a virtual environment **inside your cloned directory**. Follow the delineated steps to install needed dependencies:
 1. Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
 2. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
 3. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
+
+For the ``CARMEN_Run_2`` example given above, the virtual environment's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\carmen-env``. 
 
 **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
