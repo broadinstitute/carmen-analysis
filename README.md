@@ -68,7 +68,8 @@ The cloned directory should contain ALL of the following python scripts for your
 ## Required File Inputs 
 You will need the following two files to complete the CARMEN analysis.
 
-### A .xlsx Assignment Sheet
+### An .xlsx Assignment Sheet
+======
 Go to [this Google Drive folder](https://drive.google.com/drive/folders/1iQsmyuwRtDyMgtT2YvgJ4yv_sGcJMhgv?usp=drive_link). Select the Assignment Sheet template  corresponding to the dimensions of the IFC chip you ran. Download the template as an ``.xlsx`` file.
 
 Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`` template file. Do **NOT** edit the layout_assays and layout_samples tabs in the .xlsx template file provided. 
@@ -110,7 +111,7 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data Fi
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
 3. Remove all other .csv files from the Cloned Directory. 
-4.  Remove all other .csv files from the current working directory
+4. Remove all other .csv files from the current working directory
 
 #### Option 2:
 1. Get the path of your current working directory by running the following command in the terminal: ``pwd``
