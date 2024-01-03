@@ -51,10 +51,20 @@ The cloned directory should contain ALL of the following python scripts for your
 
 ## Required file inputs 
 You will need the following two files to complete the CARMEN analysis:
-* A .xlsx Assignment Sheet. Enter your samples and assays in the corresponding tabs in the .xlsx template file provided. Do not edit the layout_assays and layout_samples tabs in the .xlsx template file provided. Rename this file as follows: ``{IFC Barcode}_192_assignment.xlsx`` 
- * NOTE: Your negative control must contain the phrase "NTC".
+* A .xlsx Assignment Sheet. Enter your samples and assays in the corresponding tabs in the .xlsx template file provided. Do not edit the layout_assays and layout_samples tabs in the .xlsx template file provided. Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
+ * NOTE: Each plate of samples that you run in CARMEN must include the following 3 controls:  
+  1. First Negative control must contain the phrase ``"NTC"``.
+    * The ``"No Target Control"`` does not contain viral target and should produce a negative response. 
+    * Validation is integral to ensuring that there is no contamination in the RT-PCR steps of CARMEN. 
+  2. Second Negative control must contrain the phrase ``"NDC"``. 
+    * The ``"No Detection Control"`` does not contain Magnesium 2+ and should produce a negative response. 
+    * Validation is integral to ensuring that there is no conamination in the Detection steps of CARMEN (preparing the Sample Master Mix and loading the chip). Cas13a enzyme remains unactive without its cofactor Magnesium 2+. 
+  3. Positive control must contain the phrase ``"CPC"``. 
+    * The ``"Combined Positive Control"`` contains a combined assay of synthetic targets corresponding to all viral assays tested in your CARMEN run. 
+    * A positive signal for the CPC per viral assay is integral to validating the viral assay in your CARMEN run. 
 
-* A .csv Data File from the Standard BioTools instrument. When exporting results from teh Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
+
+* A .csv Data File from the Standard BioTools instrument. When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
 You have 2 options of moving the required file inputs from their current locations on your computer to the cloned directory. 
 * Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
