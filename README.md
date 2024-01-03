@@ -46,15 +46,15 @@ From your terminal, type ``git clone git@github.com:cwilkason/carmen-streamlit-v
 
 ## Content Description of Cloned Directory: 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
-* carmen_analysis.py
-* matcher.py
-* median_frame.py
-* norm.py
-* ntcnorm.py
-* plotting.py
-* reader.py
-* threshold.py 
-* summary.py
+* ``carmen_analysis.py``
+* ``matcher.py``
+* ``median_frame.py``
+* ``norm.py``
+* ``ntcnorm.py``
+* ``plotting.py``
+* ``reader.py``
+* ``threshold.py`` 
+* ``summary.py``
 
 ## Required file inputs 
 You will need the following two files to complete the CARMEN analysis:
