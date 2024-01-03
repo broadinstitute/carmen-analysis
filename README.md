@@ -79,12 +79,12 @@ Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`
 
 Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
 
-#### What does ``"{Chip Dimension}"`` mean?
+#### (i) What does ``"{Chip Dimension}"`` mean?
 ``"{Chip Dimension}"`` refers to the total number of samples and number of assays that your Standard BioTools Dynamic Array^TM IFC ran. 
 
 The most common IFC chip ran in CARMEN is the ``192.24`` IFC chip, which runs 192 samples and 24 assays. However, there is also the ``96.96`` IFC chip, which runs 96 samples and 96 assays, and the ``48.48`` IFC chip, which runs 48 samples and 48 assays.
 
-#### Required Controls
+#### (ii) Required Controls
 Each plate of samples that you run in CARMEN must include the following 3 controls:  
   1. First Negative control must contain the phrase ``"NTC"``.
     * The ``"No Target Control"`` does not contain viral target and should produce a negative response. 
