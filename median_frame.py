@@ -22,7 +22,7 @@ class MedianSort:
             time_med.columns.names=['']
             time_med_transposed = time_med.transpose()
             med_frames[name] = time_med_transposed
-          
+
         return med_frames
       
           

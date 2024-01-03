@@ -107,15 +107,28 @@ crRNA_assays = assigned_lists['assay_list']
 median = MedianSort(crRNA_assays)
 final_med_frames = median.create_median(assigned_norms['signal_norm_raw'])
 
+# Output needs to be rounded to 4 digits
+rounded_final_med_frames = {}
+# Define the number of decimals for rounding
+decimals = 5
 
-timepoints = list(final_med_frames.keys())
+# Iterate through each row and column
+for key, df in final_med_frames.items():
+    rounded_df = pd.DataFrame(index=df.index, columns=df.columns)
+    for i in range(len(df.index)):
+        for j in range(len(df.columns)):
+            # Round each value to the specified number of decimals
+            rounded_df.iloc[i, j] = round(df.iloc[i, j], decimals)
+    rounded_final_med_frames[key] = rounded_df
+
+timepoints = list(rounded_final_med_frames.keys())
 for i, t in enumerate(timepoints, start=1):
     filename = os.path.join(output_folder, f't{i}_{barcode_assignment}.csv')
-    csv = final_med_frames[t].to_csv(filename, index=True)
+    csv = rounded_final_med_frames[t].to_csv(filename, index=True)
 
 # since we want to explicitly manipulate t13_csv, it is helpful to have the t13 df referenced outside of the for loop
-last_key = list(final_med_frames.keys())[-1]
-t13_dataframe_orig = final_med_frames[last_key]
+last_key = list(rounded_final_med_frames.keys())[-1]
+t13_dataframe_orig = rounded_final_med_frames[last_key]
 t13_dataframe_copy1 = pd.DataFrame(t13_dataframe_orig)
 t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig)
 
