@@ -37,13 +37,6 @@ Now that you have a high-level understanding of the directories you need to crea
 3. Clone the repository. 
 From your terminal, type ``git clone git@github.com:cwilkason/carmen-streamlit-v1.git``
 
-4. Launch a virtual environment in your cloned directory. Follow the delineated steps to install needed dependencies:
-* Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
-* Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
-* Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
-
-**Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
-
 ## Content Description of Cloned Directory: 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
 * ``carmen_analysis.py``
@@ -97,8 +90,15 @@ NOTE: Remove all other .csv files from the current working directory by running 
 3. Check if there are any other .csv files in the current working directory by running the following command in the terminal: ``ls *.csv``
 4. If there are other .csv files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec mv {} /pathToAnotherFolder \;``
 
-## Usage
-To run the analysis, type the following command in your terminal: ``python3 carmen_analysis.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
+## Usage and Running the Analysis
+Launch a virtual environment in your cloned directory. Follow the delineated steps to install needed dependencies:
+1. Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
+2. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
+3. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
+
+**Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
+
+4. To run the analysis, type the following command in your terminal: ``python3 carmen_analysis.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
 For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\output_{IFC Barcode}``. 
 
