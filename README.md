@@ -8,22 +8,23 @@ This code is pathogen-agnostic and can be utilized for any combination of viral 
 
 ## Table of Contents
 
-[Primer on Cloning & the Python Virtual Environment](link)
+[Primer on Cloning & the Python Virtual Environment](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#primer-on-the-structure-of-your-cloned-working-directory-and-the-virtual-environment)
 
-[Installation](link)
+[Installation](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#installation)
 
-[Content Description of Cloned Working Directory](link)
+[Content Description of Cloned Working Directory](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#content-description-of-cloned-directory)
 
-[Required File Inputs](link)
-* [An .xlsx Assignment Sheet](link)
-* [A .csv Data File from the Standard BioTools instrument](link)
-* [File Relocation to Cloned Directory](link)
+[Required File Inputs](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#required-file-inputs)
+* [An .xlsx Assignment Sheet](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#an-xlsx-assignment-sheet)
+* [A .csv Data File from the Standard BioTools instrument](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#a-csv-data-file-from-the-standard-biotools-instrument)
 
-[Usage and Running the Analysis](link)
+[File Relocation to Cloned Directory](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#file-relocation-to-cloned-directory)
 
-[Description of the Outputs](link)
+[Usage and Running the Analysis](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#usage-and-running-the-analysis)
 
-[Any Questions?](link)
+[Description of the Outputs](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#description-of-the-outputs)
+
+[Any Questions?](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#congratulations-on-analyzing-your-carmen-run)
 
 ## Primer on the structure of your cloned working directory and the virtual environment
 The following is a brief discussion of the fundamental structure of your cloned directory and the virtual environment. 
@@ -100,7 +101,7 @@ The assumption for the remainder of the CARMEN analysis is that any sample that 
 ### A .csv Data File from the Standard BioTools instrument
 When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
-### File Relocation to Cloned Directory
+## File Relocation to Cloned Directory
 You have 2 options of moving the required file inputs from their current locations on your computer to the cloned directory. 
 * Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
 * Option 2 is for users who are more familiar with the command line and utilizes only the terminal interface to achieve the same file relocation. 
