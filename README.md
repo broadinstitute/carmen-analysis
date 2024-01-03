@@ -68,7 +68,7 @@ The cloned directory should contain ALL of the following python scripts for your
 ## Required File Inputs 
 You will need the following two files to complete the CARMEN analysis.
 
-### An .xlsx Assignment Sheet
+An .xlsx Assignment Sheet
 ======
 Go to [this Google Drive folder](https://drive.google.com/drive/folders/1iQsmyuwRtDyMgtT2YvgJ4yv_sGcJMhgv?usp=drive_link). Select the Assignment Sheet template  corresponding to the dimensions of the IFC chip you ran. Download the template as an ``.xlsx`` file.
 
