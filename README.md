@@ -2,9 +2,25 @@
 CARMEN is a diagnostic tool designed for surveillance purposes. Below are the instructions to complete your CARMEN analysis. 
 
 ## Overview
-At this point, you have ran the IFC (integrated fluidic circuit) on the Standard BioTools BioMark instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
+At this point, you have ran the Standard BioTools Dynamic Array^TM IFC (integrated fluidic circuit) on the Standard BioTools BioMark^TM instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
 
 This code is pathogen-agnostic and can be utilized for any combination of viral assays ran on the Standard BioTools IFC used in CARMEN. The contents of the output folder are described below, with reference to experimental analysis performed for a 192.24 IFC chip and a 1-hour Standard Biotools Biomark run.
+
+## Table of Contents
+
+[Primer on Cloning & the Python Virtual Environment](link)
+
+[Installation](link)
+
+[Content Description of Cloned Working Directory](link)
+
+[Required File Inputs](link)
+
+[Usage and Running the Analysis](link)
+
+[Description of the Outputs](link)
+
+[Any Questions?](link)
 
 ## Primer on the structure of your cloned working directory and the virtual environment
 The following is a brief discussion of the fundamental structure of your cloned directory and the virtual environment. 
@@ -49,10 +65,23 @@ The cloned directory should contain ALL of the following python scripts for your
 * ``threshold.py`` 
 * ``summary.py``
 
-## Required file inputs 
-You will need the following two files to complete the CARMEN analysis:
-* A .xlsx Assignment Sheet. Enter your samples and assays in the corresponding tabs in the .xlsx template file provided. Do not edit the layout_assays and layout_samples tabs in the .xlsx template file provided. Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
- * NOTE: Each plate of samples that you run in CARMEN must include the following 3 controls:  
+## Required File Inputs 
+You will need the following two files to complete the CARMEN analysis.
+
+### A .xlsx Assignment Sheet
+Go to [this Google Drive folder](https://drive.google.com/drive/folders/1iQsmyuwRtDyMgtT2YvgJ4yv_sGcJMhgv?usp=drive_link). Select the Assignment Sheet template  corresponding to the dimensions of the IFC chip you ran. Download the template as an ``.xlsx`` file.
+
+Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`` template file. Do **NOT** edit the layout_assays and layout_samples tabs in the .xlsx template file provided. 
+
+Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
+
+#### What does ``"{Chip Dimension}"`` mean?
+``"{Chip Dimension}"`` refers to the total number of samples and number of assays that your Standard BioTools Dynamic Array^TM IFC ran. 
+
+The most common IFC chip ran in CARMEN is the ``192.24`` IFC chip, which runs 192 samples and 24 assays. However, there is also the ``96.96`` IFC chip, which runs 96 samples and 96 assays, and the ``48.48`` IFC chip, which runs 48 samples and 48 assays.
+
+#### Required Controls
+Each plate of samples that you run in CARMEN must include the following 3 controls:  
   1. First Negative control must contain the phrase ``"NTC"``.
     * The ``"No Target Control"`` does not contain viral target and should produce a negative response. 
     * Validation is integral to ensuring that there is no contamination in the RT-PCR steps of CARMEN. 
@@ -63,9 +92,12 @@ You will need the following two files to complete the CARMEN analysis:
     * The ``"Combined Positive Control"`` contains a combined assay of synthetic targets corresponding to all viral assays tested in your CARMEN run. 
     * A positive signal for the CPC per viral assay is integral to validating the viral assay in your CARMEN run. 
 
+The assumption for the remainder of the CARMEN analysis is that any sample that does contain the phrases ``NTC``, ``NDC``, and ``CPC`` is considered a “patient or clinical sample”.
 
-* A .csv Data File from the Standard BioTools instrument. When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
+### A .csv Data File from the Standard BioTools instrument
+When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
+### File Relocation to Cloned Directory
 You have 2 options of moving the required file inputs from their current locations on your computer to the cloned directory. 
 * Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
 * Option 2 is for users who are more familiar with the command line and utilizes only the terminal interface to achieve the same file relocation. 
@@ -74,13 +106,13 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assign
 
 For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\{IFC_Barcode}.csv``
 
-**Option 1:** 
+#### Option 1:
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
 3. Remove all other .csv files from the Cloned Directory. 
 4.  Remove all other .csv files from the current working directory
 
-**Option 2:** 
+#### Option 2:
 1. Get the path of your current working directory by running the following command in the terminal: ``pwd``
 2. Copy this path
 3. Return to your home directory by running the following command in the terminal: ``cd ~`` 
@@ -90,12 +122,12 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data Fi
 * In place of ``/pathToClonedDirectory``, paste in the Cloned Directory path you copied 
 6. Repeat steps 3, 4, and 5 to move your Data File (.csv) to the Cloned Directory. 
 
-NOTE: Remove all other .xlsx files from the current working directory by running the following command from your terminal: 
+**NOTE:** Remove all other .xlsx files from the current working directory by running the following command from your terminal: 
 
 1. Check if there are any other .xlsx files in the current working directory by running the following command in the terminal: ``ls *.xlsx``
 2. If there are other .xlsx files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec mv {} /pathToAnotherFolder \;``
 
-NOTE: Remove all other .csv files from the current working directory by running the following command from your terminal: 
+**NOTE:** Remove all other .csv files from the current working directory by running the following command from your terminal: 
 
 3. Check if there are any other .csv files in the current working directory by running the following command in the terminal: ``ls *.csv``
 4. If there are other .csv files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec mv {} /pathToAnotherFolder \;``
