@@ -16,8 +16,8 @@ This code is pathogen-agnostic and can be utilized for any combination of viral 
 
 [Required File Inputs](link)
 * [An .xlsx Assignment Sheet](link)
- * [What does ``"{Chip Dimension}"`` mean?](link)
- * [Required Controls](link)
+ - [What does ``"{Chip Dimension}"`` mean?](link)
+ - [Required Controls](link)
 
 * [A .csv Data File from the Standard BioTools instrument](link)
 
