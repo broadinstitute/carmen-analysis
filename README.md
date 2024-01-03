@@ -58,18 +58,24 @@ The cloned directory should contain ALL of the following python scripts for your
 
 ## Required file inputs 
 You will need the following two files to complete the CARMEN analysis:
-* A .xlsx Assignment Sheet. Enter your samples and assays in the corresponding tabs in the .xlsx template file provided. Do not edit the layout_assays and layout_samples tabs in the .xlsx template file provided. Rename this file as follows: {IFC Barcode}_192_assignment.xlsx. 
+* A .xlsx Assignment Sheet. Enter your samples and assays in the corresponding tabs in the .xlsx template file provided. Do not edit the layout_assays and layout_samples tabs in the .xlsx template file provided. Rename this file as follows: ``{IFC Barcode}_192_assignment.xlsx`` 
  * NOTE: Your negative control must contain the phrase "NTC".
 
-* A .csv Data File from the Standard BioTools instrument. When exporting results from teh Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: {IFC_Barcode}.csv
+* A .csv Data File from the Standard BioTools instrument. When exporting results from teh Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
 You have 2 options of moving the required file inputs from their current locations on your computer to the cloned directory. 
 * Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
 * Option 2 is for users who are more familiar with the command line and utilizes only the terminal interface to achieve the same file relocation. 
 
+For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assignment Sheet will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\{IFC Barcode}_192_assignment.xlsx``
+
+For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\{IFC_Barcode}.csv``
+
 **Option 1:** 
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
+3. Remove all other .csv files from the Cloned Directory. 
+4.  Remove all other .csv files from the current working directory
 
 **Option 2:** 
 1. Get the path of your current working directory by running the following command in the terminal: ``pwd``
@@ -94,7 +100,7 @@ NOTE: Remove all other .csv files from the current working directory by running 
 ## Usage
 To run the analysis, type the following command in your terminal: ``python3 carmen_analysis.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
-For the ``CARMEN_Run_2`` example given above, the output folder's path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\CARMEN_Run_2\output_{IFC Barcode}``. 
+For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
 After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a 192.24 IFC chip). If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
