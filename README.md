@@ -71,7 +71,6 @@ You have 2 options of moving the required file inputs from their current locatio
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
 
-
 **Option 2:** 
 1. Get the path of your current working directory by running the following command in the terminal: ``pwd``
 2. Copy this path
@@ -83,17 +82,19 @@ You have 2 options of moving the required file inputs from their current locatio
 6. Repeat steps 3, 4, and 5 to move your Data File (.csv) to the Cloned Directory. 
 
 NOTE: Remove all other .xlsx files from the current working directory by running the following command from your terminal: 
+
 1. Check if there are any other .xlsx files in the current working directory by running the following command in the terminal: ``ls *.xlsx``
 2. If there are other .xlsx files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec mv {} /pathToAnotherFolder \;``
 
 NOTE: Remove all other .csv files from the current working directory by running the following command from your terminal: 
+
 3. Check if there are any other .csv files in the current working directory by running the following command in the terminal: ``ls *.csv``
 4. If there are other .csv files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec mv {} /pathToAnotherFolder \;``
 
 ## Usage
 To run the analysis, type the following command in your terminal: ``python3 carmen_analysis.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
-For the ``CARMEN_Run_2`` example given above, the output folder's path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\CARMEN_Run_2``. 
+For the ``CARMEN_Run_2`` example given above, the output folder's path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\CARMEN_Run_2\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
 After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a 192.24 IFC chip). If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
