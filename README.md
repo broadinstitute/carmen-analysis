@@ -104,20 +104,20 @@ For the ``CARMEN_Run_2`` example given above, the output folder's file path woul
 
 ## Description of the Outputs
 After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a 192.24 IFC chip). If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
-* t13_{IFC Barcode}.csv : Quantitative signal output
-* t13_{IFC Barcode}_hit_output.csv : Positive/Negative binary output
-* t13_{IFC Barcode}_quant_ntcNorm.csv : Normalized quantitative signal output wherein the signal per assay and per sample has been normalized against the mean NTC (No Target Control) signal. 
-* Heatmap_t13_{IFC Barcode}.png : Heatmap for data visualization at the final timepoint.
-* Positives_Summary_{IFC Barcode}.csv : Summary of total positive samples per assay and tabulation of the sample ID of each positive sample per assay. 
+* ``t13_{IFC Barcode}.csv`` : Quantitative signal output
+* ``t13_{IFC Barcode}_hit_output.csv`` : Positive/Negative binary output
+* ``t13_{IFC Barcode}_quant_ntcNorm.csv`` : Normalized quantitative signal output wherein the signal per assay and per sample has been normalized against the mean NTC (No Target Control) signal. 
+* ``Heatmap_t13_{IFC Barcode}.png`` : Heatmap for data visualization at the final timepoint.
+* ``Positives_Summary_{IFC Barcode}.csv`` : Summary of total positive samples per assay and tabulation of the sample ID of each positive sample per assay. 
 
 If you are more interested in research & development in the diagnostic space, additional files you might be interested are as follows:
-* t{#}_{IFC Barcode}.csv : These are the quantitative signal output per timepoint. (For a 1-hour Standard Biotools Biomark run, you will generate 13 such total files corresponding to 13 timepoints.)
-* Heatmap_t{#}_{IFC Barcode}.png : Heatmap for data visualization  per timepoint. (For a 1-hour Standard Biotools Biomark run, you will generate 13 such total files corresponding to 13 timepoints.)
-* ref_norm.csv : This file corresponds to the signal of the passive reference ROX dye per timepoint, per assay used in your experiment.
-* assigned_ref_norm.csv: This is a more useful version of the ref_norm.csv as it shows you which sample and which assay the passive reference ROX dye corresponds to, at each timepoint.
-* signal_norm.csv : This file corresponds to the normalized FAM signal (after subtraction of the background FAM signal and normalization against the signal from the reference dye).
-* assigned_signal_norm.csv : This is a more useful version of the signal_norm.csv as it shows you which sample and which assay the normalized FAM signal corresponds to, at each timepoint.
-* NTC_thresholds_{IFC Barcode}.csv : This file tabulates the mean NTC value thresholds at which samples were 
+* ``t{#}_{IFC Barcode}.csv`` : These are the quantitative signal output per timepoint. (For a 1-hour Standard Biotools Biomark run, you will generate 13 such total files corresponding to 13 timepoints.)
+* ``Heatmap_t{#}_{IFC Barcode}.png`` : Heatmap for data visualization  per timepoint. (For a 1-hour Standard Biotools Biomark run, you will generate 13 such total files corresponding to 13 timepoints.)
+* ``ref_norm.csv`` : This file corresponds to the signal of the passive reference ROX dye per timepoint, per assay used in your experiment.
+* ``assigned_ref_norm.csv``: This is a more useful version of the ref_norm.csv as it shows you which sample and which assay the passive reference ROX dye corresponds to, at each timepoint.
+* ``signal_norm.csv`` : This file corresponds to the normalized FAM signal (after subtraction of the background FAM signal and normalization against the signal from the reference dye).
+* ``assigned_signal_norm.csv`` : This is a more useful version of the signal_norm.csv as it shows you which sample and which assay the normalized FAM signal corresponds to, at each timepoint.
+* ``NTC_thresholds_{IFC Barcode}.csv`` : This file tabulates the mean NTC value thresholds at which samples were 
 
 
 ## Congratulations on analyzing your CARMEN run! 
