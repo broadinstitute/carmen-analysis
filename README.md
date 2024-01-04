@@ -2,7 +2,7 @@
 CARMEN is a diagnostic tool designed for surveillance purposes. Below are the instructions to complete your CARMEN analysis. 
 
 ## Overview
-At this point, you have ran the $Standard\ BioTools\ Dynamic\ Array^{TM}$ IFC (integrated fluidic circuit) on the $Standard\ BioTools\ BioMark^{TM}$ instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
+At this point, you have ran the $Standard\ BioTools\ Dynamic\ Array^{TM}$ IFC (integrated fluidic circuit) on the $Standard\ BioTools\ Biomark^{TM}$ instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
 
 This code is pathogen-agnostic and can be utilized for any combination of viral assays ran on the Standard BioTools IFC used in CARMEN. The contents of the output folder are described below, with reference to experimental analysis performed for a 192.24 IFC chip and a 1-hour Standard Biotools Biomark run.
 
@@ -81,7 +81,7 @@ Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`
 Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
 
 #### (i) What does ``"{Chip Dimension}"`` mean?
-``"{Chip Dimension}"`` refers to the total number of samples and number of assays that your Standard BioTools Dynamic Array^TM IFC ran. 
+``"{Chip Dimension}"`` refers to the total number of samples and number of assays that your $Standard\ BioTools\ Dynamic\ Array^{TM}$ IFC ran. 
 
 The most common IFC chip ran in CARMEN is the ``192.24`` IFC chip, which runs 192 samples and 24 assays. However, there is also the ``96.96`` IFC chip, which runs 96 samples and 96 assays, and the ``48.48`` IFC chip, which runs 48 samples and 48 assays.
 
@@ -157,7 +157,7 @@ For the ``CARMEN_Run_2`` example given above, the virtual environment's file pat
 For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
-After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a standard 1 hour protocol on the Standard BioTools Biomark^TM instrument).
+After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a standard 1 hour protocol on the $Standard\ BioTools\ Biomark^{TM}$ instrument).
 
  If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
 * ``t13_{IFC Barcode}.csv`` : Quantitative signal output
