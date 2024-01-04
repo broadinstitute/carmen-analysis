@@ -172,5 +172,5 @@ If you are more interested in research & development in the diagnostic space, ad
 
 
 ## Congratulations on analyzing your CARMEN run! 
-If you have any questions or run into any questions regarding the code base, please reach out to albeez@broadinstitute.org. 
+If you have any questions or run into any questions regarding the code base, please reach out to albeez@broadinstitute.org and cwilkason@broadinstitute.org. 
 
