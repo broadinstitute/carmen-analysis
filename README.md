@@ -26,7 +26,8 @@ This code is pathogen-agnostic and can be utilized for any combination of viral 
 
 [Any Questions?](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#congratulations-on-analyzing-your-carmen-run)
 
-## Primer on the structure of your cloned working directory and the virtual environment
+## Primer on the Structure of your Cloned Working Directory and the Virtual Environment
+
 The following is a brief discussion of the fundamental structure of your cloned directory and the virtual environment. 
 
 Firstly, what is a working directory? Essentially, a working directory is a file path that points to where your program or file of interest is located on your computer. 
