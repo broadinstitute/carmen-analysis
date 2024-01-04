@@ -14,6 +14,7 @@ import os
 from os import path
 import glob 
 import re
+from collections import OrderedDict
 from reader import DataReader
 from norm import DataProcessor
 from matcher import DataMatcher
@@ -168,7 +169,8 @@ heatmap_generator = Plotter()
 
 tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
 # tp = list of timepoints (t1, t2, etc)
-unique_crRNA_assays = list(set(crRNA_assays))
+#unique_crRNA_assays = list(set(crRNA_assays))
+unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
 heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
 # save heatmap per timepoint
