@@ -157,7 +157,9 @@ For the ``CARMEN_Run_2`` example given above, the virtual environment's file pat
 For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
-After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a 192.24 IFC chip). If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
+After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a standard 1 hour protocol on the Standard BioTools Biomark^TM instrument).
+
+ If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
 * ``t13_{IFC Barcode}.csv`` : Quantitative signal output
 * ``t13_{IFC Barcode}_hit_output.csv`` : Positive/Negative binary output
 * ``t13_{IFC Barcode}_quant_ntcNorm.csv`` : Normalized quantitative signal output wherein the signal per assay and per sample has been normalized against the mean NTC (No Target Control) signal. 
