@@ -55,7 +55,7 @@ Now that you have a high-level understanding of the directories you need to crea
 3. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
 
 3. Clone the repository. 
-From your terminal, type ``git clone git@github.com:cwilkason/carmen-streamlit-v1.git``
+From your terminal, type ``git clone https://github.com/cwilkason/carmen-analysis.git``
 
 ## Content Description of Cloned Directory: 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
@@ -72,7 +72,7 @@ The cloned directory should contain ALL of the following python scripts for your
 ## Required File Inputs 
 You will need the following two files to complete the CARMEN analysis.
 
-### An .xlsx Assignment Sheet
+### (1) An .xlsx Assignment Sheet
 Go to [this Google Drive folder](https://drive.google.com/drive/folders/1iQsmyuwRtDyMgtT2YvgJ4yv_sGcJMhgv?usp=drive_link). Select the Assignment Sheet template  corresponding to the dimensions of the IFC chip you ran. Download the template as an ``.xlsx`` file.
 
 Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`` template file. Do **NOT** edit the layout_assays and layout_samples tabs in the .xlsx template file provided. 
@@ -98,7 +98,7 @@ Each plate of samples that you run in CARMEN must include the following 3 contro
 
 The assumption for the remainder of the CARMEN analysis is that any sample that does contain the phrases ``NTC``, ``NDC``, and ``CPC`` is considered a “patient or clinical sample”.
 
-### A .csv Data File from the Standard BioTools instrument
+### (2) A .csv Data File from the Standard BioTools instrument
 When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
 ## File Relocation to Cloned Directory
