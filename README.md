@@ -2,7 +2,7 @@
 CARMEN is a diagnostic tool designed for surveillance purposes. Below are the instructions to complete your CARMEN analysis. 
 
 ## Overview
-At this point, you have ran the Standard BioTools Dynamic Array^{TM} IFC (integrated fluidic circuit) on the Standard BioTools BioMark^TM instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
+At this point, you have ran the $Standard BioTools Dynamic Array^{TM}$ IFC (integrated fluidic circuit) on the Standard BioTools BioMark^TM instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
 
 This code is pathogen-agnostic and can be utilized for any combination of viral assays ran on the Standard BioTools IFC used in CARMEN. The contents of the output folder are described below, with reference to experimental analysis performed for a 192.24 IFC chip and a 1-hour Standard Biotools Biomark run.
 
