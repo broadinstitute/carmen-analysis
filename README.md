@@ -26,7 +26,7 @@ This code is pathogen-agnostic and can be utilized for any combination of viral 
 
 [Any Questions?](https://github.com/cwilkason/carmen-streamlit-v1?tab=readme-ov-file#congratulations-on-analyzing-your-carmen-run)
 
-## Primer on the Structure of your Cloned Working Directory and the Virtual Environment
+## Primer on Cloning & the Python Virtual Environment
 
 The following is a brief discussion of the fundamental structure of your cloned directory and the virtual environment. 
 
@@ -58,7 +58,7 @@ Now that you have a high-level understanding of the directories you need to crea
 3. Clone the repository. 
 From your terminal, type ``git clone https://github.com/broadinstitute/carmen-analysis``
 
-## Content Description of Cloned Directory: 
+## Content Description of Cloned Directory 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
 * ``carmen_analysis.py``
 * ``matcher.py``
