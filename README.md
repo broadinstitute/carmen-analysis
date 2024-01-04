@@ -38,11 +38,11 @@ In the Sentinel directory, you have the following sub-directories (or sub-folder
 
 You are currently in the process of analyzing ``CARMEN_Run_2``. Thus, from the terminal, you will navigate to the location ``\Users\albeez\Sentinel\CARMEN_Run_2`` using the ``cd`` command. Once in the ``CARMEN_Run_2`` directory, you will clone the Github repository as per the instructions below (specifically in Step 3). 
 
-The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis``. 
+The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``. 
 
-Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-sentinel-analysis`` as per the instructions below (specifically in Step 4). 
+Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-analysis`` as per the instructions below (specifically in Step 4). 
 
-Of note, if you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
+Of note, if you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
 In summary, the cloned directory contains all of the needed python scripts, data files, and the virtual environment. The virtual environment is separate from the Python files and data files - but it will access the files in the cloned directory. 
 
@@ -56,7 +56,7 @@ Now that you have a high-level understanding of the directories you need to crea
 3. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
 
 3. Clone the repository. 
-From your terminal, type ``git clone https://github.com/cwilkason/carmen-analysis.git``
+From your terminal, type ``git clone https://github.com/broadinstitute/carmen-analysis``
 
 ## Content Description of Cloned Directory: 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
@@ -107,9 +107,9 @@ You have 2 options of moving the required file inputs from their current locatio
 * Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
 * Option 2 is for users who are more familiar with the command line and utilizes only the terminal interface to achieve the same file relocation. 
 
-For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assignment Sheet will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\{IFC Barcode}_192_assignment.xlsx``
+For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assignment Sheet will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC Barcode}_192_assignment.xlsx``
 
-For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\{IFC_Barcode}.csv``
+For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC_Barcode}.csv``
 
 #### Option 1:
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
@@ -139,20 +139,22 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data Fi
 
 ## Usage and Running the Analysis
 Launch a virtual environment **inside your cloned directory**. Follow the delineated steps to install needed dependencies:
-1. Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
+1. From the command-line interface, enter inside the cloned working directory. For the ``CARMEN_Run_2`` example given above, the file path from which you perform the steps below should be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``
 
-2. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
+2. Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
+
+3. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
 * When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
 
-3. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
+4. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
 
-For the ``CARMEN_Run_2`` example given above, the virtual environment's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\carmen-env``. 
+For the ``CARMEN_Run_2`` example given above, the virtual environment's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\carmen-env``. 
 
 **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
-4. To run the analysis, type the following command in your terminal: ``python3 carmen_analysis.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
+5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
-For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-sentinel-analysis\output_{IFC Barcode}``. 
+For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
 After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a 192.24 IFC chip). If your primary purpose is diagnostic surveillance, the files most useful for you will be as follows: 
