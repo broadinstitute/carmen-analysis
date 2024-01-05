@@ -148,13 +148,13 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
 4. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
 
-    For the ``CARMEN_Run_2`` example given above, the virtual environment's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\carmen-env``. 
+    * For the ``CARMEN_Run_2`` example given above, the virtual environment's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\carmen-env``. 
 
-    **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
+    * **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
 5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
-    For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
+    * For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
 ## Description of the Outputs
 After successfully running this code, you will produce a folder called "output" containing 21 csv files and 13 figures (assuming you are running a standard 1 hour protocol on the $Standard\ BioTools\ Biomark^{TM}$ instrument).
