@@ -53,9 +53,11 @@ Now that you have a high-level understanding of the directories you need to crea
 
 2. Open Terminal on your computer. 
 
-3. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
+3. If you are using a MacOS system, you will need to install the Xcode Command Line Tools. Run the following command in your terminal: ``xcode-select --install``.
 
-3. Clone the repository. 
+4. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
+
+5. Clone the repository. 
 From your terminal, type ``git clone https://github.com/broadinstitute/carmen-analysis``
 
 ## Content Description of Cloned Directory 
