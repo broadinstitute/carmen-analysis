@@ -53,7 +53,10 @@ Now that you have a high-level understanding of the directories you need to crea
 
 2. Open Terminal on your computer. 
 
-3. If you are using a MacOS system, you will need to install the Xcode Command Line Tools. Run the following command in your terminal: ``xcode-select --install``.
+3. If your computer are using a macOS system, you need to have the Xcode Command Line Tools installed. To check if you already have installed the Xcode Command Line Tools on your macOs system, run the following command: ``xcode-select --version``. 
+
+  * If you have not installed the Xcode Command Line Tools, you will get an error message as follows: ``xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.``. To install the Xcode Command Line Tools. Run the following command in your terminal: ``xcode-select --install``.
+
 
 4. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
 
@@ -154,7 +157,7 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
     * **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
-5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py ``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
+5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
     * For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
