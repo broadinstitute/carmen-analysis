@@ -55,7 +55,7 @@ Now that you have a high-level understanding of the directories you need to crea
 
 3. If your computer are using a macOS system, you need to have the Xcode Command Line Tools installed. To check if you already have installed the Xcode Command Line Tools on your macOs system, run the following command: ``xcode-select --version``. 
 
-  * If you have not installed the Xcode Command Line Tools, you will get an error message as follows: ``xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.`` To install the Xcode Command Line Tools, run the following command in your terminal: ``xcode-select --install``.
+    * If you have not installed the Xcode Command Line Tools, you will get an error message as follows: ``xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.`` To install the Xcode Command Line Tools, run the following command in your terminal: ``xcode-select --install``.
 
 
 4. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
