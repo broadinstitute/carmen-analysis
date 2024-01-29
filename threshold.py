@@ -34,6 +34,15 @@ class Thresholder:
             raw_thresholds_df.index = ['NTC Mean', 'NTC Threshold']
 
         elif CLI_thresh_arg == '3_SD':
+            # Calculate mean of each column
+            mean_ntc = ntc_PerAssay.mean(axis=1)
+
+            # Make a new df with these mean values
+            ntc_mean_df = pd.DataFrame({'NTC Mean': mean_ntc})
+
+            # Transpose the results to have assays as columns
+            ntc_mean_df = ntc_mean_df.transpose()
+
             # Calculate standard deviation of each column 
             ntc_sd = ntc_PerAssay.std(axis=1)
 
@@ -43,13 +52,23 @@ class Thresholder:
             # Transpose the results to have assays as columns
             ntc_sd_df = ntc_sd_df.transpose()
 
-            # Scale the NTC SD by 3 to generate thresholds
-            raw_thresholds_df = ntc_sd_df * 3
+            # Scale the SD by 3 to generate 3*SD per assay
+            ntc_3sd_df = ntc_sd_df * 3
+            ntc_3sd_df.index = ['NTC 3*SD']
+
+            # Make a copy of ntc_mean_df
+            raw_thresholds_df = ntc_mean_df.copy(deep=True)
+
+            # Sum the NTC mean and 3*SD per assay to generate thresholds
+            for col_name, col_data in raw_thresholds_df.items():
+                for index, value in col_data.items():
+                    # Find the 3*SD of NTCs for the assay
+                    sd_ntc = ntc_3sd_df.loc['NTC 3*SD', col_name]
+                    raw_thresholds_df.at[index, col_name] = value + sd_ntc
 
             # Append the threshold to ntc_mean_df
-            ntc_sd_df.reset_index(drop=True, inplace=True)
-            raw_thresholds_df = pd.concat([ntc_sd_df, raw_thresholds_df], ignore_index=True, axis=0)
-            raw_thresholds_df.index = ['NTC Standard Deviation', 'NTC Threshold']
+            raw_thresholds_df = pd.concat([ntc_mean_df, ntc_sd_df, ntc_3sd_df, raw_thresholds_df], ignore_index=True, axis=0)
+            raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold']
         
         else:
             print("Consult ReadME and input appropriate command-line arguments to specify thresholding method.")
