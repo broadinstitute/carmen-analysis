@@ -157,7 +157,16 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
     * **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
-5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py``. The output of this command will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
+5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py {CLI}``. Read below to understand what you should input for ``{CLI}``. 
+    
+    CARMEN has been optimized for multiple viral assay panels. Some of these panels require different types of thresholding for determining positive vs negative samples. 
+
+    * If you are running the Respiratory Virus Panel (RVP), or require your positive samples to be thresholded above **``1.8 * (the mean signal of the No Target Control samples)``**, then the command-line interface argument (CLI) you will need to enter in Step 5 is: ``1.8_Mean``.
+
+    * If you are running the Blood-Borne Pathogens Panel (BBP), or require your positive samples to be thresholded **``3 times above the standard deviation of the mean No Target Control samples``**, then the command-line interface argument (CLI) you will need to enter in Step 5 is: ``3_SD``.
+
+
+6. The output of the command ``python3 analyze_run.py {CLI}`` will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
     * For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
