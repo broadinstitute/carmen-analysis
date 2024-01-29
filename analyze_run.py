@@ -136,12 +136,18 @@ t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig)
 # at this point, we have created a t1 thru t13 dataframe and exported all these dataframes as csv files in our output folder
 # now we need to threshold the t13 csv and mark signals >= threshold as positive and < threshold as negative
 
+# The premise of the code is that different viral panels require different thresholding
+# So the user will specifiy command line arguments as per the ReadMe instructions
+# and this portion of the code is meant to access the CI arguments and modify the threshold specified in the code
+
+CLI_arg = sys.argv
+
 # instantiate Thresholder from threshold.py
 thresholdr = Thresholder()
 
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
-ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(t13_dataframe_copy1)
+ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(t13_dataframe_copy1, CLI_arg[1])
 
 ntc_thresholds_output_file_path = os.path.join(output_folder, f'NTC_thresholds_{barcode_assignment}.csv')
 hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hit_output.csv')
