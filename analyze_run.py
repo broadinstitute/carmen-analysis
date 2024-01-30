@@ -156,7 +156,7 @@ hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hi
 ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
 t13_hit_output.to_csv(hit_output_file_path, index=True)
 
-"""  # instantiate NTC_Normalized from ntcnorm.py
+ # instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
  
 # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
@@ -190,4 +190,3 @@ for i, t in enumerate(timepoints, start=1):
 print(f"The heatmap plots saved to the folder, {output_folder}")
 
 
- """

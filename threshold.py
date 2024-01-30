@@ -70,16 +70,6 @@ class Thresholder:
             # Append the threshold to ntc_mean_df
             raw_thresholds_df = pd.concat([ntc_mean_df, ntc_sd_df, ntc_3sd_df, raw_thresholds_df], ignore_index=True, axis=0)
             raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold']
-
-            """ # Calculate standard deviation of each column 
-            ntc_sd = ntc_PerAssay.std(axis=1)
-
-            # Make a new df with these sd values
-            ntc_sd_df = pd.DataFrame({'SD': ntc_sd})
-
-            # Transpose the results to have assays as columns
-            ntc_sd_df = ntc_sd_df.transpose()
-            """
      
         else:
             print("Consult ReadME and input appropriate command-line arguments to specify thresholding method.")
