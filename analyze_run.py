@@ -144,10 +144,11 @@ CLI_arg = sys.argv
 
 # instantiate Thresholder from threshold.py
 thresholdr = Thresholder()
+unique_crRNA_assays = list(set(crRNA_assays))
 
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
-ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(t13_dataframe_copy1, CLI_arg[1])
+ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_norms['signal_norm_raw'], t13_dataframe_copy1, CLI_arg[1])
 
 ntc_thresholds_output_file_path = os.path.join(output_folder, f'NTC_thresholds_{barcode_assignment}.csv')
 hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hit_output.csv')
@@ -155,7 +156,7 @@ hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hi
 ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
 t13_hit_output.to_csv(hit_output_file_path, index=True)
 
- # instantiate NTC_Normalized from ntcnorm.py
+"""  # instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
  
 # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
@@ -175,8 +176,8 @@ heatmap_generator = Plotter()
 
 tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
 # tp = list of timepoints (t1, t2, etc)
-#unique_crRNA_assays = list(set(crRNA_assays))
-unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
+unique_crRNA_assays = list(set(crRNA_assays))
+#unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
 heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
 # save heatmap per timepoint
@@ -189,3 +190,4 @@ for i, t in enumerate(timepoints, start=1):
 print(f"The heatmap plots saved to the folder, {output_folder}")
 
 
+ """
