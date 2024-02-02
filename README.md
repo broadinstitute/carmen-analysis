@@ -32,35 +32,73 @@ The following is a brief discussion of the fundamental structure of your cloned 
 
 Firstly, what is a working directory? Essentially, a working directory is a file path that points to where your program or file of interest is located on your computer. 
 
-Let's say you have the working directory ``\Users\albeez\Sentinel``. This shows the file path on your computer to get to the folder called "Sentinel". 
+Let's say you have the working directory ``\Users\albeez\Sentinel``. This shows the file path on your computer to get to the folder called "Sentinel". In the Sentinel directory, you have the following sub-directories (or sub-folders): ``\Users\albeez\Sentinel\CARMEN_Run_1``, ``\Users\albeez\Sentinel\CARMEN_Run_2``, and ``\Users\albeez\Sentinel\CARMEN_Run_3``. 
 
-In the Sentinel directory, you have the following sub-directories (or sub-folders): ``\Users\albeez\Sentinel\CARMEN_Run_1``, ``\Users\albeez\Sentinel\CARMEN_Run_2``, and ``\Users\albeez\Sentinel\CARMEN_Run_3``. 
+You are currently in the process of analyzing ``CARMEN_Run_2``. Thus, from the terminal, you will navigate to the location ``\Users\albeez\Sentinel\CARMEN_Run_2`` using the ``cd`` command. Once in the ``CARMEN_Run_2`` directory, you will clone the Github repository as per the instructions below (specifically in Step 3). The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``. 
 
-You are currently in the process of analyzing ``CARMEN_Run_2``. Thus, from the terminal, you will navigate to the location ``\Users\albeez\Sentinel\CARMEN_Run_2`` using the ``cd`` command. Once in the ``CARMEN_Run_2`` directory, you will clone the Github repository as per the instructions below (specifically in Step 3). 
-
-The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``. 
-
-Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-analysis`` as per the instructions below (specifically in Step 4). 
-
-Of note, if you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
+Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-analysis`` as per the instructions below (specifically in Step 4). Of note, if you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies. 
 
 In summary, the cloned directory contains all of the needed python scripts, data files, and the virtual environment. The virtual environment is separate from the Python files and data files - but it will access the files in the cloned directory. 
 
 ## Installation
 Now that you have a high-level understanding of the directories you need to create, let's start the installation process. 
 
-1. If you do not have Python on your local machine already, install Python. You can download it [here](https://www.python.org/downloads/) and find instructions for the process [here](https://wiki.python.org/moin/BeginnersGuide/Download). 
+1. Open Terminal on your computer. 
 
-2. Open Terminal on your computer. 
 
-3. If your computer are using a macOS system, you need to have the Xcode Command Line Tools installed. To check if you already have installed the Xcode Command Line Tools on your macOs system, run the following command: ``xcode-select --version``. 
+2. Set the current working directory to the location where you want the cloned directory.
+
+    * There are a few differences between the operating systems in regard to how to run this code. The instructions will detail such differences in detail. Please note the specific operating system running on your local machine. 
+      * `macOS` and `Linux`: 
+        * Use the command ``cd`` to change the path. 
+        * Use the command `ls` to show what files you have available in sub-folders along the file path.
+      * `Windows`: 
+        * Use the command ``cd`` to change the path.
+        * Use the command `dir` to show what files you have available in sub-folders along the file path.
+
+3. Check if you have Python installed on your local machine by running ``python3 --version``. If you do not have Python on your local machine already, follow the instructions below to install Python.
+
+    * `macOS`: 
+      * You can download the latest version of Python [here](https://www.python.org/downloads/) and follow the package installer instructions.
+      * After completing the installation, run ``python3 --version`` to verify successful instllation of Python.
+    * `Ubuntu Linux`: 
+      * For systems with Ubunto 16.10 installed, run the following commands to install Python:
+        * ``sudo apt-get update``
+        * ``sudo apt-get install python3``
+    * `Windows`: 
+      * You can download the latest version of Python [here](https://www.python.org/downloads/windows/) and follow the package installer instructions
+        * **Note:** When the installer prompts you to do so, check the box to add Python to PATH. 
+      * After completing the installation, run ``py --version`` to verify successful instllation of Python.
+
+4. If your computer are using a ``macOS`` system, you need to have the Xcode Command Line Tools installed. To check if you already have installed the Xcode Command Line Tools on your macOs system, run the following command: ``xcode-select --version``. 
 
     * If you have not installed the Xcode Command Line Tools, you will get an error message as follows: ``xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.`` To install the Xcode Command Line Tools, run the following command in your terminal: ``xcode-select --install``.
 
 
-4. Set the current working directory to the location where you want the cloned directory. (Use the command ``cd`` to change the path and use the command `ls` to show what files you have available in sub-folders along the file path.) 
+5. Check if you have `pip` installed by running the command: ``pip --version``
 
-5. Clone the repository. 
+    * If you do not have `pip` installed, install it following these steps: 
+        * `macOs`, `Linux`, and `Windows`: 
+          * Download the get-pip.py file by running this command: ``curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py``
+          * Install pip by running the command below:
+            * `macOS` or `Linux`:  ``python get-pip.py``
+            * `Windows`: ``py get-pip.py``
+
+
+6. Check if you have `git` installed by running the command: ``git --version``
+
+    * If you do not have `git` installed, install it following these steps:
+        * `macOS`: 
+            * If you have installed the Xcode Command Line Tools described above, `git` should already be installed.
+        * `Linux`: 
+            * Depending on the Linux distribution you are using (Debian, Ubuntu, Fedora, etc), the installation will differ. 
+            * Check [here](https://git-scm.com/download/linux) for specific installation instructions for `git`.
+        * `Windows`: 
+            * Download the `git` package [here] (https://git-scm.com/download/win)
+            * Install `git` by running this command: `winget install --id Git.Git -e --source winget`
+
+
+7. Clone the repository. 
 From your terminal, type ``git clone https://github.com/broadinstitute/carmen-analysis``
 
 ## Content Description of Cloned Directory 
@@ -146,7 +184,10 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data Fi
 Launch a virtual environment **inside your cloned directory**. Follow the delineated steps to install needed dependencies:
 1. From the command-line interface, enter inside the cloned working directory. For the ``CARMEN_Run_2`` example given above, the file path from which you perform the steps below should be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``
 
-2. Run the following command from your terminal to create a virtual environment in your cloned directory: ``python3 -m venv carmen-env``
+2. Run the following command from your terminal to create a virtual environment in your cloned directory: 
+
+    * `macOS` or `Linux`:  ``python3 -m venv carmen-env``
+    * `Windows`: ``py -m venv carmen-env``
 
 3. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
     * When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
@@ -157,7 +198,10 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
     * **Note:** When working in this cloned directory in the future, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies.
 
-5. To run the analysis, type the following command in your terminal: ``python3 analyze_run.py {CLI}``. Read below to understand what you should input for ``{CLI}``. 
+5. To analyze, run the following command in your terminal: 
+
+  * `macOS` or `Linux`: ``python3 analyze_run.py {CLI}``. Read below to understand what you should input for ``{CLI}``. 
+  * `Windows`: ``py analyze_run.py {CLI}``. Read below to understand what you should input for ``{CLI}``. 
     
     CARMEN has been optimized for multiple viral assay panels. Some of these panels require different types of thresholding for determining positive vs negative samples. 
 
@@ -166,7 +210,7 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
     * If you are running the Blood-Borne Pathogens Panel (BBP), or require your positive samples to be thresholded **``3 times above the standard deviation of the mean No Target Control samples``**, then the command-line interface argument (CLI) you will need to enter in Step 5 is: ``3_SD``.
 
 
-6. The output of the command ``python3 analyze_run.py {CLI}`` will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
+6. The output of the command ``python3 analyze_run.py {CLI}`` (`macOS`/ `Linux`) or ``py analyze_run.py {CLI}`` (`Windows`) will be a folder named ``output_{IFC Barcode}`` located in your cloned directory. 
 
     * For the ``CARMEN_Run_2`` example given above, the output folder's file path would be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\output_{IFC Barcode}``. 
 
