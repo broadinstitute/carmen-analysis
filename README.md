@@ -30,13 +30,14 @@ This code is pathogen-agnostic and can be utilized for any combination of viral 
 
 The following is a brief discussion of the fundamental structure of your cloned directory and the virtual environment. 
 
-Firstly, what is a working directory? Essentially, a working directory is a file path that points to where your program or file of interest is located on your computer. 
+Firstly, what is a working directory? Essentially, a working directory is a file path that points to where your program or file of interest is located on your computer. Let us assume that you have the working directory ``\Users\albeez\Sentinel``. This shows the file path on your computer to get to the folder called "Sentinel". 
 
-Let's say you have the working directory ``\Users\albeez\Sentinel``. This shows the file path on your computer to get to the folder called "Sentinel". In the Sentinel directory, you have the following sub-directories (or sub-folders): ``\Users\albeez\Sentinel\CARMEN_Run_1``, ``\Users\albeez\Sentinel\CARMEN_Run_2``, and ``\Users\albeez\Sentinel\CARMEN_Run_3``. 
+In the Sentinel directory, let us assume that you have the following sub-directories (or sub-folders): ``\Users\albeez\Sentinel\CARMEN_Run_1``, ``\Users\albeez\Sentinel\CARMEN_Run_2``, and ``\Users\albeez\Sentinel\CARMEN_Run_3``. You are currently in the process of analyzing ``CARMEN_Run_2``. 
 
-You are currently in the process of analyzing ``CARMEN_Run_2``. Thus, from the terminal, you will navigate to the location ``\Users\albeez\Sentinel\CARMEN_Run_2`` using the ``cd`` command. Once in the ``CARMEN_Run_2`` directory, you will clone the Github repository as per the instructions below (specifically in Step 3). The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``. 
+Thus, from the terminal, you will navigate to the location ``\Users\albeez\Sentinel\CARMEN_Run_2`` using the ``cd`` command. Once in the ``CARMEN_Run_2`` directory, you will clone the Github repository as per the instructions below (specifically in Step 3). The cloned directory's path will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``. 
 
-Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-analysis`` as per the instructions below (specifically in Step 4). Of note, if you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies. 
+Next, from the terminal, you will create a virtual environment in the cloned directory ``\carmen-analysis`` as per the instructions below (specifically in Step 4). 
+  * **Note:** If you need to work in this working directory (``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis``) again, you will not need to create the virtual environment again. You will only have to activate the virtual environment and install the dependencies. 
 
 In summary, the cloned directory contains all of the needed python scripts, data files, and the virtual environment. The virtual environment is separate from the Python files and data files - but it will access the files in the cloned directory. 
 
@@ -49,12 +50,12 @@ Now that you have a high-level understanding of the directories you need to crea
 2. Set the current working directory to the location where you want the cloned directory.
 
     * There are a few differences between the operating systems in regard to how to run this code. The instructions will detail such differences in detail. Please note the specific operating system running on your local machine. 
-      * `macOS` and `Linux`: 
-        * Use the command ``cd`` to change the path. 
-        * Use the command `ls` to show what files you have available in sub-folders along the file path.
-      * `Windows`: 
-        * Use the command ``cd`` to change the path.
-        * Use the command `dir` to show what files you have available in sub-folders along the file path.
+    * `macOS` and `Linux`: 
+      * Use the command ``cd`` to change the path. 
+      * Use the command `ls` to show what files you have available in sub-folders along the file path.
+    * `Windows`: 
+      * Use the command ``cd`` to change the path.
+      * Use the command `dir` to show what files you have available in sub-folders along the file path.
 
 3. Check if you have Python installed on your local machine by running ``python3 --version``. If you do not have Python on your local machine already, follow the instructions below to install Python.
 
@@ -77,25 +78,25 @@ Now that you have a high-level understanding of the directories you need to crea
 
 5. Check if you have `pip` installed by running the command: ``pip --version``
 
-    * If you do not have `pip` installed, install it following these steps: 
-        * `macOs`, `Linux`, and `Windows`: 
-          * Download the get-pip.py file by running this command: ``curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py``
-          * Install pip by running the command below:
-            * `macOS` or `Linux`:  ``python get-pip.py``
-            * `Windows`: ``py get-pip.py``
+  * If you do not have `pip` installed, install it following these steps: 
+      * `macOs`, `Linux`, and `Windows`: 
+        * Download the get-pip.py file by running this command: ``curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py``
+        * Install pip by running the command below:
+          * `macOS` or `Linux`:  ``python get-pip.py``
+          * `Windows`: ``py get-pip.py``
 
 
 6. Check if you have `git` installed by running the command: ``git --version``
 
-    * If you do not have `git` installed, install it following these steps:
-        * `macOS`: 
-            * If you have installed the Xcode Command Line Tools described above, `git` should already be installed.
-        * `Linux`: 
-            * Depending on the Linux distribution you are using (Debian, Ubuntu, Fedora, etc), the installation will differ. 
-            * Check [here](https://git-scm.com/download/linux) for specific installation instructions for `git`.
-        * `Windows`: 
-            * Download the `git` package [here] (https://git-scm.com/download/win)
-            * Install `git` by running this command: `winget install --id Git.Git -e --source winget`
+  * If you do not have `git` installed, install it following these steps:
+    * `macOS`: 
+        * If you have installed the Xcode Command Line Tools described above, `git` should already be installed.
+    * `Linux`: 
+        * Depending on the Linux distribution you are using (Debian, Ubuntu, Fedora, etc), the installation will differ. 
+        * Check [here](https://git-scm.com/download/linux) for specific installation instructions for `git`.
+    * `Windows`: 
+        * Download the `git` package [here] (https://git-scm.com/download/win)
+        * Install `git` by running this command: `winget install --id Git.Git -e --source winget`
 
 
 7. Clone the repository. 
@@ -189,7 +190,9 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
     * `macOS` or `Linux`:  ``python3 -m venv carmen-env``
     * `Windows`: ``py -m venv carmen-env``
 
-3. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: ``source ./carmen-env/bin/activate``
+3. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: 
+    * `macOS` or `Linux`: ``source ./carmen-env/bin/activate``
+    * `Windows`: ``.\carmen-env\Scripts\activate``
     * When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
 
 4. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
