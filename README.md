@@ -44,7 +44,7 @@ In summary, the cloned directory contains all of the needed python scripts, data
 ## Installation
 Now that you have a high-level understanding of the directories you need to create, let's start the installation process. 
 
-1. Open Terminal on your computer. 
+1. Open Power Shell (`Windows`) or Terminal(`macOS`) on your computer. 
 
 
 2. Set the current working directory to the location where you want the cloned directory.
@@ -192,7 +192,7 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
 3. Run the following command from your terminal to activate the virtual environment by running the following command in your terminal: 
     * `macOS` or `Linux`: ``source ./carmen-env/bin/activate``
-    * `Windows`: ``.\carmen-env\Scripts\activate``
+    * `Windows`: ``.\carmen-env\Scripts\Activate.ps1``
     * When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
 
 4. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
