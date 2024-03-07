@@ -44,7 +44,7 @@ In summary, the cloned directory contains all of the needed python scripts, data
 ## Installation
 Now that you have a high-level understanding of the directories you need to create, let's start the installation process. 
 
-1. Open Power Shell with Administrator access (`Windows`) or Terminal(`macOS`) on your computer. 
+1. Open Power Shell with Administrator access (`Windows`) or Terminal (`macOS`) on your computer. 
 
 
 2. Set the current working directory to the location where you want the cloned directory.
@@ -85,7 +85,8 @@ Now that you have a high-level understanding of the directories you need to crea
           * `macOS` or `Linux`:  ``python get-pip.py``
           * `Windows`: ``py get-pip.py``
               * Run `pip --version` again.
-              * If you get an error after installing `pip` on  Windows PC, you may have to set the PATH variable: `set PATH=%PATH%;C\Users\(file path)` where the file path is indicated in the error (but should be the file path to the folder you are currently working in via the terminal).
+              * If you get an error after installing `pip` on  Windows PC, you may have to set the PATH variable: `set PATH=%PATH%;C\Users\(file path)` 
+              * The file path is indicated in the error (but should be the file path to the folder you are currently working in via the terminal).
 
 
 6. Check if you have `git` installed by running the command: ``git --version``
@@ -99,7 +100,8 @@ Now that you have a high-level understanding of the directories you need to crea
     * `Windows`: 
         * Download the `git` package [here] (https://git-scm.com/download/win)
         * Install `git` by running this command: `winget install --id Git.Git -e --source winget`
-        * Ensure that `git` has been added to your system's PATH. Navigate to `Advanced system settings` > ` Environment Variables` > `System variables` > `Path`. Click the `Edit` button and if it is not there already, add `C:\Program Files\Git\bin` and `C:\Program Files (x86)\Git\bin`. Save the changes. 
+        * Ensure that `git` has been added to your system's PATH. Navigate to `Advanced system settings` > ` Environment Variables` > `System variables` > `Path`. 
+        * Click the `Edit` button and if it is not there already, add `C:\Program Files\Git\bin` and `C:\Program Files (x86)\Git\bin`. Save the changes. 
 
 
 7. Clone the repository. 
