@@ -234,6 +234,7 @@ After successfully running this code, you will produce a folder called "output" 
 * ``t13_{IFC Barcode}_quant_ntcNorm.csv`` : Normalized quantitative signal output wherein the signal per assay and per sample has been normalized against the mean NTC (No Target Control) signal. 
 * ``Heatmap_t13_{IFC Barcode}.png`` : Heatmap for data visualization at the final timepoint.
 * ``Positives_Summary_{IFC Barcode}.csv`` : Summary of total positive samples per assay and tabulation of the sample ID of each positive sample per assay. 
+* ``Quality_Control_Checks_{IFC Barcode}.csv`` : Summary of four quality control checks done on the analyzed results to give you a brief overview on the validation of the samples and assays tested in this experiment. The report consists of 4 checks to evaluate the following: (1) Contamination of the first negative control (NDC); (2) Verification of the experimental positive control (CPC); (3) Verification of the internal positive control (RNaseP); (4) Contamination of the second negative control (NTC).
 
 If you are more interested in research & development in the diagnostic space, additional files you might be interested are as follows:
 * ``t{#}_{IFC Barcode}.csv`` : These are the quantitative signal output per timepoint. (For a 1-hour Standard Biotools Biomark run, you will generate 13 such total files corresponding to 13 timepoints.)

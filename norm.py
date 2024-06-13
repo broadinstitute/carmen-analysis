@@ -4,8 +4,8 @@ class DataProcessor:
         pass  # No initialization parameters needed as of now
     def background_processing(self, dataframes):
         # Substract the background from the probe and reference data
-        probe_norm = dataframes["probe_raw"].subtract(dataframes["probe_bkgd"])
-        ref_norm = dataframes["ref_raw"].subtract(dataframes["ref_bkgd"])
+        probe_norm = dataframes["probe_raw"].subtract(dataframes["probe_bkgd"]) #from FAM
+        ref_norm = dataframes["ref_raw"].subtract(dataframes["ref_bkgd"]) #from Rox
         
         # Normalize the probe signal with the reference dye signal
         signal_norm = pd.DataFrame(probe_norm /ref_norm )

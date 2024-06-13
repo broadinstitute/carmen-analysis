@@ -24,6 +24,7 @@ from ntcnorm import Normalized
 from summary import Summarized
 from plotting import Plotter
 from tqdm import tqdm
+from qual_checks import Qual_Ctrl_Checks
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
@@ -78,7 +79,6 @@ else:
 
 # instantiate DataProcessor from norm.py
 # normalize the signal 
-
 processor = DataProcessor()
 normalized_dataframes = processor.background_processing(dataframes)
 
@@ -130,8 +130,8 @@ for i, t in enumerate(timepoints, start=1):
 # since we want to explicitly manipulate t13_csv, it is helpful to have the t13 df referenced outside of the for loop
 last_key = list(rounded_final_med_frames.keys())[-1]
 t13_dataframe_orig = rounded_final_med_frames[last_key]
-t13_dataframe_copy1 = pd.DataFrame(t13_dataframe_orig)
-t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig)
+t13_dataframe_copy1 = pd.DataFrame(t13_dataframe_orig).copy()
+t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig).copy()
 
 # at this point, we have created a t1 thru t13 dataframe and exported all these dataframes as csv files in our output folder
 # now we need to threshold the t13 csv and mark signals >= threshold as positive and < threshold as negative
@@ -149,6 +149,11 @@ unique_crRNA_assays = list(set(crRNA_assays))
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
 ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_norms['signal_norm_raw'], t13_dataframe_copy1, CLI_arg[1])
+t13_hit_output_copy1 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
+t13_hit_output_copy2 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
+t13_hit_output_copy3 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
+t13_hit_output_copy4 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
+t13_hit_output_copy5 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
 
 ntc_thresholds_output_file_path = os.path.join(output_folder, f'NTC_thresholds_{barcode_assignment}.csv')
 hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hit_output.csv')
@@ -171,6 +176,7 @@ summary_samples_df = summary.summarizer(t13_hit_output)
 summary_pos_samples_file_path = os.path.join(output_folder, f'Positives_Summary_{barcode_assignment}.csv')
 summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
 
+
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()
 
@@ -189,4 +195,80 @@ for i, t in enumerate(timepoints, start=1):
 
 print(f"The heatmap plots saved to the folder, {output_folder}")
 
+# instantiate Qual_Ctrl_Checks from qual-checks.py
+qual_checks = Qual_Ctrl_Checks()
 
+# initialize a list to collect all quality control checks
+QC_lines = []
+
+# apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
+ndc_positives = qual_checks.ndc_check(t13_hit_output_copy1)
+QC_lines.append("1. Evaluation of No Detect Control (NDC) Contamination \n")
+assay_list = []
+if ndc_positives: 
+    for ndc, assays in ndc_positives:
+        assay_list.extend(assays)
+    assay_str = ", ".join(assay_list)
+    QC_lines.append(f"After thresholding against the NTC, {ndc} appears positive for the following assay(s): {assay_str}.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+else: 
+    QC_lines.append("Since none of the NDCs ran in this experiment appear positive after thresholding against the NTC, we posit that there is likely no NDC contamination.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+
+# apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
+cpc_negatives = qual_checks.cpc_check(t13_hit_output_copy2)
+QC_lines.append("2. Evaluation of Combined Positive Control (CPC) Validity \n")
+assay_list = []
+if cpc_negatives: 
+    for cpc, assays in cpc_negatives:
+        assay_list.extend(assays)
+    assay_str = ", ".join(assay_list)
+    QC_lines.append(f"After thresholding against the NTC, {cpc} appears negative for the following assay(s): {assay_str}.\n") 
+    QC_lines.append("In the list provided above, if any of the CPCs show a negative result for an assay that is not the 'no-crRNA' negative control, then that particular assay should be considered invalid for this experiment.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+else: 
+    QC_lines.append("Warning: First verify that your experiment included a CPC sample. If yes, proceed to the following CPC analysis.\n")
+    QC_lines.append("After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. It is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+
+# apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
+rnasep_df, rnasep_negatives = qual_checks.rnasep_check(t13_hit_output_copy3)
+QC_lines.append("3. Evaluation of Human Samples for the Internal Control (RnaseP) \n")
+rnasep_neg_samp_list = []
+if rnasep_negatives: # there are some samples that are neg for RNAseP
+    QC_lines.append("Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.\n")
+    for rnasep, samples in rnasep_negatives:
+        rnasep_neg_samp_list.extend(samples)
+    rnasep_neg_samp_str = ", ".join(rnasep_neg_samp_list)
+    QC_lines.append(f"After thresholding against the NTC, {rnasep} appears negative for the following sample(s): {rnasep_neg_samp_str}.\n")
+    QC_lines.append("There are a few different reasons that a sample tests negative for RNaseP. The most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.\n")
+    QC_lines.append("Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+else: # all samples are positive for RNaseP - points to contamination
+    QC_lines.append("The RNaseP internal control should test negative for the NTC and NDC negative control.")
+    QC_lines.append("There are a few different reasons that all samples test positive for RNaseP.")
+    QC_lines.append("The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+
+# apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
+assigned_signal_norm = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
+
+high_raw_ntc_signal = qual_checks.ntc_check(assigned_signal_norm)
+QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination \n")
+if high_raw_ntc_signal:
+    for sample, assay, t13 in high_raw_ntc_signal:
+        QC_lines.apend(f"The raw fluorescence signal for {sample} for {assay} is {t13}.\n") 
+    QC_lines.append("Since the raw fluorescence signal for the listed sample(s) is above 0.5 a.u., it is being flagged to have a higher than normal signal for an NTC sample.")
+    QC_lines.append("The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.4 a.u. It is advised that the output files be examined further to evaluate potential NTC contamination.\n\n")
+else:
+    QC_lines.append("The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.4 a.u. Risk of NTC contamination is low.")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+
+
+# create and save an output text file containing the quality control checks
+QCs_file_path = os.path.join(output_folder, f'Quality_Control_Checks_{barcode_assignment}.txt')
+with open(QCs_file_path, 'w') as f:
+    for line in QC_lines:
+        f.write(line + '\n')
+
+print(f"The quality control checks are complete and saved to the folder, {output_folder}")
