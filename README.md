@@ -109,7 +109,7 @@ From your terminal, type ``git clone https://github.com/broadinstitute/carmen-an
 
 ## Content Description of Cloned Directory 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
-* ``carmen_analysis.py``
+* ``analyze_run.py``
 * ``matcher.py``
 * ``median_frame.py``
 * ``norm.py``
@@ -118,6 +118,7 @@ The cloned directory should contain ALL of the following python scripts for your
 * ``reader.py``
 * ``threshold.py`` 
 * ``summary.py``
+* ``qual_checks.py``
 
 ## Required File Inputs 
 You will need the following two files to complete the CARMEN analysis.
