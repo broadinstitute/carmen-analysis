@@ -246,8 +246,7 @@ if rnasep_negatives: # there are some samples that are neg for RNAseP
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 else: # all samples are positive for RNaseP - points to contamination
     QC_lines.append("The RNaseP internal control should test negative for the NTC and NDC negative control.")
-    QC_lines.append("There are a few different reasons that all samples test positive for RNaseP.")
-    QC_lines.append("The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.")
+    QC_lines.append("There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 
 # apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
