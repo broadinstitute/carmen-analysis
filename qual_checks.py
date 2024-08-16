@@ -8,11 +8,6 @@ class Qual_Ctrl_Checks:
     def __init__(self):
         pass
 
-    def quality_ctrl(self, binary_t13_df):
-        binary_t13_df.loc['']
-
-        return
-
     def ndc_check(self, binary_t13_df):
         # filter the rows to find the NDC
         ndc_rows = binary_t13_df[binary_t13_df.index.str.contains('NDC')]
@@ -49,7 +44,7 @@ class Qual_Ctrl_Checks:
         binary_t13_df.columns = binary_t13_df.columns.str.lower()
         rnasep_col = binary_t13_df.filter(like='rnasep', axis=1)
 
-        # for the rows containing CPC, collect the (row name, column name) for cells that are negative
+        # for the rows containing rnasep, collect the (row name, column name) for cells that are negative
         negative_rnasep = []
         for row_name, row in rnasep_col.iterrows():
             negative_rnasep_samples = []
@@ -73,13 +68,42 @@ class Qual_Ctrl_Checks:
             # filter the df for the current assay
             assay_df = ntc_filtered_df[ntc_filtered_df['assay'] == assay]
 
-            # Check if t13 value is greater than 0.5 for any sample
-        for _, row in assay_df.iterrows():
-            if row['t13'] > 0.5:
-                # Collect the sample name, assay, and t13 signal
-                high_raw_ntc.append((row['sample'], row['assay'], row['t13']))
+                # Check if t13 value is greater than 0.5 for any sample
+            for _, row in assay_df.iterrows():
+                if row['t13'] > 0.5:
+                    # Collect the sample name, assay, and t13 signal
+                    high_raw_ntc.append((row['sample'], row['assay'], row['t13']))
 
         return high_raw_ntc
+    
+    def coinf_check(self, t13_hit_binary_output):
+        
+        # initialize dict to store coninf samples per assay
+        coinf_samples_by_assay = {} # key is coinf sample, values are assays for which it is pos
+
+        for _, row in t13_hit_binary_output.iterrows():
+            
+            # sum across the row to collect the number of total pos assays
+            sumRow = row.sum() # input df is binary so pos for an assay is 1
+            
+            # if the sum is >2 (i.e. there is coinf btwn assays not incl RNaseP), then append all pos assays for that row to dict
+            if sumRow > 2: # you expect sample to be pos for X assay and RNaseP
+
+                # initialize a list to hold assays with value 1 for this sample
+                positive_assays = []
+        
+                # iterate through each column (assay) to find assays with a value of 1
+                for assay in t13_hit_binary_output.columns:
+                    if row[assay] == 1:
+                        positive_assays.append(assay)
+        
+                # Add the sample (row index) as the key and the list of assays as the value
+                coinf_samples_by_assay[row.name] = positive_assays
+       
+        # convert coninf_samples_by_assay into a df for easy output
+        coinf_df = pd.DataFrame.from_dict(coinf_samples_by_assay, orient='index')
+        
+        return coinf_df
 
     
 

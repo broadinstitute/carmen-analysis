@@ -46,14 +46,15 @@ class DataMatcher:
 
         # Create a list of all assays and samples
 
-        #matching layout assays to assays 
+        # matching layout assays to assays 
         assay_list = self.extract_and_stack(assays)
-        #mathching layout samples to samples 
+        # mathching layout samples to samples 
         samples_list = self.extract_and_stack(samples)
 
         assigned_lists = {}
         assigned_lists['assay_list'] = assay_list 
         assigned_lists['samples_list'] = samples_list 
+
 
         print(f"Number of crRNAs: {len(assay_list)}")
         print(f"Number of identified samples: {len(samples_list)}")

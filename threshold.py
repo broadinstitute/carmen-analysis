@@ -15,6 +15,8 @@ class Thresholder:
         ntc_PerAssay = t13_df[t13_df.index.str.contains('NTC')]
 
         # Collapse any columns that have the same name in the NTCs df 
+        # there should not be duplicates for NTCs in t13_df - as this would have been taken care of by MedianSort
+        # but the .mean() below is to ensure this - but more so simplify the groupby and transpose functions
         ntc_PerAssay = ntc_PerAssay.T.groupby(by=ntc_PerAssay.columns).mean()
 
         # Calculate mean of each column
@@ -93,6 +95,6 @@ class Thresholder:
         # Create a new row called 'Summary' at the bottom of the hit output sheet
         t13_df.loc['Summary'] = t13_df.apply(lambda col: col.value_counts().get('positive', 0))
  
-        return raw_thresholds_df, t13_df
+        return ntc_PerAssay, raw_thresholds_df, t13_df
 
     
