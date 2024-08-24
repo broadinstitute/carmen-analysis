@@ -207,8 +207,8 @@ heatmap_generator = Plotter()
 
 tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
 # tp = list of timepoints (t1, t2, etc)
-unique_crRNA_assays = list(set(crRNA_assays))
-#unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
+#unique_crRNA_assays = list(set(crRNA_assays))
+unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
 heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
 # save heatmap per timepoint
@@ -360,7 +360,7 @@ QC_lines.append("Please be advised to check the output files as well.")
 
 
 # create and save an output text file containing the quality control checks
-QCs_file_path = os.path.join(output_folder, f'Quality_Control_Checks_{barcode_assignment}.txt')
+QCs_file_path = os.path.join(output_folder, f'Quality_Control_Flags_{barcode_assignment}.txt')
 with open(QCs_file_path, 'w') as f:
     for line in QC_lines:
         f.write(line + '\n')
