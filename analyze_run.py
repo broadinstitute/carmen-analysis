@@ -332,6 +332,7 @@ else: # all samples are positive for RNaseP - points to contamination
 # apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
 assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
 
+
 high_raw_ntc_signal = qual_checks.ntc_check(assigned_signal_norm_2)
 QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination \n")
 if high_raw_ntc_signal:
