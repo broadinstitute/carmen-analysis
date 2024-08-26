@@ -336,7 +336,7 @@ high_raw_ntc_signal = qual_checks.ntc_check(assigned_signal_norm_2)
 QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination \n")
 if high_raw_ntc_signal:
     for sample, assay, t13 in high_raw_ntc_signal:
-        QC_lines.apend(f"The raw fluorescence signal for {sample} for {assay} is {t13}.\n") 
+        QC_lines.append(f"The raw fluorescence signal for {sample} for {assay} is {t13}.\n") 
     QC_lines.append("Since the raw fluorescence signal for the listed sample(s) is above 0.5 a.u., it is being flagged to have a higher than normal signal for an NTC sample.")
     QC_lines.append("The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u. It is advised that the output files be examined further to evaluate potential NTC contamination.\n\n")
 else:
