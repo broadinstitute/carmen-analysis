@@ -51,6 +51,9 @@ else:
         barcode_assignment = match.group(1)
     print(f"IFC barcode: {barcode_assignment}")
 
+#####
+# instantiate Data Reader from reader.py
+reader = DataReader() # make am empty class object that corresponds to the DataReader() object from reader.py
 
 # then load in the data file 
 data_files = sorted([fname for fname in all_files if fname.suffix == ".csv"])
@@ -64,8 +67,6 @@ else:
     file_like_object = BytesIO(data_file.read_bytes())
     df_data = pd.read_csv(file_like_object, on_bad_lines="skip")
     print(f"This is the Data File that was loaded: {data_file.name}")
-   
-    reader = DataReader() # make am empty class object that corresponds to the DataReader() object from reader.py
 
     phrases_to_find = [
         "Raw Data for Passive Reference ROX",
@@ -80,13 +81,20 @@ else:
 
 # at this point, we have loaded the assignment sheet and have sorted through the loaded data file to create a dict of dataframes 
 
+#####
 # instantiate DataProcessor from norm.py
 processor = DataProcessor()
 # normalize the signal 
 normalized_dataframes = processor.background_processing(dataframes)
 
+# The premise of the code is that different viral panels require different thresholding
+# So the user will specifiy command line arguments as per the ReadMe instructions
+# and this portion of the code is meant to access the CI arguments and modify the threshold specified in the code
+
+CLI_arg = sys.argv
+
 # make an output folder in your path's wd if it hasn't been made already
-output_folder = f'output_{barcode_assignment}'
+output_folder = f'output_{barcode_assignment}_[{CLI_arg[1]}]'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -95,6 +103,7 @@ if not os.path.exists(output_folder):
 normalized_dataframes['signal_norm'].to_csv(os.path.join(output_folder, 'signal_norm.csv'), index=True)
 normalized_dataframes['ref_norm'].to_csv(os.path.join(output_folder, 'ref_norm.csv'), index=True)
 
+#####
 # instantiate DataMatcher from matcher.py
 matcher = DataMatcher() 
 assigned_norms, assigned_lists = matcher.assign_assays(assignment_files[0], normalized_dataframes['ref_norm'], normalized_dataframes['signal_norm'])
@@ -104,9 +113,11 @@ assigned_norms, assigned_lists = matcher.assign_assays(assignment_files[0], norm
 assigned_norms['signal_norm_raw'].to_csv(os.path.join(output_folder, 'assigned_signal_norm.csv'), index=True)
 assigned_norms['ref_norm_raw'].to_csv(os.path.join(output_folder, 'assigned_ref_norm.csv'), index=True)
 
-samples_list = assigned_lists['samples_list']
+# collect the assays/samples from the layout assays/samples in the assignment sheet (this extraction is done in matcher.py)
 crRNA_assays = assigned_lists['assay_list']
+samples_list = assigned_lists['samples_list']
 
+#####
 # instantiate ntcContaminationChecker from ntc_con_check.py
 ntcCheck = ntcContaminationChecker()
 
@@ -115,16 +126,24 @@ assigned_signal_norm = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # 
 # create df of filtered assigned_signal_norm by applying the NTC check to remove any NTCs whose raw signal suggests contamination
 assigned_signal_norm_with_NTC_check = ntcCheck.ntc_cont(assigned_signal_norm) # feed this into MedianSort
 
+# temporarily save assigned_signal_norm_with_NTC_check
+assigned_signal_norm_with_NTC_check.to_csv(os.path.join(output_folder, 'assigned_signal_norm_with_NTC_check.csv'), index=True)
+
+
+#####
 # instantiate MedianSort from median_frame.py
 median = MedianSort(crRNA_assays)
 final_med_frames = median.create_median(assigned_signal_norm_with_NTC_check)
+
+# temporarily print final_med_frames
+#print(final_med_frames)
 
 # Output needs to be rounded to 4 digits
 rounded_final_med_frames = {}
 # Define the number of decimals for rounding
 decimals = 5
 
-# Iterate through each row and column
+# Iterate through each row and column, round each value
 for key, df in final_med_frames.items():
     rounded_df = pd.DataFrame(index=df.index, columns=df.columns)
     for i in range(len(df.index)):
@@ -133,10 +152,17 @@ for key, df in final_med_frames.items():
             rounded_df.iloc[i, j] = round(df.iloc[i, j], decimals)
     rounded_final_med_frames[key] = rounded_df
 
+# Make subfolder in the output folder in your path's wd if it hasn't been made already
+timepoints_subfolder = os.path.join(output_folder, f'timepoints_quantData_{barcode_assignment}')
+if not os.path.exists(timepoints_subfolder):
+    os.makedirs(timepoints_subfolder)
+
+# Save the dataframes per timepoint in subfolder timp
 timepoints = list(rounded_final_med_frames.keys())
 for i, t in enumerate(timepoints, start=1):
-    filename = os.path.join(output_folder, f't{i}_{barcode_assignment}.csv')
+    filename = os.path.join(timepoints_subfolder, f't{i}_{barcode_assignment}.csv')
     csv = rounded_final_med_frames[t].to_csv(filename, index=True)
+
 
 # since we want to explicitly manipulate t13_csv, it is helpful to have the t13 df referenced outside of the for loop
 last_key = list(rounded_final_med_frames.keys())[-1]
@@ -147,12 +173,7 @@ t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig).copy()
 # at this point, we have created a t1 thru t13 dataframe and exported all these dataframes as csv files in our output folder
 # now we need to threshold the t13 csv and mark signals >= threshold as positive and < threshold as negative
 
-# The premise of the code is that different viral panels require different thresholding
-# So the user will specifiy command line arguments as per the ReadMe instructions
-# and this portion of the code is meant to access the CI arguments and modify the threshold specified in the code
-
-CLI_arg = sys.argv
-
+#####
 # instantiate Thresholder from threshold.py
 thresholdr = Thresholder()
 unique_crRNA_assays = list(set(crRNA_assays))
@@ -160,7 +181,6 @@ unique_crRNA_assays = list(set(crRNA_assays))
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
 ntc_PerAssay, ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_norms['signal_norm_raw'], t13_dataframe_copy1, CLI_arg[1])
-
 
 # make copies of t13_hit_output csv for downstream summaries and quality control checks
 t13_hit_output_copy1 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in ndc qual check
@@ -176,13 +196,15 @@ hit_output_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_hi
 ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
 t13_hit_output.to_csv(hit_output_file_path, index=True)
 
+#####
  # instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
  # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
-t13_quant_hit_norm = ntcNorm.normalizr(t13_dataframe_copy2)
-quant_hit_output_ntcNorm_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_quant_ntcNorm.csv')
-t13_quant_hit_norm.to_csv(quant_hit_output_ntcNorm_file_path, index=True)
+t13_quant_norm = ntcNorm.normalizr(t13_dataframe_copy2)
+quant_output_ntcNorm_file_path = os.path.join(output_folder, f't13_{barcode_assignment}_normalized.csv')
+t13_quant_norm.to_csv(quant_output_ntcNorm_file_path, index=True)
 
+#####
 # instantiate Binary_Converter from binary_results.py
 binary_num_converter = Binary_Converter()
 # apply hit_numeric_conv to the the t13_hit_output to produce a new dataframe with all pos/neg converted to binary 1/0 output
@@ -194,6 +216,7 @@ t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
 t13_hit_binary_output_copy1 = pd.DataFrame(t13_hit_binary_output).copy() # used in coninf check
 t13_hit_binary_output_copy2 = pd.DataFrame(t13_hit_binary_output).copy() 
 
+#####
 # instantiate Summarized from summary.py
 summary = Summarized()
 # apply summarizer to the t13_dataframe to produce a new dataframe tabulating all of the positive samples
@@ -201,7 +224,7 @@ summary_samples_df = summary.summarizer(t13_hit_output)
 summary_pos_samples_file_path = os.path.join(output_folder, f'Positives_Summary_{barcode_assignment}.csv')
 summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
 
-
+#####  
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()
 
@@ -211,20 +234,38 @@ tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 imag
 unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
 heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
+# Make subfolder in the output folder in your path's wd if it hasn't been made already
+heatmaps_subfolder = os.path.join(output_folder, f'heatmaps_{barcode_assignment}')
+if not os.path.exists(heatmaps_subfolder):
+    os.makedirs(heatmaps_subfolder)
+
 # save heatmap per timepoint
 for i, t in enumerate(timepoints, start=1):
     #csv = convert_df(final_med_frames[t])
-    heatmap_filename = os.path.join(output_folder, f'Heatmap_t{i}_{barcode_assignment}.png')
+    heatmap_filename = os.path.join(heatmaps_subfolder, f'Heatmap_t{i}_{barcode_assignment}.png')
     fig = heatmap[t].savefig(heatmap_filename, bbox_inches = 'tight', dpi=80)
     plt.close(fig)
 
-print(f"The heatmap plots saved to the folder, {output_folder}")
+print(f"The heatmap plots saved to the folder, {heatmaps_subfolder} in {output_folder}")
 
+heatmap_t13_quant_norm = heatmap_generator.t13_plt_heatmap(tgap, barcode_assignment,t13_quant_norm, samples_list, unique_crRNA_assays, timepoints)
+heatmap_t13_quant_norm_filename = os.path.join(output_folder, f'Heatmap_t13_{barcode_assignment}_normalized.png')
+fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
+plt.close(fig)
+
+
+#####
 # instantiate Assay_QC_Score
 assayScorer = Assay_QC_Score()
 # take in t13_hit_binary_output as the df to build off of 
 QC_score_per_assay_df = assayScorer.assay_level_score(t13_hit_binary_output)
-assay_lvl_QC_score_file_path = os.path.join(output_folder, f'Assay_Level_QC_Metrics_{barcode_assignment}.csv')
+
+# Make subfolder in the output folder in your path's wd if it hasn't been made already
+assayQC_subfolder = os.path.join(output_folder, f'assay_performance_evaluation_{barcode_assignment}')
+if not os.path.exists(assayQC_subfolder):
+    os.makedirs(assayQC_subfolder)
+
+assay_lvl_QC_score_file_path = os.path.join(assayQC_subfolder, f'Assay_Performance_QC_Test_Results_{barcode_assignment}.csv')
 QC_score_per_assay_df.to_csv(assay_lvl_QC_score_file_path, index=True)
 
 # write text file explaining the QC score
@@ -264,15 +305,21 @@ assayScores_Explanation.append(f"The ideal outcome is for the RNaseP assay to sc
 assayScores_Explanation.append("The final score per assay is included for easy comparison of assay performance.\n")
 
 # create and save an output text file containing the quality control checks
-assayScores_file_path = os.path.join(output_folder, f'Assay_Performance_QC_Tests_{barcode_assignment}.txt')
+assayScores_file_path = os.path.join(assayQC_subfolder, f'Assay_Performance_QC_Tests_{barcode_assignment}.txt')
 with open(assayScores_file_path, 'w') as f:
     for line in assayScores_Explanation:
         f.write(line + '\n')
 
-print(f"The four quality control tests to evaluate assay performance are complete. Their results have been saved to the folder, {output_folder}")
+print(f"The four quality control tests to evaluate assay performance are complete. Their results have been saved to the folder, {assayQC_subfolder}")
 
+#####
 # instantiate Qual_Ctrl_Checks from qual-checks.py
 qual_checks = Qual_Ctrl_Checks()
+
+# Make subfolder in the output folder in your path's wd if it hasn't been made already
+qc_subfolder = os.path.join(output_folder, 'quality_control_flags')
+if not os.path.exists(qc_subfolder):
+    os.makedirs(qc_subfolder)
 
 # initialize a list to collect all quality control checks
 QC_lines = []
@@ -332,7 +379,6 @@ else: # all samples are positive for RNaseP - points to contamination
 # apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
 assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
 
-
 high_raw_ntc_signal = qual_checks.ntc_check(assigned_signal_norm_2)
 QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination \n")
 if high_raw_ntc_signal:
@@ -348,7 +394,7 @@ else:
 coinfection_df = qual_checks.coinf_check(t13_hit_binary_output_copy1)
 QC_lines.append("5. Evaluation of Potential Co-Infected Samples\n")
 
-coinfection_df_file_path = os.path.join(output_folder, f'Coinfection_Check_{barcode_assignment}.csv')
+coinfection_df_file_path = os.path.join(qc_subfolder, f'Coinfection_Check_{barcode_assignment}.csv')
 coinfection_df.to_csv(coinfection_df_file_path, index=True) # output needs to be csv of coninfection check
 
 # in Qual_Check text file, add message saying "see coinf check csv" and "if any samples excpet CPC are flagged as being coinfected, there is risk of these samples being coinfected"
@@ -359,13 +405,12 @@ QC_lines.append("   - Samples are not flagged as “co-detected” based on posi
 QC_lines.append("   - All other flagged samples should be further evaluated for potential co-infection.\n")
 QC_lines.append("Please be advised to check the output files as well.")
 
-
 # create and save an output text file containing the quality control checks
-QCs_file_path = os.path.join(output_folder, f'Quality_Control_Flags_{barcode_assignment}.txt')
+QCs_file_path = os.path.join(qc_subfolder, f'Quality_Control_Flags_{barcode_assignment}.txt')
 with open(QCs_file_path, 'w') as f:
     for line in QC_lines:
         f.write(line + '\n')
 
-print(f"The quality control checks are complete and saved to the folder, {output_folder}")
+print(f"The quality control checks are complete and saved to the folder, {qc_subfolder}")
 
 

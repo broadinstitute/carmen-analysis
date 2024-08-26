@@ -28,6 +28,8 @@ class Normalized:
                 ntc_mean = ntc_mean_df.loc['NTC Mean', col_name]
                 # Divide the value by the NTC mean per assay
                 t13_df.at[index, col_name] = value/ntc_mean
+
+        t13_df = t13_df.apply(pd.to_numeric, errors = 'coerce')  
         
         return t13_df
     
