@@ -13,68 +13,90 @@ class Qual_Ctrl_Checks:
         ndc_rows = binary_t13_df[binary_t13_df.index.str.contains('NDC')]
 
         # for the rows containing NDC, collect the (row name, column name) for cells that are positive
-        positive_ndc = []
+        positive_ndc_dict = {}
         for row_name, row in ndc_rows.iterrows():
             positive_ndc_assays = []
             for col_name, cell_value in row.items():
                 if 'positive' in str(cell_value).lower():
                     positive_ndc_assays.append(col_name)
             if positive_ndc_assays:
-                positive_ndc.append((row_name, positive_ndc_assays))
-        return positive_ndc
-    
+                positive_ndc_dict[row_name]= positive_ndc_assays
+        # create a df to store the results
+        positive_ndc_df = pd.DataFrame({col: pd.Series(values) for col, values in positive_ndc_dict.items()})
+        
+        return positive_ndc_df
     
     def cpc_check(self, binary_t13_df):
         # filter the rows to find the CPC
         cpc_rows = binary_t13_df[binary_t13_df.index.str.contains('CPC')]
 
         # for the rows containing CPC, collect the (row name, column name) for cells that are negative
-        negative_cpc = []
+        negative_cpc_dict = {}
         for row_name, row in cpc_rows.iterrows():
             negative_cpc_assays = []
             for col_name, cell_value in row.items():
                 if 'negative' in str(cell_value).lower():
                     negative_cpc_assays.append(col_name)
             if negative_cpc_assays:
-                negative_cpc.append((row_name, negative_cpc_assays))
-        return negative_cpc 
+                negative_cpc_dict[row_name] = negative_cpc_assays
+        # create a df to store the results
+        negative_cpc_df = pd.DataFrame({col: pd.Series(values) for col, values in negative_cpc_dict.items()})
+        
+        return negative_cpc_df 
     
     def rnasep_check(self, binary_t13_df):
         # lowercase all column names and filter the col to find rnasep col
         binary_t13_df.columns = binary_t13_df.columns.str.lower()
-        rnasep_col = binary_t13_df.filter(like='rnasep', axis=1)
+        rnasep_cols_df = binary_t13_df.filter(like='rnasep', axis=1)
 
-        # for the rows containing rnasep, collect the (row name, column name) for cells that are negative
-        negative_rnasep = []
-        for row_name, row in rnasep_col.iterrows():
-            negative_rnasep_samples = []
+        # filter out the rows containing NTC, CPC, and NDC (as these are controls)
+        # rnasep_cols_df = rnasep_cols_df[~rnasep_cols_df.index.str.contains('CPC|NTC|NDC', case=False)]
+
+        # create a dictionary to store lists of sample names for each rnasep assay
+        rnasep_assays_dict = {col: [] for col in rnasep_cols_df.columns}
+        
+        # go thru the samples (rows) in rnasep_cols_df
+        for row_name, row in rnasep_cols_df.iterrows():
             for col_name, cell_value in row.items():
                 if 'negative' in str(cell_value).lower():
-                    negative_rnasep_samples.append(row_name)
-            if negative_rnasep_samples:
-                negative_rnasep.append((col_name, negative_rnasep_samples))
-        return rnasep_col, negative_rnasep 
+                    # add the sample name in the dictionary corresponding to the col of rnasep_cols_df
+                    rnasep_assays_dict[col_name].append(row_name)  
+        # create a df to store the results
+        neg_rnasep_df = pd.DataFrame({col: pd.Series(values) for col, values in rnasep_assays_dict.items()})
+
+        return neg_rnasep_df 
     
     def ntc_check(self, assigned_sig_norm):
         # filter for columns t13, assay, and sample
         filtered_df = assigned_sig_norm[['t13', 'assay', 'sample']]
-
         # filter sample for anything that contains NTC (case-insensitive)
         ntc_filtered_df = filtered_df[filtered_df['sample'].str.contains('NTC', case=False, na=False)]
+        # extract unique samples (NTCs) from ntc_filtered_df
+        unique_samples = ntc_filtered_df['sample'].unique() # there shld not be duplicate samples, but good check
+        # extract unique assays from ntc_filtered_df
+        unique_assays = ntc_filtered_df['assay'].unique()
+        # initialize dict with (sample, assay) as the key and t13 data as the value
+        data_dict = {(sample, assay): None for sample in unique_samples for assay in unique_assays}
+        # iterate thru ntc_filtered_df to collect t13 data IF it's > 0.5
+        for assay in unique_assays:
+            for sample in unique_samples:
+                # filter the df for the current assay & filter the df for the current sample
+                df = ntc_filtered_df[(ntc_filtered_df['sample'] == sample) & (ntc_filtered_df['assay'] == assay)]
+                if not df.empty: # if sample_df is not empty
+                    # get the t13 value
+                    t13_val = df['t13'].values[0]  # accessing the first element
+                    # check if t13 value is greater than 0.5 for any sample
+                    if t13_val > 0.5: 
+                        data_dict[(sample, assay)] = t13_val
+                else:
+                    print('Check if NTC samples were used in experiment and listed in assignment sheet.')
+        # convert the data_dict into a dataframe
+        high_raw_ntc_df = pd.Series(data_dict).reset_index()
+        high_raw_ntc_df.columns = ['Sample', 'Assay', 't13']
+        high_raw_ntc_df.dropna(subset=['t13'], inplace=True)
+        high_raw_ntc_df.reset_index(inplace=True, drop=True)
 
-        high_raw_ntc = []
-
-        for assay in ntc_filtered_df['assay'].unique():
-            # filter the df for the current assay
-            assay_df = ntc_filtered_df[ntc_filtered_df['assay'] == assay]
-
-                # Check if t13 value is greater than 0.5 for any sample
-            for _, row in assay_df.iterrows():
-                if row['t13'] > 0.5:
-                    # Collect the sample name, assay, and t13 signal
-                    high_raw_ntc.append((row['sample'], row['assay'], row['t13']))
-
-        return high_raw_ntc
+        return high_raw_ntc_df
     
     def coinf_check(self, t13_hit_binary_output):
         
@@ -102,6 +124,7 @@ class Qual_Ctrl_Checks:
        
         # convert coninf_samples_by_assay into a df for easy output
         coinf_df = pd.DataFrame.from_dict(coinf_samples_by_assay, orient='index')
+        coinf_df.drop('Summary')
         
         return coinf_df
 

@@ -28,6 +28,7 @@ from qual_checks import Qual_Ctrl_Checks
 from binary_results import Binary_Converter
 from ntc_con_check import ntcContaminationChecker
 from assay_qc_score import Assay_QC_Score
+import csv
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
@@ -324,73 +325,83 @@ if not os.path.exists(qc_subfolder):
 # initialize a list to collect all quality control checks
 QC_lines = []
 
-# apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
-ndc_positives = qual_checks.ndc_check(t13_hit_output_copy1)
+## apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
+ndc_positives_df = qual_checks.ndc_check(t13_hit_output_copy1)
+# when converting the ndc_positives df into a csv, add a clause with an if statement saying that 
+# only make the csv if the df is not empty
+
 QC_lines.append("1. Evaluation of No Detect Control (NDC) Contamination \n")
-assay_list = []
-if ndc_positives: 
-    for ndc, assays in ndc_positives:
-        assay_list.extend(assays)
-    assay_str = ", ".join(assay_list)
-    QC_lines.append(f"After thresholding against the NTC, {ndc} appears positive for the following assay(s): {assay_str}.")
+
+ndc_positives_df_file_path = os.path.join(qc_subfolder, f'NDC_Check_{barcode_assignment}.csv')
+ndc_positives_df.to_csv(ndc_positives_df_file_path, index=True) 
+
+if not ndc_positives_df.empty: 
+    QC_lines.append(f"Please consult NDC_Check_{barcode_assignment}.csv to see the initial evalution of the NDC negative controls tested in this experiment. In this file, assays are flagged for which the NDC samples have tested positive, after being thresholded against the assay-specific NTC mean.\n")
+    QC_lines.append("If any of the NDC samples show a positive result for any essay, then that assay should be evaluated for contamination with nucleases likely at the sample mastermix preparation step in the experimental workflow. However, other sources for NDC contamination may exist.\n")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 else: 
-    QC_lines.append("Since none of the NDCs ran in this experiment appear positive after thresholding against the NTC, we posit that there is likely no NDC contamination.")
+    QC_lines.append("Since none of the NDCs ran in this experiment appear positive after thresholding against the NTC, we posit that there is likely no NDC contamination.\n")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 
-# apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
-cpc_negatives = qual_checks.cpc_check(t13_hit_output_copy2)
+
+## apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
+cpc_negatives_df = qual_checks.cpc_check(t13_hit_output_copy2)
 QC_lines.append("2. Evaluation of Combined Positive Control (CPC) Validity \n")
-assay_list = []
-if cpc_negatives: 
-    for cpc, assays in cpc_negatives:
-        assay_list.extend(assays)
-    assay_str = ", ".join(assay_list)
-    QC_lines.append(f"After thresholding against the NTC, {cpc} appears negative for the following assay(s): {assay_str}.\n") 
-    QC_lines.append("In the list provided above, if any of the CPCs show a negative result for an assay that is not the 'no-crRNA' negative control, then that particular assay should be considered invalid for this experiment.")
+
+cpc_negatives_df_file_path = os.path.join(qc_subfolder, f'CPC_Check_{barcode_assignment}.csv')
+cpc_negatives_df.to_csv(cpc_negatives_df_file_path, index=True) 
+
+if not cpc_negatives_df.empty:
+    QC_lines.append(f"Please consult CPC_Check_{barcode_assignment}.csv to see the initial evaluation of the CPC positive controls tested in this experiment. In this file, assays are flagged for which the CPC samples have tested negative, after being thresholded against the assay-specific NTC mean.\n")
+    QC_lines.append("If any of the CPC samples show a negative result for any assay excluding the 'no-crRNA' negative control assay, then that assay should be considered invalid for this experiment.\n")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
-else: 
+else: # means that there are no CPC samples that are negative for any assay
     QC_lines.append("Warning: First verify that your experiment included a CPC sample. If yes, proceed to the following CPC analysis.\n")
-    QC_lines.append("After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. It is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.")
+    QC_lines.append("After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. However, it is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.\n")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+  
+## apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
+rnasep_df = qual_checks.rnasep_check(t13_hit_output_copy3)
+QC_lines.append("3. Evaluation of Human Samples for the Internal Control (RnaseP)\n")
+
+rnasep_df_file_path = os.path.join(qc_subfolder, f'RNaseP_Check_{barcode_assignment}.csv')
+rnasep_df.to_csv(rnasep_df_file_path, index=True) # output needs to be csv of rnasep check
+
+QC_lines.append("Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.\n")
+
+if not rnasep_df.empty: # there are some samples that are neg for RNAseP (not the controls NTC and NDC, which you DO expect to be negative)
+    QC_lines.append(f"Please consult RNaseP_Check_{barcode_assignment}.csv to see which samples are negative for the RNaseP assay(s). In this file, the samples that appear negative for the RNaseP assays have been flagged after thresholding against the NTC. The negative controls (NTC and NDC) are expected to be negative for the RNaseP assay and should be listed here (if you have included them in this experiment). All other samples should be evaluated for being negative for the RNaseP assay.\n")
+    QC_lines.append("There are a few different reasons that a sample tests negative for RNaseP:")
+    QC_lines.append("\t(A) If the sample is negative for all assays (including RNaseP), then the most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.")
+    QC_lines.append("\t\t** Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.")
+    QC_lines.append("\t(B) If the sample is negative for RNaseP BUT positive for any other viral crRNA assay (excluding RNaseP or no-crRNA), then the most plausible hypothesis is that the sample’s viral titer may be too high compared to its RNaseP titer. This, thereby, renders the system possibly unable to detect RNaseP, leading to the sample testing negative for RNaseP.")
+    QC_lines.append("\t\t** Note: If the sample is negative for RNaseP but positive for any other viral crRNA assay (excluding RNaseP or no-crRNA) tested in this experiment, the sample can still be included in the final results.")
+    QC_lines.append("\t(C) The source sample may have insufficient material, leading to a negative RNaseP signal and an invalid sample result.\n")
+    QC_lines.append("Please be advised to check the output files as well.\n\n")
+else: # if rnasep_df is positive for EVERY SINGLE SAMPLE (including controls)
+    # all samples are positive for RNaseP - points to contamination
+    QC_lines.append("All samples (including negative controls) have tested positive for the RNaseP assay(s) tested in this experiment. However, the assay(s) for RNaseP internal control should test negative for the NTC and NDC negative control.\n")
+    QC_lines.append("There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.\n")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 
-# apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
-rnasep_df, rnasep_negatives = qual_checks.rnasep_check(t13_hit_output_copy3)
-QC_lines.append("3. Evaluation of Human Samples for the Internal Control (RnaseP) \n")
-rnasep_neg_samp_list = []
-if rnasep_negatives: # there are some samples that are neg for RNAseP
-    QC_lines.append("Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.\n")
-    for rnasep, samples in rnasep_negatives:
-        rnasep_neg_samp_list.extend(samples)
-    rnasep_neg_samp_str = ", ".join(rnasep_neg_samp_list)
-    QC_lines.append(f"After thresholding against the NTC, {rnasep} appears negative for the following sample(s): {rnasep_neg_samp_str}.\n")
-    QC_lines.append("There are a few different reasons that a sample tests negative for RNaseP:\n")
-    QC_lines.append("   (1) If the sample is negative for all assays (including RNaseP), then the most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.")
-    QC_lines.append("   ** Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.\n")
-    QC_lines.append("   (2) If the sample is negative for RNaseP BUT positive for any other viral crRNA assay (excluding RNaseP or no-crRNA), then the most plausible hypothesis is that the sample’s viral titer may be too high compared to its RNaseP titer. This, thereby, renders the system possibly unable to detect RNaseP, leading to the sample testing negative for RNaseP.")
-    QC_lines.append("   ** Note: If the sample is negative for RNaseP but positive for any other viral crRNA assay (excluding RNaseP or no-crRNA) tested in this experiment, the sample can still be included in the final results.\n")
-    QC_lines.append("   (3) The source sample may have insufficient material, leading to a negative RNaseP signal and an invalid sample result.")
-    QC_lines.append("Please be advised to check the output files as well.\n\n")
-else: # all samples are positive for RNaseP - points to contamination
-    QC_lines.append("The RNaseP internal control should test negative for the NTC and NDC negative control.")
-    QC_lines.append("There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.")
-    QC_lines.append("Please be advised to check the output files as well.\n\n")
-
-# apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
+    
+## apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
 assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
+high_raw_ntc_signal_df = qual_checks.ntc_check(assigned_signal_norm_2)
+QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination\n")
 
-high_raw_ntc_signal = qual_checks.ntc_check(assigned_signal_norm_2)
-QC_lines.append("4. Evaluation of No Target Control (NTC) Contamination \n")
-if high_raw_ntc_signal:
-    for sample, assay, t13 in high_raw_ntc_signal:
-        QC_lines.append(f"The raw fluorescence signal for {sample} for {assay} is {t13}.\n") 
-    QC_lines.append("Since the raw fluorescence signal for the listed sample(s) is above 0.5 a.u., it is being flagged to have a higher than normal signal for an NTC sample.")
-    QC_lines.append("The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u. It is advised that the output files be examined further to evaluate potential NTC contamination.\n\n")
+high_raw_ntc_signal_df_file_path = os.path.join(qc_subfolder, f'NTC_Contamination_Check_{barcode_assignment}.csv')
+high_raw_ntc_signal_df.to_csv(high_raw_ntc_signal_df_file_path, index=True) # output needs to be csv of ntc contamination check
+
+if not high_raw_ntc_signal_df.empty:
+    QC_lines.append(f"Please consult NTC_Contamination_Check_{barcode_assignment}.csv to see which NTC samples may be potentially contaminated. This file contains a list of samples that have a raw fluorescence signal above 0.5 a.u. These samples are being flagged for having a higher than normal signal for an NTC sample. The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u.\n") 
+    QC_lines.append("Please be advised to check the output files to further evaluate potential NTC contamination.\n\n")
 else:
-    QC_lines.append("The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.5 a.u. Risk of NTC contamination is low.")
+    QC_lines.append("The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.5 a.u. Risk of NTC contamination is low.\n")
     QC_lines.append("Please be advised to check the output files as well.\n\n")
 
-# apply coinfection check to t13_hit_binary_output to generate list of all samples that are positive for multiple assays
+
+## apply coinfection check to t13_hit_binary_output to generate list of all samples that are positive for multiple assays
 coinfection_df = qual_checks.coinf_check(t13_hit_binary_output_copy1)
 QC_lines.append("5. Evaluation of Potential Co-Infected Samples\n")
 
@@ -398,12 +409,12 @@ coinfection_df_file_path = os.path.join(qc_subfolder, f'Coinfection_Check_{barco
 coinfection_df.to_csv(coinfection_df_file_path, index=True) # output needs to be csv of coninfection check
 
 # in Qual_Check text file, add message saying "see coinf check csv" and "if any samples excpet CPC are flagged as being coinfected, there is risk of these samples being coinfected"
-QC_lines.append("A preliminary evaluation for co-infection of a given sample against all tested assays has been completed.")
 QC_lines.append(f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.\n")
-QC_lines.append("   - If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.\n")
-QC_lines.append("   - Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.\n")
-QC_lines.append("   - All other flagged samples should be further evaluated for potential co-infection.\n")
-QC_lines.append("Please be advised to check the output files as well.")
+QC_lines.append("A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:")
+QC_lines.append("   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.")
+QC_lines.append("   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.")
+QC_lines.append("   (C) All other flagged samples should be further evaluated for potential co-infection.\n")
+QC_lines.append("Please be advised to check the output files to further evaluate potential co-infection.\n\n")
 
 # create and save an output text file containing the quality control checks
 QCs_file_path = os.path.join(qc_subfolder, f'Quality_Control_Flags_{barcode_assignment}.txt')
