@@ -181,7 +181,7 @@ unique_crRNA_assays = list(set(crRNA_assays))
 
 # apply the NTC thresholding to the t13_dataframe to produce a new dataframe with the positive/negative denotation
 # and save the file to your working directory
-ntc_PerAssay, ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_norms['signal_norm_raw'], t13_dataframe_copy1, CLI_arg[1])
+ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_norms['signal_norm_raw'], t13_dataframe_copy1, CLI_arg[1])
 
 # make copies of t13_hit_output csv for downstream summaries and quality control checks
 t13_hit_output_copy1 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in ndc qual check

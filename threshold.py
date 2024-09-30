@@ -95,6 +95,6 @@ class Thresholder:
         # Create a new row called 'Summary' at the bottom of the hit output sheet
         t13_df.loc['Summary'] = t13_df.apply(lambda col: col.value_counts().get('positive', 0))
  
-        return ntc_PerAssay, raw_thresholds_df, t13_df
+        return raw_thresholds_df, t13_df
 
     

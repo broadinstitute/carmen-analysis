@@ -124,7 +124,7 @@ class Qual_Ctrl_Checks:
        
         # convert coninf_samples_by_assay into a df for easy output
         coinf_df = pd.DataFrame.from_dict(coinf_samples_by_assay, orient='index')
-        coinf_df.drop('Summary')
+        #coinf_df.drop('Summary')
         
         return coinf_df
 
