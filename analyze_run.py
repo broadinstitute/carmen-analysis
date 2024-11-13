@@ -38,7 +38,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-#from textwrap import wrap
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
