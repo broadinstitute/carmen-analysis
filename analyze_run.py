@@ -31,7 +31,6 @@ from binary_results import Binary_Converter
 from ntc_con_check import ntcContaminationChecker
 from assay_qc_score import Assay_QC_Score
 import csv
-from qc_pdf_generator import QC_PDF_generator
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
