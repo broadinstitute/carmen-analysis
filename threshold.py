@@ -78,8 +78,8 @@ class Thresholder:
             sys.exit()
 
 
-        # Binary
-        binary = ['positive', 'negative']
+        # Produce the t13 output as Binary Pos/Neg Results
+        binary = ['POSITIVE', 'NEGATIVE']
        
         for col_name, col_data in t13_df.items():
             for index, value in col_data.items():
@@ -93,7 +93,7 @@ class Thresholder:
                     t13_df.at[index, col_name] = binary[1]
        
         # Create a new row called 'Summary' at the bottom of the hit output sheet
-        t13_df.loc['Summary'] = t13_df.apply(lambda col: col.value_counts().get('positive', 0))
+        t13_df.loc['Summary'] = t13_df.apply(lambda col: col.value_counts().get('POSITIVE', 0))
  
         return raw_thresholds_df, t13_df
 

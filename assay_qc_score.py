@@ -69,7 +69,86 @@ class Assay_QC_Score:
                 QC_score_per_assay_df.loc['QC2: NDC', assay] = 0 # fail
             
      ## for assay score #3 CPC:
-        # filter the rows to find the NDCs in the df
+        # filter the rows to find the CPCs in the df
+        cpc_rows = t13_hit_binary_output[t13_hit_binary_output.index.str.contains('CPC')]
+
+        # filter cpc_rows further and stratify into cpc_rvp, cpc_p1, cpc_p2
+        cpc_rvp_rows = cpc_rows[cpc_rows.index.str.contains('_RVP', case=False)]
+        cpc_p1_rows = cpc_rows[cpc_rows.index.str.contains('_P1', case=False)]
+        cpc_p2_rows = cpc_rows[cpc_rows.index.str.contains('_P2', case=False)]
+
+        for cpc, row in cpc_rvp_rows.iterrows():
+            # extract the cpc_p1 suffix
+            cpc_rvp_suffix = cpc.split('_')[-1].lower()
+            # count the number of CPC_P1s -> this is tot_CPC_P1s (divisor)
+            tot_CPC_RVPs = len(cpc_rvp_rows)
+            # initialize a dict to hold CPC_P1 samples (value) with val 0 for assay (key)
+            pos_CPC_RVPs = {}
+            # count the number of CPC_P1s with val 0 -> neg_CPC_P1s
+            for assay in cpc_rvp_rows.columns:
+                assay_suffix = assay.split('_')[-1]
+                if assay_suffix == cpc_rvp_suffix: # if sample is a CPC_P1 and assay is from P1
+                    # initialize counter
+                    counter=0
+                    for _, row in cpc_rvp_rows.iterrows():
+                        if row[assay] == 1: # if CPC_P1 is positive for that assay
+                            counter+=1   
+                    pos_CPC_RVPs[assay] = counter
+                    # assign the pass/fail score to the assay
+                    if pos_CPC_RVPs[assay]/tot_CPC_RVPs >= 0.5:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 1 # pass
+                    else:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
+
+        for cpc, row in cpc_p1_rows.iterrows():
+            # extract the cpc_p1 suffix
+            cpc_p1_suffix = cpc.split('_')[-1].lower()
+            # count the number of CPC_P1s -> this is tot_CPC_P1s (divisor)
+            tot_CPC_P1s = len(cpc_p1_rows)
+            # initialize a dict to hold CPC_P1 samples (value) with val 0 for assay (key)
+            pos_CPC_P1s = {}
+            # count the number of CPC_P1s with val 0 -> neg_CPC_P1s
+            for assay in cpc_p1_rows.columns:
+                assay_suffix = assay.split('_')[-1]
+                if assay_suffix == cpc_p1_suffix: # if sample is a CPC_P1 and assay is from P1
+                    # initialize counter
+                    counter=0
+                    for _, row in cpc_p1_rows.iterrows():
+                        if row[assay] == 1: # if CPC_P1 is positive for that assay
+                            counter+=1   
+                    pos_CPC_P1s[assay] = counter
+                    # assign the pass/fail score to the assay
+                    if pos_CPC_P1s[assay]/tot_CPC_P1s >= 0.5:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 1 # pass
+                    else:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
+        
+        for cpc, row in cpc_p2_rows.iterrows():
+            # extract the cpc_p1 suffix
+            cpc_p2_suffix = cpc.split('_')[-1].lower()
+            # count the number of CPC_P1s -> this is tot_CPC_P1s (divisor)
+            tot_CPC_P2s = len(cpc_p2_rows)
+            # initialize a dict to hold CPC_P1 samples (value) with val 0 for assay (key)
+            pos_CPC_P2s = {}
+            # count the number of CPC_P1s with val 0 -> neg_CPC_P1s
+            for assay in cpc_p2_rows.columns:
+                assay_suffix = assay.split('_')[-1]
+                if assay_suffix == cpc_p2_suffix: # if sample is a CPC_P1 and assay is from P1
+                    # initialize counter
+                    counter=0
+                    for _, row in cpc_p2_rows.iterrows():
+                        if row[assay] == 1: # if CPC_P1 is positive for that assay
+                            counter+=1   
+                    pos_CPC_P2s[assay] = counter
+                    # assign the pass/fail score to the assay
+                    if pos_CPC_P2s[assay]/tot_CPC_P2s >= 0.5:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 1 # pass
+                    else:
+                        QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
+
+        """  
+        ## OLD BELOW FOR GENERAL CPC TEST
+        # filter the rows to find the CPCs in the df
         cpc_rows = t13_hit_binary_output[t13_hit_binary_output.index.str.contains('CPC')]
         # count the number of NDCs -> this is tot_NDCs (divisor)
         tot_CPCs = len(cpc_rows)
@@ -87,7 +166,8 @@ class Assay_QC_Score:
             if pos_CPCs[assay]/tot_CPCs >= 0.5:
                 QC_score_per_assay_df.loc['QC3: CPC', assay] = 1 # pass
             else:
-                QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail       
+                QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
+        """      
 
      ## for assay score #$ RNaseP:
         # filter the cols to find the RNaseP col in the df

@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
+import re
 
 class Qual_Ctrl_Checks:
     def __init__(self):
@@ -26,23 +27,81 @@ class Qual_Ctrl_Checks:
         
         return positive_ndc_df
     
-    def cpc_check(self, binary_t13_df):
+    def cpc_check(self, binary_t13_df):  
         # filter the rows to find the CPC
         cpc_rows = binary_t13_df[binary_t13_df.index.str.contains('CPC')]
+        assays = binary_t13_df.columns.tolist()
+       
+        if all(('_P1' in idx or '_P2' in idx or '_RVP' in idx) for idx in cpc_rows.index) and all(('_P1' in col or '_P2' in col or '_RVP' in col) for col in cpc_rows.columns):
+            # filter cpc_rows further and stratify into cpc_rvp, cpc_p1, cpc_p2
+            cpc_rvp_rows = cpc_rows[cpc_rows.index.str.contains('_RVP')]
+            cpc_p1_rows = cpc_rows[cpc_rows.index.str.contains('_P1')]
+            cpc_p2_rows = cpc_rows[cpc_rows.index.str.contains('_P2')]
 
-        # for the rows containing CPC, collect the (row name, column name) for cells that are negative
-        negative_cpc_dict = {}
-        for row_name, row in cpc_rows.iterrows():
-            negative_cpc_assays = []
-            for col_name, cell_value in row.items():
-                if 'negative' in str(cell_value).lower():
-                    negative_cpc_assays.append(col_name)
-            if negative_cpc_assays:
-                negative_cpc_dict[row_name] = negative_cpc_assays
-        # create a df to store the results
-        negative_cpc_df = pd.DataFrame({col: pd.Series(values) for col, values in negative_cpc_dict.items()})
-        
-        return negative_cpc_df 
+            # initialize empty lists to store panel-specific assays
+            rvp_assays = [] 
+            p1_assays = []
+            p2_assays = []
+
+            # for the rows containing CPC per panel, collect the (row name, column name) for cells that are negative
+            negative_cpc_dict = {}
+
+            for assay in assays:
+                if re.search(r'_RVP', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                    rvp_assays.append(assay)
+                if re.search(r'_P1', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                    p1_assays.append(assay)
+                if re.search(r'_P2', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                    p2_assays.append(assay)
+            
+            negative_cpc_rvp_assays = []
+            for rvp_assay in rvp_assays:
+                for cpc_rvp_sample, row in cpc_rvp_rows.iterrows():
+                    for col_name, cell_value in row.items():
+                        if rvp_assay == col_name:
+                            if 'negative' in str(cell_value).lower():
+                                negative_cpc_rvp_assays.append(col_name)
+                        if negative_cpc_rvp_assays:
+                            negative_cpc_dict[cpc_rvp_sample] = negative_cpc_rvp_assays
+            
+            for cpc_p1_sample, row in cpc_p1_rows.iterrows():
+                negative_cpc_p1_assays = []
+                for col_name, cell_value in row.items():
+                    for p1_assay in p1_assays:
+                        if p1_assay == col_name:
+                            if 'negative' in str(cell_value).lower():
+                                negative_cpc_p1_assays.append(col_name)
+                if negative_cpc_p1_assays:
+                    negative_cpc_dict[cpc_p1_sample] = negative_cpc_p1_assays
+           
+            for cpc_p2_sample, row in cpc_p2_rows.iterrows():
+                negative_cpc_p2_assays = []
+                for col_name, cell_value in row.items():
+                    for p2_assay in p2_assays:
+                        if p2_assay == col_name:
+                            if 'negative' in str(cell_value).lower():
+                                negative_cpc_p2_assays.append(col_name)
+                if negative_cpc_p2_assays:
+                    negative_cpc_dict[cpc_p2_sample] = negative_cpc_p2_assays
+
+            # create a df to store the results
+            negative_cpc_df = pd.DataFrame({col: pd.Series(values) for col, values in negative_cpc_dict.items()})
+                    
+        else:
+            # for the rows containing CPC, collect the (row name, column name) for cells that are negative
+            negative_cpc_dict = {}
+            for row_name, row in cpc_rows.iterrows():
+                negative_cpc_assays = []
+                for col_name, cell_value in row.items():
+                    if 'negative' in str(cell_value).lower():
+                        negative_cpc_assays.append(col_name)
+                if negative_cpc_assays:
+                    negative_cpc_dict[row_name] = negative_cpc_assays
+            # create a df to store the results
+            negative_cpc_df = pd.DataFrame({col: pd.Series(values) for col, values in negative_cpc_dict.items()})
+            
+        # return cpc_rvp_rows, cpc_p1_rows, cpc_p2_rows, negative_cpc_p1_assays, negative_cpc_p2_assays, p1_assays, p2_assays, rvp_assays, assays, cpc_rows, negative_cpc_df, negative_cpc_dict
+        return negative_cpc_df
     
     def rnasep_check(self, binary_t13_df):
         # lowercase all column names and filter the col to find rnasep col

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np 
 import math 
 #plotting imports
+import matplotlib
 import matplotlib.pyplot as plt 
 import seaborn as sns 
 #file imports
@@ -21,9 +22,12 @@ from norm import DataProcessor
 from matcher import DataMatcher
 from median_frame import MedianSort
 from threshold import Thresholder
+from openpyxl import Workbook
+from openpyxl.styles import Font
 from ntcnorm import Normalized
 from summary import Summarized
 from plotting import Plotter
+import matplotlib.patches as patches
 from tqdm import tqdm
 # quality control checks imports
 from qual_checks import Qual_Ctrl_Checks
@@ -36,7 +40,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-
+# annotations and flags imports
+from flags import Flagger
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
@@ -60,7 +65,7 @@ else:
         barcode_assignment = match.group(1)
     print(f"IFC barcode: {barcode_assignment}")
 
-#####
+######################################################################################################################################################
 # instantiate Data Reader from reader.py
 reader = DataReader() # make am empty class object that corresponds to the DataReader() object from reader.py
 
@@ -133,7 +138,7 @@ if not os.path.exists(va_subfolder):
     os.makedirs(va_subfolder)
 
 
-#####
+######################################################################################################################################################
 # instantiate DataProcessor from norm.py
 processor = DataProcessor()
 # normalize the signal 
@@ -144,7 +149,7 @@ normalized_dataframes = processor.background_processing(read_dataframes)
 normalized_dataframes['signal_norm'].to_csv(os.path.join(rd_subfolder, 'signal_norm.csv'), index=True)
 normalized_dataframes['ref_norm'].to_csv(os.path.join(rd_subfolder, 'ref_norm.csv'), index=True)
 
-#####
+######################################################################################################################################################
 # instantiate DataMatcher from matcher.py
 matcher = DataMatcher() 
 assigned_norms, assigned_lists = matcher.assign_assays(assignment_files[0], normalized_dataframes['ref_norm'], normalized_dataframes['signal_norm'])
@@ -158,7 +163,7 @@ assigned_norms['ref_norm_raw'].to_csv(os.path.join(rd_subfolder, 'assigned_ref_n
 crRNA_assays = assigned_lists['assay_list']
 samples_list = assigned_lists['samples_list']
 
-#####
+######################################################################################################################################################
 # instantiate ntcContaminationChecker from ntc_con_check.py
 ntcCheck = ntcContaminationChecker()
 
@@ -171,7 +176,7 @@ assigned_signal_norm_with_NTC_check = ntcCheck.ntc_cont(assigned_signal_norm) # 
 assigned_signal_norm_with_NTC_check.to_csv(os.path.join(rd_subfolder, 'assigned_signal_norm_with_NTC_check.csv'), index=True)
 
 
-#####
+######################################################################################################################################################
 # instantiate MedianSort from median_frame.py
 median = MedianSort(crRNA_assays)
 final_med_frames = median.create_median(assigned_signal_norm_with_NTC_check)
@@ -214,7 +219,7 @@ t13_dataframe_copy2 = pd.DataFrame(t13_dataframe_orig).copy()
 # at this point, we have created a t1 thru t13 dataframe and exported all these dataframes as csv files in our output folder
 # now we need to threshold the t13 csv and mark signals >= threshold as positive and < threshold as negative
 
-#####
+######################################################################################################################################################
 # instantiate Thresholder from threshold.py
 thresholdr = Thresholder()
 unique_crRNA_assays = list(set(crRNA_assays))
@@ -223,6 +228,15 @@ unique_crRNA_assays = list(set(crRNA_assays))
 # and save the file to your working directory
 ntc_thresholds_output, t13_hit_output = thresholdr.raw_thresholder(unique_crRNA_assays, assigned_signal_norm_with_NTC_check, t13_dataframe_copy1, CLI_arg[1])
 
+# round the NTC thresholds to 5 places
+decimals = 5 # Define the number of decimals for rounding
+rounded_ntc_thresholds_output = pd.DataFrame(index=ntc_thresholds_output.index, columns=ntc_thresholds_output.columns) # Iterate through each row and column, round each value
+for i in range(len(ntc_thresholds_output.index)):
+    for j in range(len(ntc_thresholds_output.columns)):
+        # Round each value to the specified number of decimals
+        rounded_ntc_thresholds_output.iloc[i, j] = round(ntc_thresholds_output.iloc[i, j], decimals)
+# save the NTC thresholds to a csv after flags are added below in Flagger()
+
 # make copies of t13_hit_output csv for downstream summaries and quality control checks
 t13_hit_output_copy1 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in ndc qual check
 t13_hit_output_copy2 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in cpc qual check
@@ -230,72 +244,43 @@ t13_hit_output_copy3 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_
 t13_hit_output_copy4 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in t13_hit_binary_output generation
 t13_hit_output_copy5 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
 t13_hit_output_copy6 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output
+# save t13_hit_output as Results_Summary after flags are added below in Flagger()
 
-ntc_thresholds_output_file_path = os.path.join(res_subfolder, f'NTC_thresholds_{barcode_assignment}.csv')
-hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.csv')
-
-ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
-t13_hit_output.to_csv(hit_output_file_path, index=True)
-
-#####
+######################################################################################################################################################
  # instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
  # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
 t13_quant_norm = ntcNorm.normalizr(t13_dataframe_copy2)
-quant_output_ntcNorm_file_path = os.path.join(res_subfolder, f'NTC_Normalized_Quantitative_Results_Summary_{barcode_assignment}.csv')
-t13_quant_norm.to_csv(quant_output_ntcNorm_file_path, index=True)
+# round the NTC normalized quantitative results file
+decimals = 5 # Define the number of decimals for rounding
+rounded_t13_quant_norm = pd.DataFrame(index=t13_quant_norm.index, columns=t13_quant_norm.columns) # Iterate through each row and column, round each value
+for i in range(len(t13_quant_norm.index)):
+    for j in range(len(t13_quant_norm.columns)):
+        # Round each value to the specified number of decimals
+        rounded_t13_quant_norm.iloc[i, j] = round(t13_quant_norm.iloc[i, j], decimals)
+# save the rounded_t13_quant_norm as NTC_Quant_Results_Summary after flags are added below in Flagger()
 
-#####
+
+
+######################################################################################################################################################
 # instantiate Binary_Converter from binary_results.py
 binary_num_converter = Binary_Converter()
 # apply hit_numeric_conv to the the t13_hit_output to produce a new dataframe with all pos/neg converted to binary 1/0 output
 t13_hit_binary_output = binary_num_converter.hit_numeric_conv(t13_hit_output_copy4)
-t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
-t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
+# save t13_hit_binary_output after flags are added below in Flagger()
 
 # make copies of t13_hit_binary_output for downstream utilization in coinf check and assay level eval
 t13_hit_binary_output_copy1 = pd.DataFrame(t13_hit_binary_output).copy() # used in coninf check
 t13_hit_binary_output_copy2 = pd.DataFrame(t13_hit_binary_output).copy() 
 
-#####
+######################################################################################################################################################
 # instantiate Summarized from summary.py
 summary = Summarized()
 # apply summarizer to the t13_dataframe to produce a new dataframe tabulating all of the positive samples
 summary_samples_df = summary.summarizer(t13_hit_output)
-summary_pos_samples_file_path = os.path.join(res_subfolder, f'Positives_Summary_{barcode_assignment}.csv')
-summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
-
-#####  
-# instantiate Plotter from plotting.py
-heatmap_generator = Plotter()
-
-tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
-# tp = list of timepoints (t1, t2, etc)
-#unique_crRNA_assays = list(set(crRNA_assays))
-unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
-heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
-
-# Make subfolder in the output folder in your path's wd if it hasn't been made already
-heatmaps_subfolder = os.path.join(rd_subfolder, f'Heatmaps_by_Timepoint_{barcode_assignment}')
-if not os.path.exists(heatmaps_subfolder):
-    os.makedirs(heatmaps_subfolder)
-
-# save heatmap per timepoint
-for i, t in enumerate(timepoints, start=1):
-    #csv = convert_df(final_med_frames[t])
-    heatmap_filename = os.path.join(heatmaps_subfolder, f'Heatmap_t{i}_{barcode_assignment}.png')
-    fig = heatmap[t].savefig(heatmap_filename, bbox_inches = 'tight', dpi=80)
-    plt.close(fig)
-
-print(f"The heatmap plots saved to the folder, {heatmaps_subfolder} in {rd_subfolder} in {output_folder}.")
-
-heatmap_t13_quant_norm = heatmap_generator.t13_plt_heatmap(tgap, barcode_assignment,t13_quant_norm, samples_list, unique_crRNA_assays, timepoints)
-heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_Heatmap_{barcode_assignment}.png')
-fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
-plt.close(fig)
-
-
-#####
+# save summary_samples_df as Positives Summary after flags are added in Flagger() below
+ 
+######################################################################################################################################################
 # instantiate Assay_QC_Score
 assayScorer = Assay_QC_Score()
 # take in t13_hit_binary_output as the df to build off of 
@@ -312,10 +297,9 @@ shutil.copy(assay_test_expl_source_file, assay_test_expl_output_file)
 
 print(f"The four quality control tests to evaluate assay performance are complete. Their results have been saved to the folder, {va_subfolder}")
 
-#####
+######################################################################################################################################################
 # instantiate Qual_Ctrl_Checks from qual-checks.py
 qual_checks = Qual_Ctrl_Checks()
-
 
 # Define the path for the PDF file in the qc_subfolder
 npc_pdf_file_path = os.path.join(npc_subfolder, f'Quality_Control_Report_{barcode_assignment}.pdf')
@@ -558,3 +542,121 @@ for line in text_content:
 # Build the PDF with the collected Flowables
 doc.build(content)
 
+
+###################################################################################################################################################### 
+# instantiate Flagger from flags.py
+flagger = Flagger()
+
+invalid_row, flagged_files = flagger.assign_flags(QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+
+fl_t13_hit_output = flagged_files[0]
+fl_rounded_t13_quant_norm = flagged_files[1]
+fl_summary_samples_df = flagged_files[2]
+fl_rounded_ntc_thresholds_output = flagged_files[3]
+fl_t13_hit_binary_output = flagged_files[4]
+
+# SAVE all the files to their respective output folders
+### FILE 1: t13_hit_output as Results_Summary
+# convert the t13 hit output to an excel file with green/red conditional formatting for NEG/POS results
+t13_hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.xlsx')
+
+# create the Excel writer
+with pd.ExcelWriter(t13_hit_output_file_path, engine="openpyxl") as writer:
+    # write the DataFrame to an Excel sheet
+    fl_t13_hit_output.to_excel(writer, sheet_name="Sheet1", index=True)
+    workbook = writer.book
+    worksheet = writer.sheets["Sheet1"]
+
+    # define font colors for POSITIVE and NEGATIVE
+    red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
+    green_font = Font(color="008000")  # Green for NEGATIVE
+
+    # apply text color formatting
+    for row_idx, row in enumerate(t13_hit_output.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
+        for col_idx, cell_value in enumerate(row, start=2):
+            cell = worksheet.cell(row=row_idx, column=col_idx)
+            if cell_value == "POSITIVE":
+                cell.font = red_font
+            elif cell_value == "NEGATIVE":
+                cell.font = green_font
+
+### FILE 2: rounded_t13_quant_norm as NTC_Quant_Normalized_Results
+quant_output_ntcNorm_file_path = os.path.join(res_subfolder, f'NTC_Normalized_Quantitative_Results_Summary_{barcode_assignment}.csv')
+fl_rounded_t13_quant_norm.to_csv(quant_output_ntcNorm_file_path, index=True)
+
+### File 3: summary_samples_df as Positives_Summary
+summary_pos_samples_file_path = os.path.join(res_subfolder, f'Positives_Summary_{barcode_assignment}.csv')
+fl_summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
+
+### File 4: ntc_thresholds_output as NTC_Thresholds
+ntc_thresholds_output_file_path = os.path.join(res_subfolder, f'NTC_thresholds_{barcode_assignment}.csv')
+fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
+
+### File 5: t13_hit_binary_output as t13_hit_Binary 
+t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
+fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
+ 
+"""  
+######################################################################################################################################################   
+# instantiate Plotter from plotting.py
+heatmap_generator = Plotter()
+
+tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 image in minutes
+# tp = list of timepoints (t1, t2, etc)
+#unique_crRNA_assays = list(set(crRNA_assays))
+unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
+heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
+
+# Make subfolder in the output folder in your path's wd if it hasn't been made already
+heatmaps_subfolder = os.path.join(rd_subfolder, f'Heatmaps_by_Timepoint_{barcode_assignment}')
+if not os.path.exists(heatmaps_subfolder):
+    os.makedirs(heatmaps_subfolder)
+
+# save heatmap per timepoint
+for i, t in enumerate(timepoints, start=1):
+    #csv = convert_df(final_med_frames[t])
+    heatmap_filename = os.path.join(heatmaps_subfolder, f'Heatmap_t{i}_{barcode_assignment}.png')
+    fig = heatmap[t].savefig(heatmap_filename, bbox_inches = 'tight', dpi=80)
+    plt.close(fig)
+
+print(f"The heatmap plots saved to the folder, {heatmaps_subfolder} in {rd_subfolder} in {output_folder}.")
+
+heatmap_t13_quant_norm = heatmap_generator.t13_plt_heatmap(tgap, barcode_assignment,t13_quant_norm, samples_list, unique_crRNA_assays, timepoints)
+heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_Heatmap_{barcode_assignment}.png')
+fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
+plt.close(fig)
+
+# needs to be DELETED
+
+#if all(('_P1' in idx or '_P2' in idx or '_RVP' in idx) for idx in t13_quant_norm.index) and all(('_P1' in col or '_P2' in col or 'PRVP' in col) for col in t13_quant_norm.columns):
+for idx in t13_quant_norm.index:
+    if not ('_P1' in idx or '_P2' in idx or '_RVP' in idx):
+        print(f"Failed index: {idx}")
+
+for col in t13_quant_norm.columns:
+    if not ('_P1' in col or '_P2' in col or '_RVP' in col):
+        print(f"Failed column: {col}")
+
+
+t13_quant_norm_T = t13_quant_norm.transpose() # now index = assays (rows or y-axis of heatmap), columns = samples (columns or x-axis of heatmap)
+ax = sns.heatmap(t13_quant_norm, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, linewidths = 1, linecolor = "black")
+if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in t13_quant_norm_T.index) and all(('P1' in col or 'P2' in col or 'RVP' in col) for col in t13_quant_norm_T.columns): 
+    for sample in t13_quant_norm_T.columns:
+        if 'CPC' in sample:
+            sample_suffix = sample.split('_')[-1]
+            for assay in t13_quant_norm_T.index:
+                if sample_suffix == 'RVP' and 'RVP' not in assay:
+                    print(f"this sample, {sample} does not belong to this {assay}")
+                if sample_suffix == 'P1' and 'P1' not in assay:
+                    print(f"this sample, {sample} does not belong to this {assay}")
+                    x = t13_quant_norm_T.columns.get_loc(sample)
+                    y = t13_quant_norm_T.index.get_loc(assay) 
+                    ax.plot(x, y, 'ro')  # Plot red dots at (x, y)
+                    rect = patches.Rectangle((x, y), 1, 1, edgecolor='black', fill=True, visible=True, zorder=100)
+                    ax.add_patch(rect)
+                if sample_suffix == 'P2' and 'P2' not in assay:
+                    print(f"this sample, {sample} does not belong to this {assay}")
+        
+else:
+    print("if statement did not come true.")
+ """

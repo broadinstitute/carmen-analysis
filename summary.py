@@ -7,12 +7,12 @@ class Summarized:
 
     def summarizer(self, binary_t13_df):
         # Create a new row called 'Summary'
-        binary_t13_df.loc['Summary'] = binary_t13_df.apply(lambda col: col.value_counts().get('positive', 0))
+        binary_t13_df.loc['Summary'] = binary_t13_df.apply(lambda col: col.value_counts().get('POSITIVE', 0))
  
         positive_samples_dict ={}
 
         for col_name, col_data in binary_t13_df.items():
-           pos_samples_list = col_data.index[col_data == 'positive'].tolist()
+           pos_samples_list = col_data.index[col_data == 'POSITIVE'].tolist()
            positive_samples_dict[col_name] = pos_samples_list
 
         positive_samples_df = pd.DataFrame()

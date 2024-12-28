@@ -164,31 +164,11 @@ For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assign
 
 For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC_Barcode}.csv``
 
-#### Option 1:
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
 3. Remove all other .csv files from the Cloned Directory. 
 4. Remove all other .csv files from the current working directory
 
-#### Option 2:
-1. Get the path of your current working directory by running the following command in the terminal: ``pwd``
-2. Copy this path
-3. Return to your home directory by running the following command in the terminal: ``cd ~`` 
-4. Navigate to the location of your Assignment Sheet (.xlsx) using the ``cd`` command in the terminal. 
-5. When you are in the directory containing the Assignment Sheet (.xlsx), run the following command in the terminal: ``mv {IFC Barcode}_192_assignment.xlsx /pathToClonedDirectory``
-* Replace ``{IFC Barcode}_192_assignment.xlsx`` with the name of your Assignment Sheet 
-* In place of ``/pathToClonedDirectory``, paste in the Cloned Directory path you copied 
-6. Repeat steps 3, 4, and 5 to move your Data File (.csv) to the Cloned Directory. 
-
-**NOTE:** Remove all other .xlsx files from the current working directory by running the following command from your terminal: 
-
-1. Check if there are any other .xlsx files in the current working directory by running the following command in the terminal: ``ls *.xlsx``
-2. If there are other .xlsx files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '192_assignment.xlsx' -exec mv {} /pathToAnotherFolder \;``
-
-**NOTE:** Remove all other .csv files from the current working directory by running the following command from your terminal: 
-
-3. Check if there are any other .csv files in the current working directory by running the following command in the terminal: ``ls *.csv``
-4. If there are other .csv files in the current working directory, remove them by running the following command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec rm {} \;`` or move them to another location on your computer by running this command in the terminal ``find . -name '*.xlsx' ! -name '{IFC Barcode}.csv' -exec mv {} /pathToAnotherFolder \;``
 
 ## Usage and Running the Analysis
 Launch a virtual environment **inside your cloned directory**. Follow the delineated steps to install needed dependencies:
