@@ -547,7 +547,7 @@ doc.build(content)
 # instantiate Flagger from flags.py
 flagger = Flagger()
 
-invalid_row, flagged_files = flagger.assign_flags(QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+flagged_files = flagger.assign_flags(high_raw_ntc_signal_df, rnasep_df, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
 
 fl_t13_hit_output = flagged_files[0]
 fl_rounded_t13_quant_norm = flagged_files[1]
@@ -596,7 +596,7 @@ fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=T
 t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
 fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
  
-"""  
+""" 
 ######################################################################################################################################################   
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()
@@ -659,4 +659,4 @@ if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in t13_quant_norm_T.
         
 else:
     print("if statement did not come true.")
- """
+"""
