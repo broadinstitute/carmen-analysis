@@ -186,6 +186,26 @@ class Qual_Ctrl_Checks:
         #coinf_df.drop('Summary')
         
         return coinf_df
+    
+    def no_crrna_check(self, binary_t13_df):
+        # lowercase all column names and filter the col to find rnasep col
+        binary_t13_df.columns = binary_t13_df.columns.str.lower()
+
+        # Filter columns containing 'no_crrna'
+        no_crrna_columns = binary_t13_df.columns[binary_t13_df.columns.str.contains("no_crrna")].tolist()
+        
+        # Create a dictionary to store the results
+        no_crrna_samples = {}
+
+        for col in no_crrna_columns:
+            # Get the samples (row indices) with a value of 1 in this column
+            samples = binary_t13_df[binary_t13_df[col] == 1].index.tolist()
+            no_crrna_samples[col] = samples
+
+        # Create a new DataFrame from the dictionary
+        nocrrna_fail_df = pd.DataFrame(dict([(key, pd.Series(value)) for key, value in no_crrna_samples.items()]))
+
+        return nocrrna_fail_df
 
     
 

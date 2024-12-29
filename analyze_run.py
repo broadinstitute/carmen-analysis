@@ -542,18 +542,36 @@ for line in text_content:
 # Build the PDF with the collected Flowables
 doc.build(content)
 
+## (6) No-crRNA Assay Check 
+
+## apply no_crrna check to t13_hit_binary_output to generate list of all samples that are positive for the no-crRNA assay(s)
+fail_nocrRNA_check_df = qual_checks.no_crrna_check(t13_hit_binary_output_copy1)
+
+# define file path for csv
+fail_nocrRNA_check_df_file_path = os.path.join(npc_subfolder, f'No_crRNA_Assay_Check_{barcode_assignment}.csv')
+
+# When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
+if fail_nocrRNA_check_df.empty:
+    # If empty, create a DataFrame with the custom message and save it to CSV
+    empty_message_df = pd.DataFrame({"Message": ["All samples have tested against the no-crRNA assay. Thus, there are no samples which must be invalidated."]})
+    empty_message_df.to_csv(fail_nocrRNA_check_df_file_path, index=False, header=False)
+    print(f"CSV created with message at {fail_nocrRNA_check_df_file_path}")
+else:
+    # If coinfection_df is not empty, save the DataFrame as is
+    fail_nocrRNA_check_df.to_csv(fail_nocrRNA_check_df_file_path, index=True)
+    print(f"CSV created with data at {fail_nocrRNA_check_df_file_path}")
 
 ###################################################################################################################################################### 
 # instantiate Flagger from flags.py
 flagger = Flagger()
 
-flagged_files = flagger.assign_flags(high_raw_ntc_signal_df, rnasep_df, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+flagged_files = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
 
-fl_t13_hit_output = flagged_files[0]
-fl_rounded_t13_quant_norm = flagged_files[1]
-fl_summary_samples_df = flagged_files[2]
-fl_rounded_ntc_thresholds_output = flagged_files[3]
-fl_t13_hit_binary_output = flagged_files[4]
+fl_t13_hit_output = flagged_files[0] # Results_Summary
+fl_rounded_t13_quant_norm = flagged_files[1] # NTC_Normalized_Quantitative_Results_Summary
+fl_summary_samples_df = flagged_files[2] # Positives_Summary
+fl_rounded_ntc_thresholds_output = flagged_files[3] # NTC_thresholds
+fl_t13_hit_binary_output = flagged_files[4] # 't13__{barcode_assignment}_hit_binary
 
 # SAVE all the files to their respective output folders
 ### FILE 1: t13_hit_output as Results_Summary
@@ -596,7 +614,7 @@ fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=T
 t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
 fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
  
-""" 
+
 ######################################################################################################################################################   
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()
@@ -626,37 +644,3 @@ heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_H
 fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
 plt.close(fig)
 
-# needs to be DELETED
-
-#if all(('_P1' in idx or '_P2' in idx or '_RVP' in idx) for idx in t13_quant_norm.index) and all(('_P1' in col or '_P2' in col or 'PRVP' in col) for col in t13_quant_norm.columns):
-for idx in t13_quant_norm.index:
-    if not ('_P1' in idx or '_P2' in idx or '_RVP' in idx):
-        print(f"Failed index: {idx}")
-
-for col in t13_quant_norm.columns:
-    if not ('_P1' in col or '_P2' in col or '_RVP' in col):
-        print(f"Failed column: {col}")
-
-
-t13_quant_norm_T = t13_quant_norm.transpose() # now index = assays (rows or y-axis of heatmap), columns = samples (columns or x-axis of heatmap)
-ax = sns.heatmap(t13_quant_norm, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, linewidths = 1, linecolor = "black")
-if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in t13_quant_norm_T.index) and all(('P1' in col or 'P2' in col or 'RVP' in col) for col in t13_quant_norm_T.columns): 
-    for sample in t13_quant_norm_T.columns:
-        if 'CPC' in sample:
-            sample_suffix = sample.split('_')[-1]
-            for assay in t13_quant_norm_T.index:
-                if sample_suffix == 'RVP' and 'RVP' not in assay:
-                    print(f"this sample, {sample} does not belong to this {assay}")
-                if sample_suffix == 'P1' and 'P1' not in assay:
-                    print(f"this sample, {sample} does not belong to this {assay}")
-                    x = t13_quant_norm_T.columns.get_loc(sample)
-                    y = t13_quant_norm_T.index.get_loc(assay) 
-                    ax.plot(x, y, 'ro')  # Plot red dots at (x, y)
-                    rect = patches.Rectangle((x, y), 1, 1, edgecolor='black', fill=True, visible=True, zorder=100)
-                    ax.add_patch(rect)
-                if sample_suffix == 'P2' and 'P2' not in assay:
-                    print(f"this sample, {sample} does not belong to this {assay}")
-        
-else:
-    print("if statement did not come true.")
-"""
