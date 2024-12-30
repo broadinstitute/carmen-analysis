@@ -189,10 +189,10 @@ class Flagger:
                         break
              
             if i == 2: 
-                unique_samples = pd.concat([fail_nocrRNA_check_df[col] for col in fail_nocrRNA_check_df.columns]).dropna().unique()
+                invalid_samples = pd.concat([fail_nocrRNA_check_df[col] for col in fail_nocrRNA_check_df.columns]).dropna().unique()
 
                 # iterate over the flagged_file df and mark the matching samples with '***'
-                for sample in unique_samples:
+                for sample in invalid_samples:
                     flagged_file = flagged_file.apply(lambda col: col.map(lambda x: f'{sample}***' if x == sample else x))
                 
                 # add legend at the bottom of the file
@@ -207,7 +207,6 @@ class Flagger:
                         legend_added = True
                         break
           
-
             ### RNaseP flags 
             ## need to be added to t13_hit_output, rounded_t13_quant_norm, t13_hit_binary_output
             if i in {0, 1, 4} :  # modify only specific files
@@ -248,4 +247,4 @@ class Flagger:
 
             flagged_files.append(flagged_file) # add flagged file to the list          
 
-        return invalid_assays, flagged_files
+        return invalid_assays, invalid_samples, flagged_files

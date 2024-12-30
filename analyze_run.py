@@ -27,6 +27,7 @@ from openpyxl.styles import Font
 from ntcnorm import Normalized
 from summary import Summarized
 from plotting import Plotter
+from t13_plotting import t13_Plotter
 import matplotlib.patches as patches
 from tqdm import tqdm
 # quality control checks imports
@@ -403,6 +404,7 @@ for line in text_content:
 
 ## apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
 rnasep_df = qual_checks.rnasep_check(t13_hit_output_copy3)
+rnasep_df_heatmap = rnasep_df.copy()
 
 # define file path for csv
 rnasep_df_file_path = os.path.join(npc_subfolder, f'RNaseP_Check_{barcode_assignment}.csv')
@@ -565,7 +567,7 @@ else:
 # instantiate Flagger from flags.py
 flagger = Flagger()
 
-flagged_files = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+invalid_assays, invalid_samples, flagged_files = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df_heatmap, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
 
 fl_t13_hit_output = flagged_files[0] # Results_Summary
 fl_rounded_t13_quant_norm = flagged_files[1] # NTC_Normalized_Quantitative_Results_Summary
@@ -639,7 +641,12 @@ for i, t in enumerate(timepoints, start=1):
 
 print(f"The heatmap plots saved to the folder, {heatmaps_subfolder} in {rd_subfolder} in {output_folder}.")
 
-heatmap_t13_quant_norm = heatmap_generator.t13_plt_heatmap(tgap, barcode_assignment,t13_quant_norm, samples_list, unique_crRNA_assays, timepoints)
+######################################################################################################################################################   
+# instantiate t13_Plotter from t13_plotting.py
+t13_heatmap_generator = t13_Plotter()
+
+# Plot the t13 heatmap with annotations
+heatmap_t13_quant_norm = t13_heatmap_generator.t13_plt_heatmap(tgap, barcode_assignment,t13_quant_norm, samples_list, unique_crRNA_assays, timepoints, invalid_samples, invalid_assays, rnasep_df)
 heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_Heatmap_{barcode_assignment}.png')
 fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
 plt.close(fig)
