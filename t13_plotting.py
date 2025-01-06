@@ -216,6 +216,28 @@ class t13_Plotter:
                     ax2.text(left2, top2 + 7, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
                                 ha='left', fontsize=12, style='italic')
+                    
+                # plot * on y-axis that contains Invalid Assays
+                if invalid_assays:
+                    invalid_assays = [assay.upper() for assay in invalid_assays]
+                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame1.index]
+                    ax1.set_yticklabels(asterisk1_labels, rotation=0)
+                    
+                    ## add legend for * below the '†: ...' legend
+                    ax1.text(left1, top1 + 9, 
+                                '*: This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.', 
+                                ha='left', fontsize=12, style='italic')
+                
+                # plot *** on x-axis that contains Invalid Samples
+                if invalid_samples:
+                    invalid_samples = [sample.upper() for sample in invalid_samples]
+                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
+                    ax1.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
+
+                    ## add legend for * below the '†: ...' legend
+                    ax1.text(left1, top1 + 10, 
+                                '***: This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.', 
+                                ha='left', fontsize=12, style='italic')
                 
                 # fill in black box for any non-panel assays for panel-specific CPC samples 
                 if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in frame2.index) and all(('P1' in col or 'P2' in col or 'RVP' in col) for col in frame2.columns): 
@@ -306,6 +328,28 @@ class t13_Plotter:
                     top, bottom = ax.get_ylim() 
                     ax.text(left, top + 7, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
+                                ha='left', fontsize=12, style='italic')
+                
+                # plot * on y-axis that contains Invalid Assays
+                if invalid_assays:
+                    invalid_assays = [assay.upper() for assay in invalid_assays]
+                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame1.index]
+                    ax.set_yticklabels(asterisk1_labels, rotation=0)
+                    
+                    ## add legend for * below the '†: ...' legend
+                    ax.text(left1, top1 + 9, 
+                                '*: This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.', 
+                                ha='left', fontsize=12, style='italic')
+                
+                # plot *** on x-axis that contains Invalid Samples
+                if invalid_samples.size > 0:
+                    invalid_samples = [sample.upper() for sample in invalid_samples]
+                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
+                    ax.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
+
+                    ## add legend for * below the '†: ...' legend
+                    ax.text(left1, top1 + 10, 
+                                '***: This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.', 
                                 ha='left', fontsize=12, style='italic')
 
                 # fill in black box for any non-panel assays for panel-specific CPC samples 

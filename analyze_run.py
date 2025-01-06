@@ -43,6 +43,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 # annotations and flags imports
 from flags import Flagger
+from openpyxl.utils import get_column_letter
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
@@ -576,6 +577,61 @@ fl_rounded_ntc_thresholds_output = flagged_files[3] # NTC_thresholds
 fl_t13_hit_binary_output = flagged_files[4] # 't13__{barcode_assignment}_hit_binary
 
 # SAVE all the files to their respective output folders
+sheet_names = [
+    "Results_Summary",
+    "NTC_Normalized_Quantitative_Results_Summary",
+    "Positives_Summary",
+    "NTC_thresholds",
+    "Binary_Results"
+]
+
+dataframes = [
+    fl_t13_hit_output,
+    fl_rounded_t13_quant_norm,
+    fl_summary_samples_df,
+    fl_rounded_ntc_thresholds_output,
+    fl_t13_hit_binary_output
+]
+
+output_file_path = os.path.join(res_subfolder, f"RESULTS_{barcode_assignment}.xlsx") #
+
+try: 
+    # save all DataFrames to a single Excel file
+    with pd.ExcelWriter(output_file_path, engine="openpyxl") as writer:
+        for df, sheet_name in zip(dataframes, sheet_names):
+            # write each DataFrame to its respective sheet
+            df.to_excel(writer, sheet_name=sheet_name, index=True)
+            
+            worksheet = writer.sheets[sheet_name]
+            worksheet.column_dimensions["A"].width = 20  # Set column A to width 13
+            for col_idx in range(2, worksheet.max_column + 1):  # Other columns
+                col_letter = get_column_letter(col_idx)  # Get column letter dynamically
+                #ol_letter = chr(64 + col_idx)
+                worksheet.column_dimensions[col_letter].width = 14
+             
+            if sheet_name == "Results_Summary":
+                worksheet = writer.sheets[sheet_name]
+
+                # define font colors for POSITIVE and NEGATIVE
+                red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
+                green_font = Font(color="008000")  # Green for NEGATIVE
+
+                # apply text color formatting
+                for row_idx, row in enumerate(df.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
+                    for col_idx, cell_value in enumerate(row, start=2):
+                        cell = worksheet.cell(row=row_idx, column=col_idx)
+                        if cell_value == "POSITIVE":
+                            cell.font = red_font
+                        elif cell_value == "NEGATIVE":
+                            cell.font = green_font
+            
+    print(f"All FLAGGED FILES have been saved to {output_file_path}.")
+
+except Exception as e:
+    print(f"Error saving file: {e}")
+
+
+"""  
 ### FILE 1: t13_hit_output as Results_Summary
 # convert the t13 hit output to an excel file with green/red conditional formatting for NEG/POS results
 t13_hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.xlsx')
@@ -615,8 +671,8 @@ fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=T
 ### File 5: t13_hit_binary_output as t13_hit_Binary 
 t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
 fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
- 
 
+"""
 ######################################################################################################################################################   
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()

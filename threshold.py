@@ -33,9 +33,12 @@ class Thresholder:
             # Scale the NTC mean by 1.8 to generate thresholds
             raw_thresholds_df = ntc_mean_df * 1.8
 
-            # Append the threshold to ntc_mean_df
-            raw_thresholds_df = pd.concat([ntc_mean_df, raw_thresholds_df], ignore_index=True, axis=0)
-            raw_thresholds_df.index = ['NTC Mean', 'NTC Threshold']
+            # Calculate the Normalized NTC threshold too
+            norm_thresholds_df = raw_thresholds_df / ntc_mean_df
+
+            # Append ntc_mean_df, raw_thresholds_df, and norm_thresholds_df
+            raw_thresholds_df = pd.concat([ntc_mean_df, raw_thresholds_df, norm_thresholds_df], ignore_index=True, axis=0) 
+            raw_thresholds_df.index = ['NTC Mean', 'NTC Threshold', 'Normalized NTC Threshold']
 
         elif CLI_thresh_arg == '3_SD':
             
@@ -72,6 +75,11 @@ class Thresholder:
             # Append the threshold to ntc_mean_df
             raw_thresholds_df = pd.concat([ntc_mean_df, ntc_sd_df, ntc_3sd_df, raw_thresholds_df], ignore_index=True, axis=0)
             raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold']
+
+            # Calculate the Normalized NTC threshold too
+            norm_thresholds_df = raw_thresholds_df.loc['NTC Threshold'] / ntc_mean_df
+            raw_thresholds_df = pd.concat([raw_thresholds_df, norm_thresholds_df], ignore_index=True, axis=0)
+            raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold', 'Normalized NTC Threshold']
      
         else:
             print("Consult ReadME and input appropriate command-line arguments to specify thresholding method.")
