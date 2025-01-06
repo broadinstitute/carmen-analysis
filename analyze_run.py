@@ -43,7 +43,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 # annotations and flags imports
 from flags import Flagger
-from openpyxl.utils import get_column_letter
+import xlsxwriter
 
 
 all_files = list(Path(os.getcwd()).glob('*'))
@@ -578,9 +578,9 @@ fl_t13_hit_binary_output = flagged_files[4] # 't13__{barcode_assignment}_hit_bin
 
 # SAVE all the files to their respective output folders
 sheet_names = [
-    "Results_Summary",
-    "NTC_Normalized_Quantitative_Results_Summary",
-    "Positives_Summary",
+    "CARMEN_Results",
+    "NTC_Normalized_Quant_Results",
+    "Summary_of_Positive_Samples",
     "NTC_thresholds",
     "Binary_Results"
 ]
@@ -597,40 +597,93 @@ output_file_path = os.path.join(res_subfolder, f"RESULTS_{barcode_assignment}.xl
 
 try: 
     # save all DataFrames to a single Excel file
-    with pd.ExcelWriter(output_file_path, engine="openpyxl") as writer:
+    with pd.ExcelWriter(output_file_path, engine="xlsxwriter") as writer:
+        # store the indices of cells with the "POSITIVE" value in the CARMEN_Results sheet
+        red_cells = set()  # to store (row_idx, col_idx) for "POSITIVE" cells
+    
         for df, sheet_name in zip(dataframes, sheet_names):
             # write each DataFrame to its respective sheet
+            df.fillna('', inplace=True)
             df.to_excel(writer, sheet_name=sheet_name, index=True)
             
+            # set col dimensions
             worksheet = writer.sheets[sheet_name]
-            worksheet.column_dimensions["A"].width = 20  # Set column A to width 13
-            for col_idx in range(2, worksheet.max_column + 1):  # Other columns
-                col_letter = get_column_letter(col_idx)  # Get column letter dynamically
-                #ol_letter = chr(64 + col_idx)
-                worksheet.column_dimensions[col_letter].width = 14
-             
-            if sheet_name == "Results_Summary":
+            worksheet.set_column(0, 0, 20)
+            for col_idx in range(1, df.shape[1]):  # Other columns
+                worksheet.set_column(col_idx, col_idx, 16)
+            
+            # modify colors of output
+            if sheet_name == "CARMEN_Results":
                 worksheet = writer.sheets[sheet_name]
-
                 # define font colors for POSITIVE and NEGATIVE
-                red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
-                green_font = Font(color="008000")  # Green for NEGATIVE
+                red_font = writer.book.add_format({'color': 'FF0000', 'bold': True})  # Red for POSITIVE
+                green_font = writer.book.add_format({'color': '008000'})  # Green for NEGATIVE
+                black_font = writer.book.add_format({'color': '000000'})  # Black for other values
 
                 # apply text color formatting
-                for row_idx, row in enumerate(df.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
-                    for col_idx, cell_value in enumerate(row, start=2):
-                        cell = worksheet.cell(row=row_idx, column=col_idx)
-                        if cell_value == "POSITIVE":
-                            cell.font = red_font
-                        elif cell_value == "NEGATIVE":
-                            cell.font = green_font
+                for row_idx, row in enumerate(df.values, start=1):  
+                    for col_idx, cell_value in enumerate(row, start=1):
+                        if cell_value == "NEGATIVE":
+                            worksheet.write(row_idx, col_idx, cell_value, green_font)
+                        elif cell_value == "POSITIVE":
+                            worksheet.write(row_idx, col_idx, cell_value, red_font)
+                            red_cells.add((row_idx, col_idx))  # Track the red cells
+                        else:
+                            worksheet.write(row_idx, col_idx, cell_value, black_font)
             
+            # apply red color to same cells in other sheets (NTC_Normalized_Quant_Results and Binary_Results)
+            if sheet_name in ["NTC_Normalized_Quant_Results", "Binary_Results"]:
+                worksheet = writer.sheets[sheet_name]
+                for row_idx, row in enumerate(df.values, start=1):
+                    for col_idx, cell_value in enumerate(row, start=1):
+                        if (row_idx, col_idx) in red_cells:
+                            worksheet.write(row_idx, col_idx, cell_value, red_font)  # Apply red formatting
+
     print(f"All FLAGGED FILES have been saved to {output_file_path}.")
 
 except Exception as e:
-    print(f"Error saving file: {e}")
+    print(f"Error saving single Excel file: {e}. Results are saved as 5 individual csv files.")
+    ### FILE 1: t13_hit_output as Results_Summary
+    # convert the t13 hit output to an excel file with green/red conditional formatting for NEG/POS results
+    t13_hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.xlsx')
 
+    # create the Excel writer
+    with pd.ExcelWriter(t13_hit_output_file_path, engine="openpyxl") as writer:
+        # write the DataFrame to an Excel sheet
+        fl_t13_hit_output.to_excel(writer, sheet_name="Sheet1", index=True)
+        workbook = writer.book
+        worksheet = writer.sheets["Sheet1"]
 
+        # define font colors for POSITIVE and NEGATIVE
+        red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
+        green_font = Font(color="008000")  # Green for NEGATIVE
+
+        # apply text color formatting
+        for row_idx, row in enumerate(t13_hit_output.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
+            for col_idx, cell_value in enumerate(row, start=2):
+                cell = worksheet.cell(row=row_idx, column=col_idx)
+                if cell_value == "POSITIVE":
+                    cell.font = red_font
+                elif cell_value == "NEGATIVE":
+                    cell.font = green_font
+
+    ### FILE 2: rounded_t13_quant_norm as NTC_Quant_Normalized_Results
+    quant_output_ntcNorm_file_path = os.path.join(res_subfolder, f'NTC_Normalized_Quantitative_Results_Summary_{barcode_assignment}.csv')
+    fl_rounded_t13_quant_norm.to_csv(quant_output_ntcNorm_file_path, index=True)
+
+    ### File 3: summary_samples_df as Positives_Summary
+    summary_pos_samples_file_path = os.path.join(res_subfolder, f'Positives_Summary_{barcode_assignment}.csv')
+    fl_summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
+
+    ### File 4: ntc_thresholds_output as NTC_Thresholds
+    ntc_thresholds_output_file_path = os.path.join(res_subfolder, f'NTC_thresholds_{barcode_assignment}.csv')
+    fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
+
+    ### File 5: t13_hit_binary_output as t13_hit_Binary 
+    t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
+    fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
+        
+           
 """  
 ### FILE 1: t13_hit_output as Results_Summary
 # convert the t13 hit output to an excel file with green/red conditional formatting for NEG/POS results
