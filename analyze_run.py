@@ -578,7 +578,7 @@ fl_t13_hit_binary_output = flagged_files[4] # 't13__{barcode_assignment}_hit_bin
 
 # SAVE all the files to their respective output folders
 sheet_names = [
-    "CARMEN_Results",
+    "CARMEN_Hit_Results",
     "NTC_Normalized_Quant_Results",
     "Summary_of_Positive_Samples",
     "NTC_thresholds",
