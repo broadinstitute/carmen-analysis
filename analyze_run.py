@@ -613,19 +613,23 @@ try:
                 worksheet.set_column(col_idx, col_idx, 16)
             
             # modify colors of output
-            if sheet_name == "CARMEN_Results":
+            if sheet_name == "CARMEN_Hit_Results":
                 worksheet = writer.sheets[sheet_name]
                 # define font colors for POSITIVE and NEGATIVE
-                red_font = writer.book.add_format({'color': 'FF0000', 'bold': True})  # Red for POSITIVE
-                green_font = writer.book.add_format({'color': '008000'})  # Green for NEGATIVE
+                red_font = writer.book.add_format({'color': 'F97609', 'bold': True})  # Red for POSITIVE - change to orange for color blind accessibiliy
+                green_font = writer.book.add_format({'color': '1A85FF'})  # Green for NEGATIVE - change to blue for color blind accessibility
                 black_font = writer.book.add_format({'color': '000000'})  # Black for other values
 
                 # apply text color formatting
                 for row_idx, row in enumerate(df.values, start=1):  
                     for col_idx, cell_value in enumerate(row, start=1):
-                        if cell_value == "NEGATIVE":
+                        cell_str = str(cell_value)
+                        #print(f"Row {row_idx}, Col {col_idx}, Value: {cell_value}, Cell_str: {cell_str}")
+                        if "NEGATIVE" in cell_str:
+                            #print(f"Applying green font to {cell_value}")
                             worksheet.write(row_idx, col_idx, cell_value, green_font)
-                        elif cell_value == "POSITIVE":
+                        elif "POSITIVE" in cell_str:
+                            #print(f"Applying red font to {cell_value}")
                             worksheet.write(row_idx, col_idx, cell_value, red_font)
                             red_cells.add((row_idx, col_idx))  # Track the red cells
                         else:
@@ -648,24 +652,30 @@ except Exception as e:
     t13_hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.xlsx')
 
     # create the Excel writer
-    with pd.ExcelWriter(t13_hit_output_file_path, engine="openpyxl") as writer:
+    with pd.ExcelWriter(t13_hit_output_file_path, engine="xlsxwriter") as writer:
         # write the DataFrame to an Excel sheet
         fl_t13_hit_output.to_excel(writer, sheet_name="Sheet1", index=True)
         workbook = writer.book
         worksheet = writer.sheets["Sheet1"]
 
         # define font colors for POSITIVE and NEGATIVE
-        red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
-        green_font = Font(color="008000")  # Green for NEGATIVE
+        red_font = writer.book.add_format({'color': 'FF0000', 'bold': True})  # Red for POSITIVE
+        green_font = writer.book.add_format({'color': '008000'})  # Green for NEGATIVE
 
         # apply text color formatting
-        for row_idx, row in enumerate(t13_hit_output.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
-            for col_idx, cell_value in enumerate(row, start=2):
-                cell = worksheet.cell(row=row_idx, column=col_idx)
-                if cell_value == "POSITIVE":
-                    cell.font = red_font
-                elif cell_value == "NEGATIVE":
-                    cell.font = green_font
+        for row_idx, row in enumerate(t13_hit_output.itertuples(index=False), start=1):  # Start from row 3 (after header and INVALID ASSAY label)
+            for col_idx, cell_value in enumerate(row, start=1):
+                cell_str = str(cell_value)
+                #print(f"Row {row_idx}, Col {col_idx}, Value: {cell_value}, Cell_str: {cell_str}")
+                if "NEGATIVE" in cell_str:
+                    #print(f"Applying green font to {cell_value}")
+                    worksheet.write(row_idx, col_idx, cell_value, green_font)
+                elif "POSITIVE" in cell_str:
+                    #print(f"Applying red font to {cell_value}")
+                    worksheet.write(row_idx, col_idx, cell_value, red_font)
+                    
+
+
 
     ### FILE 2: rounded_t13_quant_norm as NTC_Quant_Normalized_Results
     quant_output_ntcNorm_file_path = os.path.join(res_subfolder, f'NTC_Normalized_Quantitative_Results_Summary_{barcode_assignment}.csv')

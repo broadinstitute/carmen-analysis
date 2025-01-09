@@ -32,7 +32,7 @@ class t13_Plotter:
                 # Split heatmap into two subplots (2-row, 1-column layout)
                 fig, axes = plt.subplots(2, 1, figsize=(len(first_half_samples) * 0.5, len(assay_list) * 0.5 * 2))
                 # Add space between the two subplots (vertical spacing)
-                plt.subplots_adjust(hspace=1)
+                plt.subplots_adjust(hspace=0.5)
 
                 df = df.transpose()
 
@@ -42,11 +42,12 @@ class t13_Plotter:
                 frame1.index = frame1.index.str.upper() 
                 # assess if there are NTCs with NaN signal 
                 annot1 = frame1.map(lambda x: 'X' if (pd.isna(x) or x == 'NaN' or x is None) else '')
-                ax1 = sns.heatmap(frame1, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, ax=axes[0], 
-                                    linewidths = 1, linecolor = "black")
+                ax1 = sns.heatmap(frame1, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, ax=axes[0], 
+                                    linewidths = 1, linecolor = "black") # cbar_kws and pad adjusts the space between heatmap and the colorbar
+                                    # annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}
                 
                 # Track x-axis labels that need a dagger
-                dagger_labels = set()
+                dagger_labels_1 = set()
                 
                 # Add cross-hatches for "X"-marked cells
                 if not annot1.empty: 
@@ -62,19 +63,19 @@ class t13_Plotter:
                                 ax1.add_line(plt.Line2D([x_start, x_end], [y_end, y_start], color='black', linewidth=1.5))  # Bottom-left to top-right
 
                                 # Collect x-axis labels that correspond to the "X"
-                                dagger_labels.add(frame1.columns[x])
-                    
+                                dagger_labels_1.add(frame1.columns[x])
+                    """
                     # Modify x-axis labels to include daggers
-                    x_labels = ax1.get_xticklabels()
-                    new_labels = [
-                        f"† {label.get_text()}" if label.get_text() in dagger_labels else label.get_text()
-                        for label in x_labels
+                    x_labels_1 = ax1.get_xticklabels()
+                    new_labels_1 = [
+                        f"† {label.get_text()}" if label.get_text() in dagger_labels_1 else label.get_text() for label in x_labels_1
                     ]
-                    ax1.set_xticklabels(new_labels, rotation=90, ha='right')
+                    ax1.set_xticklabels(new_labels_1, rotation=90, ha='right')
+                    """
                     # Place the legend below the first heatmap
                     left1, right1 = ax1.get_xlim()
                     top1, bottom1 = ax1.get_ylim() 
-                    ax1.text(left1, top1 + 8, 
+                    ax1.text(left1, top1 + 9, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
                                 ha='left', fontsize=12, style='italic')
 
@@ -84,8 +85,8 @@ class t13_Plotter:
                     asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame1.index]
                     ax1.set_yticklabels(asterisk1_labels, rotation=0)
                     
-                    ## add legend for * below the '†: ...' legend
-                    ax1.text(left1, top1 + 9, 
+                    ## add legend for * below the '*: ...' legend
+                    ax1.text(left1, top1 + 10, 
                                 '*: This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.', 
                                 ha='left', fontsize=12, style='italic')
 
@@ -125,14 +126,24 @@ class t13_Plotter:
                 # plot *** on x-axis that contains Invalid Samples
                 if invalid_samples.size > 0:
                     invalid_samples = [sample.upper() for sample in invalid_samples]
+                    """
                     asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
                     ax1.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
-
-                    ## add legend for * below the '†: ...' legend
-                    ax1.text(left1, top1 + 10, 
+                    """
+                    ## add legend for * below the '***: ...' legend
+                    ax1.text(left1, top1 + 11, 
                                 '***: This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.', 
                                 ha='left', fontsize=12, style='italic')
 
+                 # plot new x-labels that combine asterisk and dagger logic
+                x_labels_1 = ax1.get_xticklabels()
+                final_labels = [
+                        f"{'† ' if label.get_text().strip() in dagger_labels_1 else ''}"
+                        f"{label.get_text().strip()}"
+                        f"{'***' if label.get_text().strip().upper() in invalid_samples else ''}"
+                        for label in x_labels_1
+                    ]
+                ax1.set_xticklabels(final_labels, rotation=90, ha='right')
 
                 # fill in black box for any non-panel assays for panel-specific CPC samples 
                 if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in frame1.index) and all(('P1' in col or 'P2' in col or 'RVP' in col) for col in frame1.columns): 
@@ -158,8 +169,6 @@ class t13_Plotter:
                                     #ax1.plot(x, y, 'ro')  # Plot red dots at (x, y)
                                     rect = patches.Rectangle((x, y), 1, 1, edgecolor='black', facecolor='black', fill=True, visible=True, zorder=100)
                                     ax1.add_patch(rect)
-        
-                
                 
                 # Adjust layout
                 ax1.set_title(f'Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #1: {half_samples} Samples)', size=28)
@@ -172,7 +181,7 @@ class t13_Plotter:
                 ax1.tick_params(axis="y", labelsize=16, width = 2, length = 5)
                 ax1.tick_params(axis="x", labelsize=16, width = 2, length = 5)
                 plt.yticks(rotation=0)
-                plt.tight_layout()
+                #plt.tight_layout(h_pad=0.3)
                 ax1.axhline(y=top1 + 0.16, color='k',linewidth=6)
                 ax1.axhline(y=bottom1 - 0.14, color='k',linewidth=6)
                 ax1.axvline(x=left1 - 0.14, color='k',linewidth=6)
@@ -180,12 +189,14 @@ class t13_Plotter:
 
                 # Second heatmap (next 96 samples)
                 frame2 = df[second_half_samples].reindex(assay_list)
+                frame2.index = frame2.index.str.upper() 
+                # assess if there are NTCs with NaN signal 
                 annot2 = frame2.map(lambda x: 'X' if (pd.isna(x) or x == 'NaN' or x is None) else '')
-                ax2 = sns.heatmap(frame2, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, annot_kws={"size": 20}, ax=axes[1], 
-                                    linewidths = 1, linecolor = "black")
+                ax2 = sns.heatmap(frame2, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, ax=axes[1], 
+                                    linewidths = 1, linecolor = "black") # annot = None, annot_kws={"size": 20}
                 
                 # Track x-axis labels that need a dagger
-                dagger_labels = set()
+                dagger_labels_2 = set()
                 
                 # Add cross-hatches for "X"-marked cells
                 if not annot2.empty: 
@@ -201,44 +212,56 @@ class t13_Plotter:
                                 ax2.add_line(plt.Line2D([x_start, x_end], [y_end, y_start], color='black', linewidth=1.5))  # Bottom-left to top-right
 
                                 # Collect x-axis labels that correspond to the "X"
-                                dagger_labels.add(frame2.columns[x])
+                                dagger_labels_2.add(frame2.columns[x])
                     
+                    """  
                     # Modify x-axis labels to include daggers
-                    x_labels = ax2.get_xticklabels()
-                    new_labels = [
-                        f"† {label.get_text()}" if label.get_text() in dagger_labels else label.get_text()
-                        for label in x_labels
+                    x_labels_2 = ax2.get_xticklabels()
+                    new_labels_2 = [
+                        f"† {label.get_text()}" if label.get_text() in dagger_labels_2 else label.get_text() for label in x_labels_2
                     ]
-                    ax2.set_xticklabels(new_labels, rotation=90, ha='right')
+                    ax2.set_xticklabels(new_labels_2, rotation=90, ha='right')
+                    """
                     # Place the legend below the first heatmap
-                    left2, right2 = ax1.get_xlim()
-                    top2, bottom2 = ax1.get_ylim() 
-                    ax2.text(left2, top2 + 7, 
+                    left2, right2 = ax2.get_xlim()
+                    top2, bottom2 = ax2.get_ylim() 
+                    ax2.text(left1, top2 + 9, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
                                 ha='left', fontsize=12, style='italic')
                     
                 # plot * on y-axis that contains Invalid Assays
                 if invalid_assays:
                     invalid_assays = [assay.upper() for assay in invalid_assays]
-                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame1.index]
-                    ax1.set_yticklabels(asterisk1_labels, rotation=0)
+                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame2.index]
+                    ax2.set_yticklabels(asterisk1_labels, rotation=0)
                     
                     ## add legend for * below the '†: ...' legend
-                    ax1.text(left1, top1 + 9, 
+                    ax2.text(left1, top2 + 10, 
                                 '*: This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.', 
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot *** on x-axis that contains Invalid Samples
                 if invalid_samples:
                     invalid_samples = [sample.upper() for sample in invalid_samples]
-                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
-                    ax1.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
-
+                    """
+                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame2.columns]
+                    ax2.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
+                    """
                     ## add legend for * below the '†: ...' legend
-                    ax1.text(left1, top1 + 10, 
+                    ax2.text(left1, top2 + 11, 
                                 '***: This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.', 
                                 ha='left', fontsize=12, style='italic')
                 
+                # plot new x-labels that combine asterisk and dagger logic
+                x_labels_2 = ax2.get_xticklabels()
+                final_labels = [
+                        f"{'† ' if label.get_text().strip() in dagger_labels_2 else ''}"
+                        f"{label.get_text().strip()}"
+                        f"{'***' if label.get_text().strip().upper() in invalid_samples else ''}"
+                        for label in x_labels_2
+                    ]
+                ax2.set_xticklabels(final_labels, rotation=90, ha='right')
+
                 # fill in black box for any non-panel assays for panel-specific CPC samples 
                 if all(('P1' in idx or 'P2' in idx or 'RVP' in idx) for idx in frame2.index) and all(('P1' in col or 'P2' in col or 'RVP' in col) for col in frame2.columns): 
                     for sample in frame2.columns:
@@ -266,8 +289,8 @@ class t13_Plotter:
 
                 # Adjust layout
                 ax2.set_title(f'Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #2: {half_samples} Samples)', size=28)
-                ax2.set_xlabel('Samples', size=14)
-                ax2.set_ylabel('Assays', size=14)
+                ax2.set_xlabel('Samples', size=18)
+                ax2.set_ylabel('Assays', size=18)
                 top, bottom = ax2.get_ylim() 
                 ax2.set_ylim(top + 0.25, bottom - 0.25)
                 left, right = ax2.get_xlim()
@@ -275,11 +298,13 @@ class t13_Plotter:
                 ax2.tick_params(axis="y", labelsize=16)
                 ax2.tick_params(axis="x", labelsize=16)
                 plt.yticks(rotation=0)
-                plt.tight_layout()
+                #plt.tight_layout(h_pad=0.3)
                 ax2.axhline(y=top + 0.16, color='k',linewidth=6)
                 ax2.axhline(y=bottom - 0.14, color='k',linewidth=6)
                 ax2.axvline(x=left - 0.14, color='k',linewidth=6)
                 ax2.axvline(x=right + 0.15, color='k',linewidth=6)
+
+                fig.tight_layout()
 
             else: 
                 # Do not split heatmap into two subplots (2-row, 1-column layout)
