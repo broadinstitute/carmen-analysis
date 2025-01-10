@@ -190,12 +190,16 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
     * `Windows`: ``py -m venv carmen-env``
 
 3. Run the following command from your terminal to **activate** the virtual environment by running the following command in your terminal: 
-    * `macOS` or `Linux`: ``source ./carmen-env/bin/activate``
-    * `Windows`: ``.\carmen-env\Scripts\Activate.ps1``
-        * When you first try activating the virtual environment, you may get an error about `Execution_Policies`.
-        * If so, run `Get-ExecutionPolicy` and then run `Set-ExecutionPolicy Unrestricted`.
-        * Then proceed to activating the virtual environment.  
-    * When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
+    * `macOS` or `Linux`: 
+        * ``conda activate``
+        * ``source ./carmen-env/bin/activate``
+    * `Windows`: 
+        * ``.\carmen-env\Scripts\Activate.ps1``
+          * When you first try activating the virtual environment, you may get an error about `Execution_Policies`.
+          * If so, run `Get-ExecutionPolicy` and then run `Set-ExecutionPolicy Unrestricted`.
+          * Then proceed to activating the virtual environment.  
+
+  When the virtual environment has been activated, the text ``(carmen-env)`` will be to the left-most of your command-line in the terminal. 
 
 4. Run the following command from your terminal to install required dependencies in the virtual environment: ``pip3 install -r requirements.txt``
 
