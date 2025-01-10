@@ -69,10 +69,10 @@ class Assay_QC_Score:
                 QC_score_per_assay_df.loc['QC2: NDC', assay] = 0 # fail
             
      ## for assay score #3 CPC:
-        if all(('_P1' in idx or '_P2' in idx or '_RVP' in idx) for idx in cpc_rows.index) and all(('_P1' in col or '_P2' in col or '_RVP' in col) for col in cpc_rows.columns):
-            # filter the rows to find the CPCs in the df
-            cpc_rows = t13_hit_binary_output[t13_hit_binary_output.index.str.contains('CPC')]
+        # filter the rows to find the CPCs in the df
+        cpc_rows = t13_hit_binary_output[t13_hit_binary_output.index.str.contains('CPC')]
 
+        if all(('_P1' in idx or '_P2' in idx or '_RVP' in idx) for idx in cpc_rows.index) and all(('_P1' in col or '_P2' in col or '_RVP' in col) for col in cpc_rows.columns):
             # filter cpc_rows further and stratify into cpc_rvp, cpc_p1, cpc_p2
             cpc_rvp_rows = cpc_rows[cpc_rows.index.str.contains('_RVP', case=False)]
             cpc_p1_rows = cpc_rows[cpc_rows.index.str.contains('_P1', case=False)]
@@ -148,8 +148,6 @@ class Assay_QC_Score:
                             QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
         else: 
             ## GENERAL CPC TEST if user does not input both assays and samples with suffix _RVP, _P1, or _P2
-            # filter the rows to find the CPCs in the df
-            cpc_rows = t13_hit_binary_output[t13_hit_binary_output.index.str.contains('CPC')]
             # count the number of NDCs -> this is tot_NDCs (divisor)
             tot_CPCs = len(cpc_rows)
             # initialize a dict to hold NDC samples (value) with val 0 for assay (key)
