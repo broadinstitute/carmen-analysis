@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
 
-pd.set_option('future.no_silent_downcasting', True) 
+#pd.set_option('future.no_silent_downcasting', True) 
 
 # goal is to take in the t13 hit output csv and convert it to binary level output 
 class Binary_Converter:

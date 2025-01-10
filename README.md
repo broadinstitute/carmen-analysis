@@ -113,15 +113,24 @@ From your terminal, type ``git clone https://github.com/broadinstitute/carmen-an
 ## Content Description of Cloned Directory 
 The cloned directory should contain ALL of the following python scripts for your analysis to be successfully completed:
 * ``analyze_run.py``
+* ``assay_qc_score.py``
+* ``binary_results.py``
+* ``flags.py``
 * ``matcher.py``
 * ``median_frame.py``
 * ``norm.py``
+* ``ntc_con_check.py``
 * ``ntcnorm.py``
 * ``plotting.py``
-* ``reader.py``
-* ``threshold.py`` 
-* ``summary.py``
 * ``qual_checks.py``
+* ``reader.py``
+* ``requirements.txt``
+* ``summary.py``
+* ``t13_plotting.py``
+* ``threshold.py`` 
+* ``Assay-Level QC Test Explanation.pdf``
+* ``LICENSE``
+* ``README.md``
 
 ## Required File Inputs 
 You will need the following two files to complete the CARMEN analysis.
@@ -160,19 +169,16 @@ Based on the viral panel you run in CARMEN, add the corresponding '_RVP', '_P1',
 When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
 
 ## File Relocation to Cloned Directory
-You have 2 options of moving the required file inputs from their current locations on your computer to the cloned directory. 
-* Option 1 is simpler and allows you to move the required file inputs into the cloned directory via File Explorer or Finder. 
-* Option 2 is for users who are more familiar with the command line and utilizes only the terminal interface to achieve the same file relocation. 
-
-For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assignment Sheet will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC Barcode}_192_assignment.xlsx``
-
-For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC_Barcode}.csv``
+Move the required file inputs from their current locations on your computer to the cloned directory by using File Explorer or Finder. (If you are a user who is highly familiar with the command line, you can also achieve the same file relocation using only the terminal interface.)
 
 1. Using Finder or File Explorer your local computer's, locate where you have saved the two required file inputs: {IFC Barcode}_192_assignment.xlsx and {IFC_Barcode}.csv
 2. Move both of these files into the Cloned Directory (via a "drag and drop" method).
 3. Remove all other .csv files from the Cloned Directory. 
 4. Remove all other .csv files from the current working directory
 
+For the ``CARMEN_Run_2`` example given above, the file path for the .xlsx Assignment Sheet will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC Barcode}_192_assignment.xlsx``
+
+For the ``CARMEN_Run_2`` example given above, the file path for the .csv Data File will be ``\Users\albeez\Sentinel\CARMEN_Run_2\carmen-analysis\{IFC_Barcode}.csv``
 
 ## Usage and Running the Analysis
 Launch a virtual environment **inside your cloned directory**. Follow the delineated steps to install needed dependencies:
