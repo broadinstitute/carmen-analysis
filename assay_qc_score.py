@@ -148,6 +148,7 @@ class Assay_QC_Score:
                             QC_score_per_assay_df.loc['QC3: CPC', assay] = 0 # fail 
         else: 
             ## GENERAL CPC TEST if user does not input both assays and samples with suffix _RVP, _P1, or _P2
+            
             # count the number of NDCs -> this is tot_NDCs (divisor)
             tot_CPCs = len(cpc_rows)
             # initialize a dict to hold NDC samples (value) with val 0 for assay (key)

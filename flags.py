@@ -23,7 +23,8 @@ class Flagger:
             for row in QC_score_per_assay_df.itertuples():
                 if row.Index == 'QC3: CPC':
                     for assay in QC_score_per_assay_df.columns: 
-                        score = getattr(row, assay)
+                        row._asdict().get(assay, None)
+                        #score = getattr(row, assay)
                         if score == 0: # CPC test has failed, the assay is invalid
                             invalid_assays.append(assay) # add to invalid assays list
             
