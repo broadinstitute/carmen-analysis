@@ -2,7 +2,7 @@
 CARMEN is a diagnostic tool designed for surveillance purposes. Below are the instructions to complete your CARMEN analysis. 
 
 ## Software Version
-When cloning this repository, you will be using software version 4.1.0.
+When cloning this repository, you will be using software version 4.3.5.
 
 ## Overview
 At this point, you have ran the $Standard\ BioTools\ Dynamic\ Array^{TM}$ IFC (integrated fluidic circuit) on the $Standard\ BioTools\ Biomark^{TM}$ instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 
@@ -151,6 +151,10 @@ Each plate of samples that you run in CARMEN must include the following 3 contro
     * A positive signal for the CPC per viral assay is integral to validating the viral assay in your CARMEN run. 
 
 The assumption for the remainder of the CARMEN analysis is that any sample that does contain the phrases ``NTC``, ``NDC``, and ``CPC`` is considered a “patient or clinical sample”.
+
+#### (iii) Panel-Specific Formating
+Based on the viral panel you run in CARMEN, add the corresponding '_RVP', '_P1', or '_P2' as the suffix to samples and assays corresponding to RVP Panel, BBP Panel #1, or BBP Panel #2, respectively. 
+* Note: If you have a control (for example, the RNaseP assay) that corresponds to two or more panels (for example, BBP Panel #1 and BBP Panel #2), you can denote the suffix of BOTH panels in the assay name (for example, 'RNaseP_P1_P2').
 
 ### (2) A .csv Data File from the Standard BioTools instrument
 When exporting results from the Standard Biotools instrument, this output file is called Results_all.csv. Rename this file as follows: ``{IFC_Barcode}.csv``
