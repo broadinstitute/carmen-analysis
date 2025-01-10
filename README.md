@@ -158,6 +158,9 @@ Each plate of samples that you run in CARMEN must include the following 3 contro
   3. Positive control must contain the phrase ``"CPC"``. 
     * The ``"Combined Positive Control"`` contains a combined assay of synthetic targets corresponding to all viral assays tested in your CARMEN run. 
     * A positive signal for the CPC per viral assay is integral to validating the viral assay in your CARMEN run. 
+  4. Negative Viral Assay Control must contain the phrase ``no_crRNA``. 
+    * The ``no_crRNA`` control does not contain any viral crRNA assay and each sample should test negative against this assay.
+    * A negative signal for the ``no_crRNA`` control is integral to validating the sample tested in your CARMEN run.
 
 The assumption for the remainder of the CARMEN analysis is that any sample that does contain the phrases ``NTC``, ``NDC``, and ``CPC`` is considered a “patient or clinical sample”.
 
