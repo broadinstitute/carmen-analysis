@@ -89,7 +89,8 @@ class Qual_Ctrl_Checks:
                     
         else:
             # for the rows containing CPC, collect the (row name, column name) for cells that are negative
-            negative_cpc_dict = {}
+            negative_cpc_dict = {'error': 'issue'} 
+            """ 
             for row_name, row in cpc_rows.iterrows():
                 negative_cpc_assays = []
                 for col_name, cell_value in row.items():
@@ -97,9 +98,10 @@ class Qual_Ctrl_Checks:
                         negative_cpc_assays.append(col_name)
                 if negative_cpc_assays:
                     negative_cpc_dict[row_name] = negative_cpc_assays
+            """
             # create a df to store the results
             negative_cpc_df = pd.DataFrame({col: pd.Series(values) for col, values in negative_cpc_dict.items()})
-            
+           
         # return cpc_rvp_rows, cpc_p1_rows, cpc_p2_rows, negative_cpc_p1_assays, negative_cpc_p2_assays, p1_assays, p2_assays, rvp_assays, assays, cpc_rows, negative_cpc_df, negative_cpc_dict
         return negative_cpc_df
     
