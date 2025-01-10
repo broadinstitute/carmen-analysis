@@ -191,7 +191,7 @@ Launch a virtual environment **inside your cloned directory**. Follow the deline
 
 3. Run the following command from your terminal to **activate** the virtual environment by running the following command in your terminal: 
     * `macOS` or `Linux`: 
-        * ``conda activate``
+        * ``conda deactivate``
         * ``source ./carmen-env/bin/activate``
     * `Windows`: 
         * ``.\carmen-env\Scripts\Activate.ps1``
