@@ -138,6 +138,8 @@ You will need the following two files to complete the CARMEN analysis.
 ### (1) An .xlsx Assignment Sheet
 Go to [this Google Drive folder](https://drive.google.com/drive/folders/1iQsmyuwRtDyMgtT2YvgJ4yv_sGcJMhgv?usp=drive_link). Select the Assignment Sheet template  corresponding to the dimensions of the IFC chip you ran. Download the template as an ``.xlsx`` file.
 
+See the file labelled ``SAMPLE 192.24 Assignment Sheet.xlsx`` as an example of an assignment sheet which contains the required controls and panel-specific formating described below.
+
 Enter your samples in Sheet 1 and your assays Sheet 2 of the downloaded ``.xlsx`` template file. Do **NOT** edit the layout_assays and layout_samples tabs in the .xlsx template file provided. 
 
 Rename this file as follows: ``{IFC Barcode}_{Chip Dimension}_assignment.xlsx`` 
