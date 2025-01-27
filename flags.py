@@ -25,7 +25,7 @@ class Flagger:
                     for assay in QC_score_per_assay_df.columns: 
                         score = row._asdict().get(assay, None)
                         #score = getattr(row, assay)
-                        if score == 0: # CPC test has failed, the assay is invalid
+                        if score == 0 and 'no_crrna' not in assay.lower(): # CPC test has failed, the assay is invalid
                             invalid_assays.append(assay) # add to invalid assays list
             
             if invalid_assays: # if there are invalid assays
@@ -132,23 +132,21 @@ class Flagger:
             ## need to be added to t13_hit, t13_quant_norm, pos_samples_df, t13_hit_binary
             if i in {0,1,4}: # t13_hit, t13_quant_norm,t13_hit_binary
                
-                legend_rows = flagged_file.index[flagged_file.index.str.contains('Legend', na=False)].tolist()
+                summary_rows = flagged_file.index[flagged_file.index.str.contains('Summary', na=False)].tolist()
                 
-                legend_index = flagged_file.index.get_loc(legend_rows[0])
+                summary_index = flagged_file.index.get_loc(summary_rows[0])
                
-                df1 = flagged_file.iloc[:legend_index].copy()  # Everything before 'Legend'
-                df2 = flagged_file.iloc[legend_index:].copy()  # Everything from 'Legend' onward
-               
-                #df1 = flagged_file.iloc[:legend_index + 1].copy()  # Everything up to and including 'Summary'
-                #df2 = flagged_file.iloc[legend_index + 1:].copy()  # Everything after 'Summary' (not including 'Summary')
+                df1 = flagged_file.iloc[:summary_index].copy()  # Everything before 'Summary'
+                df2 = flagged_file.iloc[summary_index:].copy()  # Everything from 'Summary' onward (includes 'Summary')
 
+                ## treat df1
                 # make the Sample Valid column and the default val is Y
                 df1.insert(0, 'Sample Valid? Y/N','')
                 string_index = df1.index.to_series().astype(str)
 
-                # assign 'Y' only to indices ending with '_P1', '_P2', or '_RVP'
-                df1.loc[string_index.str.contains(r'_P1|_P2|_RVP'), 'Sample Valid? Y/N'] = 'Y'
-
+                # assign 'Y' only to samples
+                df1.loc[~string_index.str.contains(r'Assay Valid?'), 'Sample Valid? Y/N'] = 'Y'
+              
                 # assing 'N' to samples that have failed the no_crRNA check
                 fail_nocrRNA_check_df.columns = fail_nocrRNA_check_df.columns.str.upper() # upper all cols before iterating
                 
@@ -173,14 +171,32 @@ class Flagger:
                                     #    if not str(df1.at[index, col]).endswith('***'):
                                     #        df1.at[index, no_crrna_assay] = f'{df1.at[index, no_crrna_assay]}***'
                 
-                df2.columns = ['Sample Valid? Y/N'] + list(df2.columns[1:])
-                df2.insert(11, '', '')
-                flagged_file = pd.concat([df1, df2], axis=0, ignore_index= False)
+                ## treat df2 and make df3
+                df2_cols = df2.columns
+                df3_cols = ['Sample Valid? Y/N'] + list(df2_cols)
+                df3 = pd.DataFrame(index=['Summary'], columns=df3_cols)
+                # populate df3 using df2's Summary row
+                if 'Summary' in df2.index:
+                    summary_row = df2.loc['Summary']
+                    for df2_col in df2_cols:
+                        df3.at['Summary', df2_col] = summary_row[df2_col]
+                # make sure this value is blank 
+                df3.at['Summary', 'Sample Valid? Y/N'] = ''
+
+                # filter df2 to exclude rows containing 'Summary' and add a column at the end
+                df2_allElse = df2[~df2.index.str.contains('Summary', na=False)].copy()
+                df2_allElse.loc[:,"Sample Valid? Y/N"] = ' ' 
+                df2_allElse = df2_allElse.loc[:, ["Sample Valid? Y/N"] + [col for col in df2_allElse.columns if col != "Sample Valid? Y/N"]]
+                # add df3 and df2_allElse together
+                df3 = pd.concat((df3, df2_allElse), axis=0, ignore_index=False)
+
+                ## concatenate df1 and df2 to reform the flagged_file
+                flagged_file = pd.concat([df1, df3], axis=0, ignore_index= False)
 
                 # add legend at the bottom of the file
                 legend_added = False
                 for index, sample_row in flagged_file.iterrows():
-                    if '***' in sample_row['Sample Valid? Y/N']:
+                    if '***' in index: #if '***' in sample_row['Sample Valid? Y/N']:
                         label = 'This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.'
                         fail_nocrrna_legend_label = pd.DataFrame(data=[[label] + [pd.NA]*(len(flagged_file.columns) - 1)], columns=flagged_file.columns, index=["Legend for ***:"])
                         fail_nocrrna_legend_label_filled = fail_nocrrna_legend_label.fillna('')

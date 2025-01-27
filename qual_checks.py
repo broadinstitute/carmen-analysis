@@ -47,11 +47,13 @@ class Qual_Ctrl_Checks:
             negative_cpc_dict = {}
 
             for assay in assays:
-                if re.search(r'_RVP', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                # the CPC should always be negative for the no_crRNA assay
+                # so we are not adding the no_crRNA assay to the negative_cpc dict
+                if re.search(r'_RVP', assay) and 'no_crrna' not in assay.lower(): # divide assays in rvp, p1, and p2 assays based on label suffixes
                     rvp_assays.append(assay)
-                if re.search(r'_P1', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                if re.search(r'_P1', assay) and 'no_crrna' not in assay.lower(): # divide assays in rvp, p1, and p2 assays based on label suffixes
                     p1_assays.append(assay)
-                if re.search(r'_P2', assay): # divide assays in rvp, p1, and p2 assays based on label suffixes
+                if re.search(r'_P2', assay) and 'no_crrna' not in assay.lower(): # divide assays in rvp, p1, and p2 assays based on label suffixes
                     p2_assays.append(assay)
             
             negative_cpc_rvp_assays = []

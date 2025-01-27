@@ -239,6 +239,7 @@ for i in range(len(ntc_thresholds_output.index)):
         rounded_ntc_thresholds_output.iloc[i, j] = round(ntc_thresholds_output.iloc[i, j], decimals)
 # save the NTC thresholds to a csv after flags are added below in Flagger()
 
+
 # make copies of t13_hit_output csv for downstream summaries and quality control checks
 t13_hit_output_copy1 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in ndc qual check
 t13_hit_output_copy2 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_hit_output # used in cpc qual check
@@ -260,9 +261,12 @@ for i in range(len(t13_quant_norm.index)):
     for j in range(len(t13_quant_norm.columns)):
         # Round each value to the specified number of decimals
         rounded_t13_quant_norm.iloc[i, j] = round(t13_quant_norm.iloc[i, j], decimals)
+
+# append the totals row from summary_samples_df to the bottom of rounded_t13_quant_norm
+sum_row = t13_hit_output.loc[['Summary']]
+rounded_t13_quant_norm = pd.concat((rounded_t13_quant_norm, sum_row), ignore_index=False)
+
 # save the rounded_t13_quant_norm as NTC_Quant_Results_Summary after flags are added below in Flagger()
-
-
 
 ######################################################################################################################################################
 # instantiate Binary_Converter from binary_results.py
@@ -274,6 +278,7 @@ t13_hit_binary_output = binary_num_converter.hit_numeric_conv(t13_hit_output_cop
 # make copies of t13_hit_binary_output for downstream utilization in coinf check and assay level eval
 t13_hit_binary_output_copy1 = pd.DataFrame(t13_hit_binary_output).copy() # used in coninf check
 t13_hit_binary_output_copy2 = pd.DataFrame(t13_hit_binary_output).copy() 
+ 
 
 ######################################################################################################################################################
 # instantiate Summarized from summary.py
@@ -281,7 +286,7 @@ summary = Summarized()
 # apply summarizer to the t13_dataframe to produce a new dataframe tabulating all of the positive samples
 summary_samples_df = summary.summarizer(t13_hit_output)
 # save summary_samples_df as Positives Summary after flags are added in Flagger() below
- 
+
 ######################################################################################################################################################
 # instantiate Assay_QC_Score
 assayScorer = Assay_QC_Score()
@@ -769,4 +774,6 @@ heatmap_t13_quant_norm = t13_heatmap_generator.t13_plt_heatmap(tgap, barcode_ass
 heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_Heatmap_{barcode_assignment}.png')
 fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
 plt.close(fig)
+
+print("Operation complete.")
 
