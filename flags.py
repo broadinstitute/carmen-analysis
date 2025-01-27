@@ -265,4 +265,4 @@ class Flagger:
 
             flagged_files.append(flagged_file) # add flagged file to the list          
 
-        return df1, df3, df2_allElse, df2, invalid_assays, invalid_samples, flagged_files
+        return invalid_assays, invalid_samples, flagged_files
