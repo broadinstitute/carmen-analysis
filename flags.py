@@ -185,7 +185,8 @@ class Flagger:
 
                 # filter df2 to exclude rows containing 'Summary' and add a column at the end
                 df2_allElse = df2[~df2.index.str.contains('Summary', na=False)].copy()
-                df2_allElse.loc[:, ""] = " " # add an unnamed empty column at the very end
+                #df2_allElse.loc[:, ""] = " " 
+                df2_allElse.insert(len(df2_allElse.columns), "", " ") # add an unnamed empty column at the very end
                 df2_allElse.columns = ['Sample Valid? Y/N'] + list(df2_allElse.columns[:-1]) # rename the existing columns
 
                 # add df3 and df2_allElse together
