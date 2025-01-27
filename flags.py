@@ -198,7 +198,7 @@ class Flagger:
                 # add legend at the bottom of the file
                 legend_added = False
                 for index, sample_row in flagged_file.iterrows():
-                    if '***' in index: #if '***' in sample_row['Sample Valid? Y/N']:
+                    if '***' in sample_row['Sample Valid? Y/N']:
                         label = 'This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.'
                         fail_nocrrna_legend_label = pd.DataFrame(data=[[label] + [pd.NA]*(len(flagged_file.columns) - 1)], columns=flagged_file.columns, index=["Legend for ***:"])
                         fail_nocrrna_legend_label_filled = fail_nocrrna_legend_label.fillna('')
