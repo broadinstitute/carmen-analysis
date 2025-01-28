@@ -49,7 +49,7 @@ import xlsxwriter
 
 ######################################################################################################################################################
 # assign software version
-software_version = '4.4.1'
+software_version = '4.4.2'
 
 ######################################################################################################################################################
 # data loading
@@ -332,249 +332,504 @@ style.fontSize = 12
 
 content = []
 
-## (1) NDC CHECK
 
-# apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
-ndc_positives_df = qual_checks.ndc_check(t13_hit_output_copy1)
+### BUILD QC Excel file
+# Set up QC sheet names
+QC_sheet_names = [
+    "Positive NDC Samples",
+    "Negative CPC Samples",
+    "Negative RNaseP Samples",
+    "Positive NTC Samples",
+    "Potentially Co-infected Samples", 
+    "Invalid Samples"
+]
 
-# define file path for csv
-ndc_positives_df_file_path = os.path.join(npc_subfolder, f'NDC_Check_{barcode_assignment}.csv')
+qc_output_file_path = os.path.join(npc_subfolder, f"QC_{barcode_assignment}.xlsx") #
 
-# When converting the ndc_positives df into a CSV, check if ndc_positives_df is empty and, if so, modify the CSV produced 
-if ndc_positives_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all NDC samples test negative."]})
-    empty_message_df.to_csv(ndc_positives_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {ndc_positives_df_file_path}")
-else:
-    # If ndc_positives_df is not empty, save the DataFrame as is
-    ndc_positives_df.to_csv(ndc_positives_df_file_path, index=True)
-    print(f"CSV created with data at {ndc_positives_df_file_path}")
+try:
+    with pd.ExcelWriter(qc_output_file_path, engine="xlsxwriter") as writer:
 
-# Add NDC Check Header and Paragraphs
-content.append(Paragraph("1. Evaluation of No Detect Control (NDC) Contamination", header_style))
-content.append(Spacer(1, 0.2 * inch))
+        ### (1) NDC CHECK
 
-if not ndc_positives_df.empty:
-    text_content = [
-        f"Please consult NDC_Check_{barcode_assignment}.csv to see the initial evaluation of the NDC negative controls tested in this experiment. In this file, assays are flagged for which the NDC samples have tested positive, after being thresholded against the assay-specific NTC mean.",
-        "If any of the NDC samples show a positive result for any assay, then that assay should be evaluated for contamination with nucleases likely at the sample mastermix preparation step in the experimental workflow. However, other sources for NDC contamination may exist.\n",
-        "Please be advised to check the output files as well."
-    ]
-else:
-    text_content = [
-        "Since none of the NDCs ran in this experiment appear positive, there is likely no NDC contamination.",
-        "Please check the output files as well."
-    ]
+        # apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
+        ndc_positives_df = qual_checks.ndc_check(t13_hit_output_copy1)
 
-for line in text_content:
-    content.append(Paragraph(line, style))
-    content.append(Spacer(1, 0.1 * inch))
+        # When converting the ndc_positives df into a CSV, check if ndc_positives_df is empty and, if so, modify the CSV produced 
+        if ndc_positives_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all NDC samples test negative."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[0], index=False)
+            print(f"File generated with message in {QC_sheet_names[0]} at {qc_output_file_path}")
+        else:
+            # If ndc_positives_df is not empty, save the DataFrame as is
+            ndc_positives_df.to_excel(writer, sheet_name=QC_sheet_names[0], index=True)
+            print(f"File generated with data in {QC_sheet_names[0]} at {qc_output_file_path}")
 
-## (2) CPC Check
-
-## apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
-cpc_negatives_df = qual_checks.cpc_check(t13_hit_output_copy2)
-
-# define file path for csv
-cpc_negatives_df_file_path = os.path.join(npc_subfolder, f'CPC_Check_{barcode_assignment}.csv')
-
-# When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
-if cpc_negatives_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all CPC samples test positive."]})
-    empty_message_df.to_csv(cpc_negatives_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {cpc_negatives_df_file_path}")
-else:
-    # If cpc_negatives_df is not empty, save the DataFrame as is
-    cpc_negatives_df.to_csv(cpc_negatives_df_file_path, index=True)
-    print(f"CSV created with data at {cpc_negatives_df_file_path}")
-
-
-# Add CPC Check Header and Paragraphs
-content.append(Paragraph("2. Evaluation of Combined Positive Control (CPC) Validity", header_style))
-content.append(Spacer(1, 0.2 * inch))
-
-if not cpc_negatives_df.empty:
-    text_content = [
-        f"Please consult CPC_Check_{barcode_assignment}.csv to see the initial evaluation of the CPC positive controls tested in this experiment. In this file, assays are flagged for which the CPC samples have tested negative, after being thresholded against the assay-specific NTC mean.",
-        "If any of the CPC samples show a negative result for any assay excluding the 'no-crRNA' negative control assay, then that assay should be considered invalid for this experiment.",
-        "Please be advised to check the output files as well."
-    ]
-else:
-    text_content = [
-        "Warning: First verify that your experiment included a CPC sample. If yes, proceed to the following CPC analysis.",
-        "After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. However, it is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.",
-        "Please be advised to check the output files as well."
-    ]
-
-for line in text_content:
-    content.append(Paragraph(line, style))
-    content.append(Spacer(1, 0.1 * inch))
-
-
-## (3) RNaseP Check
-
-## apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
-rnasep_df = qual_checks.rnasep_check(t13_hit_output_copy3)
-rnasep_df_heatmap = rnasep_df.copy()
-
-# define file path for csv
-rnasep_df_file_path = os.path.join(npc_subfolder, f'RNaseP_Check_{barcode_assignment}.csv')
-
-# When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
-if rnasep_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all RNaseP samples test positive."]})
-    empty_message_df.to_csv(rnasep_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {rnasep_df_file_path}")
-else:
-    # If cpc_negatives_df is not empty, save the DataFrame as is
-    rnasep_df.to_csv(rnasep_df_file_path, index=True)
-    print(f"CSV created with data at {rnasep_df_file_path}")
-
-# Add RNaseP Check Header and Paragraphs
-content.append(Paragraph("3. Evaluation of Human Samples for the Internal Control (RNaseP)", header_style))
-content.append(Spacer(1, 0.2 * inch))
-
-if not rnasep_df.empty:
-    text_content = [
-        "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
-        f"Please consult RNaseP_Check_{barcode_assignment}.csv to see which samples are negative for the RNaseP assay(s). In this file, the samples that appear negative for the RNaseP assays have been flagged after thresholding against the NTC. The negative controls (NTC and NDC) are expected to be negative for the RNaseP assay and should be listed here (if you have included them in this experiment). All other samples should be evaluated for being negative for the RNaseP assay.",
     
-        "Possible reasons for a sample testing negative for the RNaseP assay:",
-        "(A) If the sample is negative for all assays (including RNaseP), then the most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.",
-        "** Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.",
+        # Add NDC Check Header and Paragraphs
+        content.append(Paragraph("1. Evaluation of No Detect Control (NDC) Contamination", header_style))
+        content.append(Spacer(1, 0.2 * inch))
+
+        if not ndc_positives_df.empty:
+            text_content = [
+                f"Please consult NDC_Check_{barcode_assignment}.csv to see the initial evaluation of the NDC negative controls tested in this experiment. In this file, assays are flagged for which the NDC samples have tested positive, after being thresholded against the assay-specific NTC mean.",
+                "If any of the NDC samples show a positive result for any assay, then that assay should be evaluated for contamination with nucleases likely at the sample mastermix preparation step in the experimental workflow. However, other sources for NDC contamination may exist.\n",
+                "Please be advised to check the output files as well."
+            ]
+        else:
+            text_content = [
+                "Since none of the NDCs ran in this experiment appear positive, there is likely no NDC contamination.",
+                "Please check the output files as well."
+            ]
+
+        for line in text_content:
+            content.append(Paragraph(line, style))
+            content.append(Spacer(1, 0.1 * inch))
+
+        ### (2) CPC Check
+
+        ## apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
+        cpc_negatives_df = qual_checks.cpc_check(t13_hit_output_copy2)
+
+        # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
+        if cpc_negatives_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all CPC samples test positive."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[1], index=False)
+            print(f"File generated with message in {QC_sheet_names[1]} at {qc_output_file_path}")
+        else:
+            # If cpc_negatives_df is not empty, save the DataFrame as is
+            cpc_negatives_df.to_excel(writer, sheet_name=QC_sheet_names[1], index=True)
+            print(f"File generated with data in {QC_sheet_names[1]} at {qc_output_file_path}")
+
+
+        # Add CPC Check Header and Paragraphs
+        content.append(Paragraph("2. Evaluation of Combined Positive Control (CPC) Validity", header_style))
+        content.append(Spacer(1, 0.2 * inch))
+
+        if not cpc_negatives_df.empty:
+            text_content = [
+                f"Please consult CPC_Check_{barcode_assignment}.csv to see the initial evaluation of the CPC positive controls tested in this experiment. In this file, assays are flagged for which the CPC samples have tested negative, after being thresholded against the assay-specific NTC mean.",
+                "If any of the CPC samples show a negative result for any assay excluding the 'no-crRNA' negative control assay, then that assay should be considered invalid for this experiment.",
+                "Please be advised to check the output files as well."
+            ]
+        else:
+            text_content = [
+                "Warning: First verify that your experiment included a CPC sample. If yes, proceed to the following CPC analysis.",
+                "After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. However, it is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.",
+                "Please be advised to check the output files as well."
+            ]
+
+        for line in text_content:
+            content.append(Paragraph(line, style))
+            content.append(Spacer(1, 0.1 * inch))
+
+
+        ### (3) RNaseP Check
+
+        ## apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
+        rnasep_df = qual_checks.rnasep_check(t13_hit_output_copy3)
+        rnasep_df_heatmap = rnasep_df.copy()
+
+        # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
+        if rnasep_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all RNaseP samples test positive."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[2], index=False)
+            print(f"File generated with message in {QC_sheet_names[2]} at {qc_output_file_path}")
+        else:
+            # If cpc_negatives_df is not empty, save the DataFrame as is
+            rnasep_df.to_excel(writer, sheet_name=QC_sheet_names[2], index=True)
+            print(f"File generated with data in {QC_sheet_names[2]} at {qc_output_file_path}")
+
+        # Add RNaseP Check Header and Paragraphs
+        content.append(Paragraph("3. Evaluation of Human Samples for the Internal Control (RNaseP)", header_style))
+        content.append(Spacer(1, 0.2 * inch))
         
-        "(B) If the sample is negative for RNaseP BUT positive for any other viral crRNA assay (excluding RNaseP or no-crRNA), then the most plausible hypothesis is that the sample’s viral titer may be too high compared to its RNaseP titer. This, thereby, renders the system possibly unable to detect RNaseP, leading to the sample testing negative for RNaseP.",
-        "** Note: If the sample is negative for RNaseP but positive for any other viral crRNA assay (excluding RNaseP or no-crRNA) tested in this experiment, the sample can still be included in the final results.",
+        if not rnasep_df.empty:
+            text_content = [
+                "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
+                f"Please consult RNaseP_Check_{barcode_assignment}.csv to see which samples are negative for the RNaseP assay(s). In this file, the samples that appear negative for the RNaseP assays have been flagged after thresholding against the NTC. The negative controls (NTC and NDC) are expected to be negative for the RNaseP assay and should be listed here (if you have included them in this experiment). All other samples should be evaluated for being negative for the RNaseP assay.",
+            
+                "Possible reasons for a sample testing negative for the RNaseP assay:",
+                "(A) If the sample is negative for all assays (including RNaseP), then the most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.",
+                "** Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.",
+                
+                "(B) If the sample is negative for RNaseP BUT positive for any other viral crRNA assay (excluding RNaseP or no-crRNA), then the most plausible hypothesis is that the sample’s viral titer may be too high compared to its RNaseP titer. This, thereby, renders the system possibly unable to detect RNaseP, leading to the sample testing negative for RNaseP.",
+                "** Note: If the sample is negative for RNaseP but positive for any other viral crRNA assay (excluding RNaseP or no-crRNA) tested in this experiment, the sample can still be included in the final results.",
 
-        "(C) The source sample may have insufficient material, leading to a negative RNaseP signal and an invalid sample result.",
+                "(C) The source sample may have insufficient material, leading to a negative RNaseP signal and an invalid sample result.",
 
-        "Please be advised to check the output files as well."
+                "Please be advised to check the output files as well."
 
-    ]
-else:
-    text_content = [
-        "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
-        "All samples (including negative controls) have tested positive for the RNaseP assay(s) tested in this experiment. However, the assay(s) for RNaseP internal control should test negative for the NTC and NDC negative control.",
-        "There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.",
-        "Please be advised to check the output files as well."
-    ]
+            ]
+        else:
+            text_content = [
+                "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
+                "All samples (including negative controls) have tested positive for the RNaseP assay(s) tested in this experiment. However, the assay(s) for RNaseP internal control should test negative for the NTC and NDC negative control.",
+                "There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.",
+                "Please be advised to check the output files as well."
+            ]
 
-for line in text_content:
-    content.append(Paragraph(line, style))
-    content.append(Spacer(1, 0.1 * inch))
+        for line in text_content:
+            content.append(Paragraph(line, style))
+            content.append(Spacer(1, 0.1 * inch))
 
-## (4) NTC Check
+        ### (4) NTC Check
 
-## apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
-assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
-high_raw_ntc_signal_df = qual_checks.ntc_check(assigned_signal_norm_2)
+        ## apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
+        assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
+        high_raw_ntc_signal_df = qual_checks.ntc_check(assigned_signal_norm_2)
 
-# define file path for csv
-high_raw_ntc_signal_df_file_path = os.path.join(npc_subfolder, f'NTC_Contamination_Check_{barcode_assignment}.csv')
-
-# When converting the high_raw_ntc_signal_df into a CSV, check if high_raw_ntc_signal_df is empty and, if so, modify the CSV produced 
-if high_raw_ntc_signal_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no NTC samples which appear as contaminated."]})
-    empty_message_df.to_csv(high_raw_ntc_signal_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {high_raw_ntc_signal_df_file_path}")
-else:
-    # If cpc_negatives_df is not empty, save the DataFrame as is
-    high_raw_ntc_signal_df.to_csv(high_raw_ntc_signal_df_file_path, index=True)
-    print(f"CSV created with data at {high_raw_ntc_signal_df_file_path}")
-
-
-# Add NTC Check Header and Paragraphs
-content.append(Paragraph("4. Evaluation of No Target Control (NTC) Contamination", header_style))
-content.append(Spacer(1, 0.2 * inch))
-
-if not high_raw_ntc_signal_df.empty:
-    text_content = [
-        f"Please consult NTC_Contamination_Check_{barcode_assignment}.csv to see which NTC samples may be potentially contaminated.",
-        "This file contains a list of samples that have a raw fluorescence signal above 0.5 a.u. These samples are being flagged for having a higher than normal signal for an NTC sample. The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u.",
-        "Please be advised to check the output files to further evaluate potential NTC contamination."
-    ]
-else:
-    text_content = [
-        "The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.5 a.u. Risk of NTC contamination is low.",
-        "Please be advised to check the output files as well."
-    ]
-    
-for line in text_content:
-    content.append(Paragraph(line, style))
-    content.append(Spacer(1, 0.1 * inch))
+        # When converting the high_raw_ntc_signal_df into a CSV, check if high_raw_ntc_signal_df is empty and, if so, modify the CSV produced 
+        if high_raw_ntc_signal_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no NTC samples which appear as contaminated."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[3], index=False)
+            print(f"File generated with message in {QC_sheet_names[3]} at {qc_output_file_path}")
+        else:
+            # If cpc_negatives_df is not empty, save the DataFrame as is
+            high_raw_ntc_signal_df.to_excel(writer, sheet_name=QC_sheet_names[3], index=True)
+            print(f"File generated with data in {QC_sheet_names[3]} at {qc_output_file_path}")
 
 
-## (5) Co-Infection Check
+        # Add NTC Check Header and Paragraphs
+        content.append(Paragraph("4. Evaluation of No Target Control (NTC) Contamination", header_style))
+        content.append(Spacer(1, 0.2 * inch))
 
-## apply coinfection check to t13_hit_binary_output to generate list of all samples that are positive for multiple assays
-coinfection_df = qual_checks.coinf_check(t13_hit_binary_output_copy1)
+        if not high_raw_ntc_signal_df.empty:
+            text_content = [
+                f"Please consult NTC_Contamination_Check_{barcode_assignment}.csv to see which NTC samples may be potentially contaminated.",
+                "This file contains a list of samples that have a raw fluorescence signal above 0.5 a.u. These samples are being flagged for having a higher than normal signal for an NTC sample. The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u.",
+                "Please be advised to check the output files to further evaluate potential NTC contamination."
+            ]
+        else:
+            text_content = [
+                "The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.5 a.u. Risk of NTC contamination is low.",
+                "Please be advised to check the output files as well."
+            ]
+            
+        for line in text_content:
+            content.append(Paragraph(line, style))
+            content.append(Spacer(1, 0.1 * inch))
 
-# define file path for csv
-coinfection_df_file_path = os.path.join(npc_subfolder, f'Coinfection_Check_{barcode_assignment}.csv')
 
-# When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
-if coinfection_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no samples which appear as potentially co-infected."]})
-    empty_message_df.to_csv(coinfection_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {coinfection_df_file_path}")
-else:
-    # If coinfection_df is not empty, save the DataFrame as is
-    coinfection_df.to_csv(coinfection_df_file_path, index=True)
-    print(f"CSV created with data at {coinfection_df_file_path}")
+        ### (5) Co-Infection Check
 
-# Add NTC Check Header and Paragraphs
-content.append(Paragraph("5. Evaluation of Potential Co-Infected Samples", header_style))
-content.append(Spacer(1, 0.2 * inch))
+        ## apply coinfection check to t13_hit_binary_output to generate list of all samples that are positive for multiple assays
+        coinfection_df = qual_checks.coinf_check(t13_hit_binary_output_copy1)
 
-if not coinfection_df.empty:
-    text_content = [
-       f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.",
-        "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
-        "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
-        "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
-        "   (C) All other flagged samples should be further evaluated for potential co-infection.",
-        "Please be advised to check the output files to further evaluate potential co-infection."
-    ]
-else:
-    text_content = [
+        # define file path for csv
+        coinfection_df_file_path = os.path.join(npc_subfolder, f'Coinfection_Check_{barcode_assignment}.csv')
+
+        # When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
+        if coinfection_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no samples which appear as potentially co-infected."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[4], index=False)
+            print(f"File generated with message in {QC_sheet_names[4]} at {qc_output_file_path}")
+        else:
+            # If coinfection_df is not empty, save the DataFrame as is
+            coinfection_df.to_excel(writer, sheet_name=QC_sheet_names[4], index=True)
+            print(f"File generated with data in {QC_sheet_names[4]} at {qc_output_file_path}")
+
+        # Add NTC Check Header and Paragraphs
+        content.append(Paragraph("5. Evaluation of Potential Co-Infected Samples", header_style))
+        content.append(Spacer(1, 0.2 * inch))
+
+        if not coinfection_df.empty:
+            text_content = [
+            f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.",
+                "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
+                "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
+                "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
+                "   (C) All other flagged samples should be further evaluated for potential co-infection.",
+                "Please be advised to check the output files to further evaluate potential co-infection."
+            ]
+        else:
+            text_content = [
+                f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.",
+                "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
+                "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
+                "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
+                "   (C) All other flagged samples should be further evaluated for potential co-infection.",
+                "Please be advised to check the output files to further evaluate potential co-infection."    
+            ]
+            
+        for line in text_content:
+            content.append(Paragraph(line, style))
+            content.append(Spacer(1, 0.1 * inch))
+
+        # Build the PDF with the collected Flowables
+        doc.build(content)
+
+        ## (6) No-crRNA Assay Check 
+
+        ## apply no_crrna check to t13_hit_binary_output to generate list of all samples that are positive for the no-crRNA assay(s)
+        fail_nocrRNA_check_df = qual_checks.no_crrna_check(t13_hit_binary_output_copy1)
+
+        # define file path for csv
+        fail_nocrRNA_check_df_file_path = os.path.join(npc_subfolder, f'No_crRNA_Assay_Check_{barcode_assignment}.csv')
+
+        # When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
+        if fail_nocrRNA_check_df.empty:
+            # If empty, create a DataFrame with the custom message and save it to CSV
+            empty_message_df = pd.DataFrame({"Message": ["All samples have tested against the no-crRNA assay. Thus, there are no samples which must be invalidated."]})
+            empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[5], index=False)
+            print(f"File generated with message in {QC_sheet_names[5]} at {qc_output_file_path}")
+        else:
+            # If coinfection_df is not empty, save the DataFrame as is
+            fail_nocrRNA_check_df.to_excel(writer, sheet_name=QC_sheet_names[5], index=True)
+            print(f"File generated with data in {QC_sheet_names[5]} at {qc_output_file_path}")
+
+except Exception as e:
+    print(f'Error with QC Excel file generation: {e}. Results are saved as 5 individual csv files.')
+
+    ## (1) NDC CHECK
+
+    # apply ndc_check to the t13_hit_output df to generate a list of all ndc positive assays
+    ndc_positives_df = qual_checks.ndc_check(t13_hit_output_copy1)
+
+    # define file path for csv
+    ndc_positives_df_file_path = os.path.join(npc_subfolder, f'NDC_Check_{barcode_assignment}.csv')
+
+    # When converting the ndc_positives df into a CSV, check if ndc_positives_df is empty and, if so, modify the CSV produced 
+    if ndc_positives_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all NDC samples test negative."]})
+        empty_message_df.to_csv(ndc_positives_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {ndc_positives_df_file_path}")
+    else:
+        # If ndc_positives_df is not empty, save the DataFrame as is
+        ndc_positives_df.to_csv(ndc_positives_df_file_path, index=True)
+        print(f"CSV created with data at {ndc_positives_df_file_path}")
+
+    # Add NDC Check Header and Paragraphs
+    content.append(Paragraph("1. Evaluation of No Detect Control (NDC) Contamination", header_style))
+    content.append(Spacer(1, 0.2 * inch))
+
+    if not ndc_positives_df.empty:
+        text_content = [
+            f"Please consult NDC_Check_{barcode_assignment}.csv to see the initial evaluation of the NDC negative controls tested in this experiment. In this file, assays are flagged for which the NDC samples have tested positive, after being thresholded against the assay-specific NTC mean.",
+            "If any of the NDC samples show a positive result for any assay, then that assay should be evaluated for contamination with nucleases likely at the sample mastermix preparation step in the experimental workflow. However, other sources for NDC contamination may exist.\n",
+            "Please be advised to check the output files as well."
+        ]
+    else:
+        text_content = [
+            "Since none of the NDCs ran in this experiment appear positive, there is likely no NDC contamination.",
+            "Please check the output files as well."
+        ]
+
+    for line in text_content:
+        content.append(Paragraph(line, style))
+        content.append(Spacer(1, 0.1 * inch))
+
+    ## (2) CPC Check
+
+    ## apply cpc_check to the t13_hit_output df to generate a list of all cpc negative assays
+    cpc_negatives_df = qual_checks.cpc_check(t13_hit_output_copy2)
+
+    # define file path for csv
+    cpc_negatives_df_file_path = os.path.join(npc_subfolder, f'CPC_Check_{barcode_assignment}.csv')
+
+    # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
+    if cpc_negatives_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all CPC samples test positive."]})
+        empty_message_df.to_csv(cpc_negatives_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {cpc_negatives_df_file_path}")
+    else:
+        # If cpc_negatives_df is not empty, save the DataFrame as is
+        cpc_negatives_df.to_csv(cpc_negatives_df_file_path, index=True)
+        print(f"CSV created with data at {cpc_negatives_df_file_path}")
+
+
+    # Add CPC Check Header and Paragraphs
+    content.append(Paragraph("2. Evaluation of Combined Positive Control (CPC) Validity", header_style))
+    content.append(Spacer(1, 0.2 * inch))
+
+    if not cpc_negatives_df.empty:
+        text_content = [
+            f"Please consult CPC_Check_{barcode_assignment}.csv to see the initial evaluation of the CPC positive controls tested in this experiment. In this file, assays are flagged for which the CPC samples have tested negative, after being thresholded against the assay-specific NTC mean.",
+            "If any of the CPC samples show a negative result for any assay excluding the 'no-crRNA' negative control assay, then that assay should be considered invalid for this experiment.",
+            "Please be advised to check the output files as well."
+        ]
+    else:
+        text_content = [
+            "Warning: First verify that your experiment included a CPC sample. If yes, proceed to the following CPC analysis.",
+            "After thresholding against the NTC, the CPC(s) appears as positive for all crRNA assays tested. However, it is expected for the CPC(s) to test as negative for 'no-crRNA' assay. There may be possible contamination of the 'no-crRNA' assay.",
+            "Please be advised to check the output files as well."
+        ]
+
+    for line in text_content:
+        content.append(Paragraph(line, style))
+        content.append(Spacer(1, 0.1 * inch))
+
+
+    ## (3) RNaseP Check
+
+    ## apply rnasep_check to the t13_hit_output df to generate a list of all rnasep negative samples
+    rnasep_df = qual_checks.rnasep_check(t13_hit_output_copy3)
+    rnasep_df_heatmap = rnasep_df.copy()
+
+    # define file path for csv
+    rnasep_df_file_path = os.path.join(npc_subfolder, f'RNaseP_Check_{barcode_assignment}.csv')
+
+    # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
+    if rnasep_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all RNaseP samples test positive."]})
+        empty_message_df.to_csv(rnasep_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {rnasep_df_file_path}")
+    else:
+        # If cpc_negatives_df is not empty, save the DataFrame as is
+        rnasep_df.to_csv(rnasep_df_file_path, index=True)
+        print(f"CSV created with data at {rnasep_df_file_path}")
+
+    # Add RNaseP Check Header and Paragraphs
+    content.append(Paragraph("3. Evaluation of Human Samples for the Internal Control (RNaseP)", header_style))
+    content.append(Spacer(1, 0.2 * inch))
+
+    if not rnasep_df.empty:
+        text_content = [
+            "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
+            f"Please consult RNaseP_Check_{barcode_assignment}.csv to see which samples are negative for the RNaseP assay(s). In this file, the samples that appear negative for the RNaseP assays have been flagged after thresholding against the NTC. The negative controls (NTC and NDC) are expected to be negative for the RNaseP assay and should be listed here (if you have included them in this experiment). All other samples should be evaluated for being negative for the RNaseP assay.",
+        
+            "Possible reasons for a sample testing negative for the RNaseP assay:",
+            "(A) If the sample is negative for all assays (including RNaseP), then the most plausible hypothesis is that the viral extraction protocol used in this experiment needs to be examined. For optimal results, the extraction must be compatible with the Standard Operating Procedure (SOP) advised by the CARMEN team in the Sabeti Lab.",
+            "** Note: If the sample is negative for RNaseP and ALL other crRNA assays tested in this experiment, the sample should be rendered invalid.",
+            
+            "(B) If the sample is negative for RNaseP BUT positive for any other viral crRNA assay (excluding RNaseP or no-crRNA), then the most plausible hypothesis is that the sample’s viral titer may be too high compared to its RNaseP titer. This, thereby, renders the system possibly unable to detect RNaseP, leading to the sample testing negative for RNaseP.",
+            "** Note: If the sample is negative for RNaseP but positive for any other viral crRNA assay (excluding RNaseP or no-crRNA) tested in this experiment, the sample can still be included in the final results.",
+
+            "(C) The source sample may have insufficient material, leading to a negative RNaseP signal and an invalid sample result.",
+
+            "Please be advised to check the output files as well."
+
+        ]
+    else:
+        text_content = [
+            "Warning: First verify that your experiment included a RNaseP assay. If yes, proceed to the following RNaseP analysis.",
+            "All samples (including negative controls) have tested positive for the RNaseP assay(s) tested in this experiment. However, the assay(s) for RNaseP internal control should test negative for the NTC and NDC negative control.",
+            "There are a few different reasons that all samples test positive for RNaseP. The most plausible hypothesis is that there is RNaseP contamination in this experiment. Precaution is advised to mitigate contamination avenues, especially at the RT-PCR (nucleic acid amplification) stage.",
+            "Please be advised to check the output files as well."
+        ]
+
+    for line in text_content:
+        content.append(Paragraph(line, style))
+        content.append(Spacer(1, 0.1 * inch))
+
+    ## (4) NTC Check
+
+    ## apply ntc_check to the t13_hit_output df to generate a list of all ntc positive assays
+    assigned_signal_norm_2 = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
+    high_raw_ntc_signal_df = qual_checks.ntc_check(assigned_signal_norm_2)
+
+    # define file path for csv
+    high_raw_ntc_signal_df_file_path = os.path.join(npc_subfolder, f'NTC_Contamination_Check_{barcode_assignment}.csv')
+
+    # When converting the high_raw_ntc_signal_df into a CSV, check if high_raw_ntc_signal_df is empty and, if so, modify the CSV produced 
+    if high_raw_ntc_signal_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no NTC samples which appear as contaminated."]})
+        empty_message_df.to_csv(high_raw_ntc_signal_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {high_raw_ntc_signal_df_file_path}")
+    else:
+        # If cpc_negatives_df is not empty, save the DataFrame as is
+        high_raw_ntc_signal_df.to_csv(high_raw_ntc_signal_df_file_path, index=True)
+        print(f"CSV created with data at {high_raw_ntc_signal_df_file_path}")
+
+
+    # Add NTC Check Header and Paragraphs
+    content.append(Paragraph("4. Evaluation of No Target Control (NTC) Contamination", header_style))
+    content.append(Spacer(1, 0.2 * inch))
+
+    if not high_raw_ntc_signal_df.empty:
+        text_content = [
+            f"Please consult NTC_Contamination_Check_{barcode_assignment}.csv to see which NTC samples may be potentially contaminated.",
+            "This file contains a list of samples that have a raw fluorescence signal above 0.5 a.u. These samples are being flagged for having a higher than normal signal for an NTC sample. The range for typical raw fluorescence signal for an NTC sample is between 0.1 and 0.5 a.u.",
+            "Please be advised to check the output files to further evaluate potential NTC contamination."
+        ]
+    else:
+        text_content = [
+            "The raw fluorescence signal for each NTC sample across all crRNA assays tested in this experiment appears to be within the normal range of 0.1 and 0.5 a.u. Risk of NTC contamination is low.",
+            "Please be advised to check the output files as well."
+        ]
+        
+    for line in text_content:
+        content.append(Paragraph(line, style))
+        content.append(Spacer(1, 0.1 * inch))
+
+
+    ## (5) Co-Infection Check
+
+    ## apply coinfection check to t13_hit_binary_output to generate list of all samples that are positive for multiple assays
+    coinfection_df = qual_checks.coinf_check(t13_hit_binary_output_copy1)
+
+    # define file path for csv
+    coinfection_df_file_path = os.path.join(npc_subfolder, f'Coinfection_Check_{barcode_assignment}.csv')
+
+    # When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
+    if coinfection_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, there are no samples which appear as potentially co-infected."]})
+        empty_message_df.to_csv(coinfection_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {coinfection_df_file_path}")
+    else:
+        # If coinfection_df is not empty, save the DataFrame as is
+        coinfection_df.to_csv(coinfection_df_file_path, index=True)
+        print(f"CSV created with data at {coinfection_df_file_path}")
+
+    # Add NTC Check Header and Paragraphs
+    content.append(Paragraph("5. Evaluation of Potential Co-Infected Samples", header_style))
+    content.append(Spacer(1, 0.2 * inch))
+
+    if not coinfection_df.empty:
+        text_content = [
         f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.",
-        "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
-        "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
-        "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
-        "   (C) All other flagged samples should be further evaluated for potential co-infection.",
-        "Please be advised to check the output files to further evaluate potential co-infection."    
-    ]
-    
-for line in text_content:
-    content.append(Paragraph(line, style))
-    content.append(Spacer(1, 0.1 * inch))
+            "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
+            "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
+            "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
+            "   (C) All other flagged samples should be further evaluated for potential co-infection.",
+            "Please be advised to check the output files to further evaluate potential co-infection."
+        ]
+    else:
+        text_content = [
+            f"Please consult Codetection_Check_{barcode_assignment}.csv to see which samples may be potentially co-infected.",
+            "A preliminary evaluation for co-infection of a given sample against all tested assays has been completed:",
+            "   (A) If you have included Combined Positive Controls (CPCs) in this experiment, as recommended, these positive controls should be identified and listed among the flagged samples. CPCs are expected to show a “co-detection” with ALL of the assays being tested in this experiment.",
+            "   (B) Samples are not flagged as “co-detected” based on positivity with RNaseP and a second assay. For a sample to be flagged during this Co-detection Check, it must test positive for at least two assays, excluding RNaseP.",
+            "   (C) All other flagged samples should be further evaluated for potential co-infection.",
+            "Please be advised to check the output files to further evaluate potential co-infection."    
+        ]
+        
+    for line in text_content:
+        content.append(Paragraph(line, style))
+        content.append(Spacer(1, 0.1 * inch))
 
-# Build the PDF with the collected Flowables
-doc.build(content)
+    # Build the PDF with the collected Flowables
+    doc.build(content)
 
-## (6) No-crRNA Assay Check 
+    ## (6) No-crRNA Assay Check 
 
-## apply no_crrna check to t13_hit_binary_output to generate list of all samples that are positive for the no-crRNA assay(s)
-fail_nocrRNA_check_df = qual_checks.no_crrna_check(t13_hit_binary_output_copy1)
+    ## apply no_crrna check to t13_hit_binary_output to generate list of all samples that are positive for the no-crRNA assay(s)
+    fail_nocrRNA_check_df = qual_checks.no_crrna_check(t13_hit_binary_output_copy1)
 
-# define file path for csv
-fail_nocrRNA_check_df_file_path = os.path.join(npc_subfolder, f'No_crRNA_Assay_Check_{barcode_assignment}.csv')
+    # define file path for csv
+    fail_nocrRNA_check_df_file_path = os.path.join(npc_subfolder, f'No_crRNA_Assay_Check_{barcode_assignment}.csv')
 
-# When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
-if fail_nocrRNA_check_df.empty:
-    # If empty, create a DataFrame with the custom message and save it to CSV
-    empty_message_df = pd.DataFrame({"Message": ["All samples have tested against the no-crRNA assay. Thus, there are no samples which must be invalidated."]})
-    empty_message_df.to_csv(fail_nocrRNA_check_df_file_path, index=False, header=False)
-    print(f"CSV created with message at {fail_nocrRNA_check_df_file_path}")
-else:
-    # If coinfection_df is not empty, save the DataFrame as is
-    fail_nocrRNA_check_df.to_csv(fail_nocrRNA_check_df_file_path, index=True)
-    print(f"CSV created with data at {fail_nocrRNA_check_df_file_path}")
+    # When converting the coinfection_df into a CSV, check if coinfection_df is empty and, if so, modify the CSV produced 
+    if fail_nocrRNA_check_df.empty:
+        # If empty, create a DataFrame with the custom message and save it to CSV
+        empty_message_df = pd.DataFrame({"Message": ["All samples have tested against the no-crRNA assay. Thus, there are no samples which must be invalidated."]})
+        empty_message_df.to_csv(fail_nocrRNA_check_df_file_path, index=False, header=False)
+        print(f"CSV created with message at {fail_nocrRNA_check_df_file_path}")
+    else:
+        # If coinfection_df is not empty, save the DataFrame as is
+        fail_nocrRNA_check_df.to_csv(fail_nocrRNA_check_df_file_path, index=True)
+        print(f"CSV created with data at {fail_nocrRNA_check_df_file_path}")
+
+
 
 ###################################################################################################################################################### 
 # instantiate Flagger from flags.py
