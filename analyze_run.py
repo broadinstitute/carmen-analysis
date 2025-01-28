@@ -621,9 +621,9 @@ try:
             if sheet_name == "CARMEN_Hit_Results":
                 worksheet = writer.sheets[sheet_name]
                 # define font colors for POSITIVE and NEGATIVE
-                red_font = writer.book.add_format({'color': 'F97609', 'bold': True})  # Red for POSITIVE - change to orange for color blind accessibiliy
-                green_font = writer.book.add_format({'color': '1A85FF'})  # Green for NEGATIVE - change to blue for color blind accessibility
-                black_font = writer.book.add_format({'color': '000000'})  # Black for other values
+                red_font = writer.book.add_format({'font_color': 'F97609', 'bold': True})  # Red for POSITIVE - change to orange for color blind accessibiliy
+                green_font = writer.book.add_format({'font_color': '1A85FF'})  # Green for NEGATIVE - change to blue for color blind accessibility
+                black_font = writer.book.add_format({'font_color': '000000'})  # Black for other values
 
                 # apply text color formatting
                 for row_idx, row in enumerate(df.values, start=1):  
@@ -664,8 +664,8 @@ except Exception as e:
         worksheet = writer.sheets["Sheet1"]
 
         # define font colors for POSITIVE and NEGATIVE
-        red_font = writer.book.add_format({'color': 'FF0000', 'bold': True})  # Red for POSITIVE
-        green_font = writer.book.add_format({'color': '008000'})  # Green for NEGATIVE
+        red_font = writer.book.add_format({'font_color': 'FF0000', 'bold': True})  # Red for POSITIVE
+        green_font = writer.book.add_format({'font_color': '008000'})  # Green for NEGATIVE
 
         # apply text color formatting
         for row_idx, row in enumerate(t13_hit_output.itertuples(index=False), start=1):  # Start from row 3 (after header and INVALID ASSAY label)
