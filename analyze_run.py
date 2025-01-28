@@ -46,6 +46,13 @@ from flags import Flagger
 import xlsxwriter
 
 
+
+######################################################################################################################################################
+# assign software version
+software_version = '4.4.1'
+
+######################################################################################################################################################
+# data loading
 all_files = list(Path(os.getcwd()).glob('*'))
 
 assignment_files = sorted([fname for fname in all_files if fname.suffix == ".xlsx"])
@@ -111,7 +118,7 @@ else:
 
 ## Set up structure of the output folder - simplify into RESUTLS, QUALITY CONTROL, R&D
 # make an output folder in your path's wd if it hasn't been made already
-output_folder = f'output_{barcode_assignment}_[{CLI_arg[1]}]'
+output_folder = f'output_{barcode_assignment}_[{CLI_arg[1]}]_v{software_version}'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
