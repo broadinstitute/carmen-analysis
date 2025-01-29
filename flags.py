@@ -15,9 +15,10 @@ class Flagger:
         files = [t13_hit, t13_quant_norm, pos_samples_df, ntc_thresh, t13_hit_binary] # 0, 1, 2, 3, 4
         flagged_files = [] # store modified files after applying flags
 
-        ### CPC flags 
-        ## need to be added to t13_hit_output, rounded_t13_quant_norm, summary_samples_df, ntc_thresholds_output, t13_hit_binary_output
         for i, file in enumerate(files): 
+
+            ### CPC flags 
+            ## need to be added to t13_hit_output, rounded_t13_quant_norm, summary_samples_df, ntc_thresholds_output, t13_hit_binary_output
             flagged_file = file.copy() # work on a copy of the orig file
             invalid_assays = []  #  track which assays are invalid based on QC3 test results
             for row in QC_score_per_assay_df.itertuples():
@@ -78,9 +79,11 @@ class Flagger:
                                             processed_samples.add((cont_ntc_sample, cont_ntc_assay))
                                             # check if the value is NA (NaN)
                                             if pd.isna(sample_row[assay_col]):
-                                                flagged_file.at[idx, assay_col] = '†'  # only dagger if value is NA
+                                                flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
                                             else:
-                                                flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
+                                                flagged_file[assay_col] = flagged_file[assay_col].astype(str)
+                                                #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
+                                                flagged_file.loc[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
                          
                 for _, row in high_raw_ntc_signal_df.iterrows(): 
                     for col in high_raw_ntc_signal_df.columns: 

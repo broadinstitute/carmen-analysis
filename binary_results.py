@@ -13,6 +13,13 @@ class Binary_Converter:
 
     # positive = 1, negative = 0
     def hit_numeric_conv(self, binary_t13_hit_df):
-        binary_t13_hit_df = binary_t13_hit_df.replace(['POSITIVE', 'NEGATIVE'], [1,0])   
+        #deprecated approaches
+        #binary_t13_hit_df = binary_t13_hit_df.replace(['POSITIVE', 'NEGATIVE'], [1,0]) 
+        #binary_t13_hit_df = binary_t13_hit_df.applymap(lambda x: {'POSITIVE': 1, 'NEGATIVE': 0}.get(x, x))
+        
+        binary_t13_hit_df = binary_t13_hit_df.assign(
+                **{col: binary_t13_hit_df[col].map({'POSITIVE': 1, 'NEGATIVE': 0}) for col in binary_t13_hit_df.columns}
+            )
+        
         return binary_t13_hit_df
     

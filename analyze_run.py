@@ -49,7 +49,7 @@ import xlsxwriter
 
 ######################################################################################################################################################
 # assign software version
-software_version = '4.4.2'
+software_version = '4.4.3'
 
 ######################################################################################################################################################
 # data loading
@@ -842,6 +842,9 @@ fl_rounded_t13_quant_norm = flagged_files[1] # NTC_Normalized_Quantitative_Resul
 fl_summary_samples_df = flagged_files[2] # Positives_Summary
 fl_rounded_ntc_thresholds_output = flagged_files[3] # NTC_thresholds
 fl_t13_hit_binary_output = flagged_files[4] # 't13__{barcode_assignment}_hit_binary
+
+# any last formatting changes to dataframes
+fl_t13_hit_binary_output.columns = fl_t13_hit_binary_output.columns.str.upper()
 
 # SAVE all the files to their respective output folders
 sheet_names = [
