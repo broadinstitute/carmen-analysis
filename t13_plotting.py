@@ -241,7 +241,7 @@ class t13_Plotter:
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot *** on x-axis that contains Invalid Samples
-                if invalid_samples.size>0:
+                if invalid_samples: #flagged previously by Python as a list
                     invalid_samples = [sample.upper() for sample in invalid_samples]
                     """
                     asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame2.columns]
