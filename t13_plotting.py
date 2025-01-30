@@ -124,7 +124,7 @@ class t13_Plotter:
                                 ha='left', fontsize=12, style='italic')
                 """ 
                 # plot *** on x-axis that contains Invalid Samples
-                if invalid_samples.size > 0:
+                if any(invalid_samples): # invalid_samples is an array
                     invalid_samples = [sample.upper() for sample in invalid_samples]
                     """
                     asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
@@ -171,7 +171,7 @@ class t13_Plotter:
                                     ax1.add_patch(rect)
                 
                 # Adjust layout
-                ax1.set_title(f'Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #1: {half_samples} Samples)', size=28)
+                ax1.set_title(f'NTC Normalized Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #1: {half_samples} Samples)', size=28)
                 ax1.set_xlabel('Samples', size=18)
                 ax1.set_ylabel('Assays', size=18)
                 top1, bottom1 = ax1.get_ylim() 
@@ -241,7 +241,7 @@ class t13_Plotter:
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot *** on x-axis that contains Invalid Samples
-                if invalid_samples: #flagged previously by Python as a list
+                if any(invalid_samples): # /size
                     invalid_samples = [sample.upper() for sample in invalid_samples]
                     """
                     asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame2.columns]
@@ -288,7 +288,7 @@ class t13_Plotter:
                                     ax2.add_patch(rect)
 
                 # Adjust layout
-                ax2.set_title(f'Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #2: {half_samples} Samples)', size=28)
+                ax2.set_title(f'NTC Normalized Heatmap for {barcode_number} at {time_assign[last_key]} minutes (Plate #2: {half_samples} Samples)', size=28)
                 ax2.set_xlabel('Samples', size=18)
                 ax2.set_ylabel('Assays', size=18)
                 top, bottom = ax2.get_ylim() 
@@ -367,7 +367,7 @@ class t13_Plotter:
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot *** on x-axis that contains Invalid Samples
-                if invalid_samples.size > 0:
+                if any(invalid_samples): # invalid_samples.size > 0
                     invalid_samples = [sample.upper() for sample in invalid_samples]
                     asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
                     ax.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
@@ -403,7 +403,7 @@ class t13_Plotter:
                                     ax.add_patch(rect)
                     
                 # Adjust layout
-                ax.set_title(f'Heatmap for {barcode_number} at '+str(rt)+' minutes', size=28)
+                ax.set_title(f'NTC Normalized Heatmap for {barcode_number} at '+str(rt)+' minutes', size=28)
                 ax.set_xlabel('Samples', size=18)
                 ax.set_ylabel('Assays', size=18)
                 top, bottom = ax.get_ylim() 
