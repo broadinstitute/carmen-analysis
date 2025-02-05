@@ -89,12 +89,12 @@ class Flagger:
                                         if (cont_ntc_sample, cont_ntc_assay) not in processed_samples:
                                             processed_samples.add((cont_ntc_sample, cont_ntc_assay))
                                             # check if the value is NA (NaN)
-                                            if pd.isna(sample_row[assay_col]):
+                                            if pd.isna(sample_row[assay_col]) or sample_row[assay_col] == '':
                                                 flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
                                             else:
                                                 flagged_file[assay_col] = flagged_file[assay_col].astype(str)
                                                 #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
-                                                flagged_file.loc[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
+                                                flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
                          
                 for _, row in high_raw_ntc_signal_df.iterrows(): 
                     for col in high_raw_ntc_signal_df.columns: 
@@ -141,7 +141,7 @@ class Flagger:
                         flagged_file = pd.concat([flagged_file, cont_NTC_thresh_legend_label_filled], ignore_index=False) # concatenate
                         legend_added = True
                         break                    
-
+                        
             ### no-crRNA flags
             ## need to be added to t13_hit, t13_quant_norm, pos_samples_df, t13_hit_binary
             if i in {0,1,4}: # t13_hit, t13_quant_norm,t13_hit_binary
@@ -280,4 +280,4 @@ class Flagger:
 
             flagged_files.append(flagged_file) # add flagged file to the list          
 
-        return invalid_assays, invalid_samples, flagged_files
+        return invalid_assays, invalid_samples, flagged_files, processed_samples, cont_ntc_sample, cont_ntc_assay

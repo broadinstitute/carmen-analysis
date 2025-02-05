@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 #file imports
 from io import BytesIO
+from datetime import datetime
 import base64
 from pathlib import Path
 import os 
@@ -51,7 +52,7 @@ from redcap_builder import RedCapper
 
 ######################################################################################################################################################
 # assign software version
-software_version = '5.0.0'
+software_version = '5.1.0'
 
 ######################################################################################################################################################
 # data loading
@@ -102,7 +103,7 @@ else:
     file_like_object.seek(0)
      
     # Extract dataframes from each CSV file
-    read_dataframes = reader.extract_dataframes_from_csv(file_like_object, phrases_to_find)
+    read_dataframes, date = reader.extract_dataframes_from_csv(file_like_object, phrases_to_find)
 
 # at this point, we have loaded the assignment sheet and have sorted through the loaded data file to create a dict of dataframes 
 
@@ -831,13 +832,38 @@ except Exception as e:
         fail_nocrRNA_check_df.to_csv(fail_nocrRNA_check_df_file_path, index=True)
         print(f"CSV created with data at {fail_nocrRNA_check_df_file_path}")
 
+""" 
+flagged_file = t13_hit_output.copy()
+processed_samples = set()
+for _, row in high_raw_ntc_signal_df.iterrows():
+    for col in high_raw_ntc_signal_df.columns: # cols are Sample, Assay, t13 
+        cont_ntc_sample = row['Sample'] # NEG NTC sample
+        cont_ntc_assay = row['Assay'] # NTC assay
+        # now iterate over the flagged file
+        for idx, sample_row in flagged_file.iterrows(): 
+            if cont_ntc_sample == idx:
+                # add † to each cell value
+                for assay_col in flagged_file.columns:  
+                    if assay_col.upper() == cont_ntc_assay.upper():
+                        # check that the sample-assay pair has alr been processed
+                        if (cont_ntc_sample, cont_ntc_assay) not in processed_samples:
+                            processed_samples.add((cont_ntc_sample, cont_ntc_assay))
+                            # check if the value is NA (NaN)
+                            if pd.isna(sample_row[assay_col]) or sample_row[assay_col] == '':
+                                flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
+                            else:
+                                flagged_file[assay_col] = flagged_file[assay_col].astype(str)
+                                #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
+                                flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
+            
 
 
+"""  
 ###################################################################################################################################################### 
 # instantiate Flagger from flags.py
 flagger = Flagger()
 
-invalid_assays, invalid_samples, flagged_files = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df_heatmap, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+invalid_assays, invalid_samples, flagged_files, processed_samples, cont_ntc_sample, cont_ntc_assay = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df_heatmap, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
 
 fl_t13_hit_output = flagged_files[0] # Results_Summary
 fl_rounded_t13_quant_norm = flagged_files[1] # NTC_Normalized_Quantitative_Results_Summary
@@ -1000,25 +1026,27 @@ heatmap_t13_quant_norm_filename = os.path.join(res_subfolder, f'NTC_Normalized_H
 fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inches = 'tight', dpi=80)
 plt.close(fig)
 
-print("Operation complete.")
-
 
 ######################################################################################################################################################   
 # RedCap Integration
-# set it as you have to enter a CLI for Redcap to run this code
+# set it as you have to enter a CLI arg for Redcap to run this code
 
-# if CLI[1]
+if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
+    # instantiate RedCapper from flags.py
+    redcapper = RedCapper()
 
+    # make copy of binary output file from RESULTS Excel sheet
+    fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
 
-# instantiate RedCapper from flags.py
-redcapper = RedCapper()
+    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
 
-# make copy of binary output file from RESULTS Excel sheet
-fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
+    redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
+    redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=True)
+    print("REDCAP file generated.")
+    print("Operation complete.")
 
-redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2)
-
-redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
-redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=True)
+else:
+    print("User did not specify REDCAP as a command line argument, and it follows that the REDCAP file was not generated.")
+    print("Operation complete.")
 
 

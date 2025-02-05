@@ -2,7 +2,7 @@
 CARMEN is a diagnostic tool designed for surveillance purposes. Below are the instructions to complete your CARMEN analysis. 
 
 ## Software Version
-When cloning this repository, you will be using software version 5.0.0.
+When cloning this repository, you will be using software version 5.1.0.
 
 ## Overview
 At this point, you have ran the $Standard\ BioTools\ Dynamic\ Array^{TM}$ IFC (integrated fluidic circuit) on the $Standard\ BioTools\ Biomark^{TM}$ instrument and have completed the experimental portion of CARMEN. In running this code, you will be able to complete the data analysis portion of CARMEN and generate both binary positive/negative and quantitative signal output of your diagnostic assay. 

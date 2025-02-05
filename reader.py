@@ -1,5 +1,6 @@
 import pandas as pd
 import io
+from datetime import datetime
 
 class DataReader:
     def __init__(self):
@@ -27,7 +28,7 @@ class DataReader:
 
         # Read the content of the file-like object (only once)
         file_like_object.seek(0)
-        content = file_like_object.read().decode('utf-8')
+        content = file_like_object.read().decode('utf-8') # bytesIO obj
 
         new_phrase = [
             "ref_raw", 
@@ -62,6 +63,13 @@ class DataReader:
             df = pd.read_csv(content_io, nrows=section_rows[phrase], skiprows=start_index)
             dataframes[phrase] = self.clean_dataframe(df)  # Clean and store the dataframe
             #print(phrase, len(df))
-        # Return a dictionary of the dataframes
 
-        return dataframes
+        # Collect the date
+        df = pd.read_csv(io.StringIO(content), nrows=0)  
+        date_header = df.columns[7]
+        date_str = date_header.split(' ')[0] # strip removes the character to concat rest and split breaks string at character
+        date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+        date = date_obj.strftime("%m/%d/%Y")
+        
+        # Return a dictionary of the dataframes
+        return dataframes, date
