@@ -44,12 +44,14 @@ from reportlab.lib.styles import getSampleStyleSheet
 # annotations and flags imports
 from flags import Flagger
 import xlsxwriter
+# generate redcap
+from redcap_builder import RedCapper
 
 
 
 ######################################################################################################################################################
 # assign software version
-software_version = '4.4.4'
+software_version = '5.0.0'
 
 ######################################################################################################################################################
 # data loading
@@ -963,49 +965,7 @@ except Exception as e:
     t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
     fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
         
-           
-"""  
-### FILE 1: t13_hit_output as Results_Summary
-# convert the t13 hit output to an excel file with green/red conditional formatting for NEG/POS results
-t13_hit_output_file_path = os.path.join(res_subfolder, f'Results_Summary_{barcode_assignment}.xlsx')
-
-# create the Excel writer
-with pd.ExcelWriter(t13_hit_output_file_path, engine="openpyxl") as writer:
-    # write the DataFrame to an Excel sheet
-    fl_t13_hit_output.to_excel(writer, sheet_name="Sheet1", index=True)
-    workbook = writer.book
-    worksheet = writer.sheets["Sheet1"]
-
-    # define font colors for POSITIVE and NEGATIVE
-    red_font = Font(color="FF0000", bold=True)  # Red for POSITIVE
-    green_font = Font(color="008000")  # Green for NEGATIVE
-
-    # apply text color formatting
-    for row_idx, row in enumerate(t13_hit_output.values, start=3):  # Start from row 3 (after header and INVALID ASSAY label)
-        for col_idx, cell_value in enumerate(row, start=2):
-            cell = worksheet.cell(row=row_idx, column=col_idx)
-            if cell_value == "POSITIVE":
-                cell.font = red_font
-            elif cell_value == "NEGATIVE":
-                cell.font = green_font
-
-### FILE 2: rounded_t13_quant_norm as NTC_Quant_Normalized_Results
-quant_output_ntcNorm_file_path = os.path.join(res_subfolder, f'NTC_Normalized_Quantitative_Results_Summary_{barcode_assignment}.csv')
-fl_rounded_t13_quant_norm.to_csv(quant_output_ntcNorm_file_path, index=True)
-
-### File 3: summary_samples_df as Positives_Summary
-summary_pos_samples_file_path = os.path.join(res_subfolder, f'Positives_Summary_{barcode_assignment}.csv')
-fl_summary_samples_df.to_csv(summary_pos_samples_file_path, index=True)
-
-### File 4: ntc_thresholds_output as NTC_Thresholds
-ntc_thresholds_output_file_path = os.path.join(res_subfolder, f'NTC_thresholds_{barcode_assignment}.csv')
-fl_rounded_ntc_thresholds_output.to_csv(ntc_thresholds_output_file_path, index=True)
-
-### File 5: t13_hit_binary_output as t13_hit_Binary 
-t13_hit_binary_output_file_path = os.path.join(rd_subfolder, f't13__{barcode_assignment}_hit_binary.csv')
-fl_t13_hit_binary_output.to_csv(t13_hit_binary_output_file_path, index=True)
-
-"""
+ 
 ######################################################################################################################################################   
 # instantiate Plotter from plotting.py
 heatmap_generator = Plotter()
@@ -1041,4 +1001,24 @@ fig = heatmap_t13_quant_norm.savefig(heatmap_t13_quant_norm_filename, bbox_inche
 plt.close(fig)
 
 print("Operation complete.")
+
+
+######################################################################################################################################################   
+# RedCap Integration
+# set it as you have to enter a CLI for Redcap to run this code
+
+# if CLI[1]
+
+
+# instantiate RedCapper from flags.py
+redcapper = RedCapper()
+
+# make copy of binary output file from RESULTS Excel sheet
+fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
+
+redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2)
+
+redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
+redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=True)
+
 

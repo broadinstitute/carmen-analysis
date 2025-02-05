@@ -39,7 +39,8 @@ class Flagger:
                     if col.rstrip('*').lower() in [assay.lower() for assay in invalid_assays]:
                         invalid_row.append('INVALID ASSAY')  # mark invalid assays with this label
                     else:
-                        invalid_row.append('') # this way, invalid_row has same dimensions as flagged_file's cols
+                        invalid_row.append('VALID ASSAY') # this way, invalid_row has same dimensions as flagged_file's cols
+
                 invalid_row_df = pd.DataFrame([invalid_row], columns=flagged_file.columns)
                 invalid_row_df.index = ["Assay Valid?"]
                 data = flagged_file.iloc[0:]  
@@ -49,8 +50,18 @@ class Flagger:
                 label = 'This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.'
                 invalid_legend_label = pd.DataFrame(data=[[label] + [pd.NA]*(len(flagged_file.columns) - 1)], columns=flagged_file.columns, index=["Legend for *:"])
                 invalid_legend_label_filled = invalid_legend_label.fillna('')
+
                 # concatenate the invalid_legend label df to file df 
                 flagged_file = pd.concat([flagged_file, invalid_legend_label_filled], ignore_index=False) # concatenate
+            else: 
+                # create the "Assay Valid?" row with default value 'VALID ASSAY'
+                valid_assay_row = ['VALID ASSAY'] * len(flagged_file.columns)
+                valid_assay_row_df = pd.DataFrame([valid_assay_row], columns=flagged_file.columns)
+                valid_assay_row_df.index = ["Assay Valid?"]
+                # concatenate valid_assay_row_df to file_df
+                data = flagged_file.iloc[0:]  
+                flagged_file = pd.concat([valid_assay_row_df, data], ignore_index=False) # concatenate all
+            
 
 
             if i == 2: # summary_samples_df
