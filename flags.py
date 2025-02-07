@@ -304,4 +304,4 @@ class Flagger:
 
             flagged_files.append(flagged_file) # add flagged file to the list          
 
-        return invalid_assays, invalid_samples, flagged_files, processed_samples, cont_ntc_sample, cont_ntc_assay
+        return invalid_assays, invalid_samples, flagged_files, processed_samples

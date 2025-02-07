@@ -837,7 +837,7 @@ except Exception as e:
 # instantiate Flagger from flags.py
 flagger = Flagger()
 
-invalid_assays, invalid_samples, flagged_files, processed_samples, cont_ntc_sample, cont_ntc_assay = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df_heatmap, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
+invalid_assays, invalid_samples, flagged_files, processed_samples = flagger.assign_flags(fail_nocrRNA_check_df, high_raw_ntc_signal_df, rnasep_df_heatmap, QC_score_per_assay_df, t13_hit_output, rounded_t13_quant_norm, summary_samples_df, rounded_ntc_thresholds_output, t13_hit_binary_output)
 
 fl_t13_hit_output = flagged_files[0] # Results_Summary
 fl_rounded_t13_quant_norm = flagged_files[1] # NTC_Normalized_Quantitative_Results_Summary
