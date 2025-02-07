@@ -39,8 +39,12 @@ class RedCapper:
 
             return merged_row
        
+        ### format input flagged t13 binary hit file 
+        redcap_t13_hit_binary_output = fl_t13_hit_binary_output_2.copy()
+        redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.astype(str)
+
         ### convert 0 to 2 (negative)
-        redcap_t13_hit_binary_output = fl_t13_hit_binary_output_2.replace(0, 2)
+        redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.replace(to_replace=r'^0.*', value=2, regex=True)
 
         ### drop any rows incl and below 'Summary' row
         if 'Summary' in redcap_t13_hit_binary_output.index:
@@ -64,7 +68,7 @@ class RedCapper:
                     test_redcap_t13_hit_binary_output.loc[cont_ntc_sample, cont_ntc_assay] = '6'
         """
         redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.astype(str)
-        redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.applymap(lambda x: '6' if '†' in x else x)
+        redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.map(lambda x: '6' if '†' in x else x)
         
 
         
@@ -98,7 +102,7 @@ class RedCapper:
         ### add columns for the assay that wasn't run with since REDCAP format needs all assays (RVP and BBP) headers in 
         bbp_assays = ['CCHFV', 'CHI', 'DENV', 'EBOV', 'HBV_DNA', 'HCV', 'HIV_1', 'HIV_2', 'HTV', 'LASV', 'MBV', 'MMV', 
                     'MPOX_DNA', 'ONN', 'PF_3_DNA', 'RBV', 'RVFV', 'SYPH_DNA', 'WNV', 'YFV', 'ZIKV']
-        rvp_assays = ['SARS-COV-2', 'HCOV-HKU1', 'HCOV-NL63', 'HCOV-OC43', 'FLUAV', 'FLUBV', 'HMPV', 'HRSV', 'HPIV-3']
+        rvp_assays = ['SARS_COV-2', 'HCOV_HKU1', 'HCOV_NL63', 'HCOV_OC43', 'FLUAV', 'FLUBV', 'HMPV', 'HRSV', 'HPIV_3']
         # set column order
         column_order = bbp_assays + rvp_assays + ['RNASEP_P1','RNASEP_P2']
         # when adding the new columns, enter the value as 4 (not run)
