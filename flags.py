@@ -75,13 +75,37 @@ class Flagger:
             ## dagger flag needs to be added to t13_hit_output, rounded_t13_quant_norm, summary_samples_df, t13_hit_binary_output
             if i in {0,1,2,4}:
                 processed_samples = set()
-                for _, row in high_raw_ntc_signal_df.iterrows():
-                    for col in high_raw_ntc_signal_df.columns: # cols are Sample, Assay, t13 
-                        cont_ntc_sample = row['Sample'] # NEG NTC sample
-                        cont_ntc_assay = row['Assay'] # NTC assay
+
+                for _, row in high_raw_ntc_signal_df.iterrows(): # cols are Sample, Assay, t13 
+                        cont_ntc_sample = row['Sample'].upper() # NEG NTC sample
+                        cont_ntc_sample = cont_ntc_sample.strip()
+                        cont_ntc_assay = row['Assay'].upper() # NTC assay
                         # now iterate over the flagged file
                         for idx, sample_row in flagged_file.iterrows(): 
+                            idx = str(idx).strip().upper()
                             if cont_ntc_sample == idx:
+                                # add † to each cell value
+                                for assay_col in flagged_file.columns:  
+                                    if assay_col.strip().upper() == cont_ntc_assay:
+                                        # check that the sample-assay pair has alr been processed
+                                        if (cont_ntc_sample, cont_ntc_assay) not in processed_samples:
+                                            processed_samples.add((cont_ntc_sample, cont_ntc_assay))
+                                            # check if the value is NA (NaN)
+                                            if pd.isna(sample_row[assay_col]) or sample_row[assay_col] == '':
+                                                flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
+                                            else:
+                                                flagged_file[assay_col] = flagged_file[assay_col].astype(str)
+                                                #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
+                                                flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
+                """  
+                for _, row in high_raw_ntc_signal_df.iterrows():
+                    for col in high_raw_ntc_signal_df.columns: # cols are Sample, Assay, t13 
+                        cont_ntc_sample = row['Sample'].upper() # NEG NTC sample
+                        cont_ntc_sample = cont_ntc_sample.strip()
+                        cont_ntc_assay = row['Assay'].upper() # NTC assay
+                        # now iterate over the flagged file
+                        for idx, sample_row in flagged_file.iterrows(): 
+                            if cont_ntc_sample == str(idx).upper():
                                 # add † to each cell value
                                 for assay_col in flagged_file.columns:  
                                     if assay_col.upper() == cont_ntc_assay.upper():
@@ -95,7 +119,7 @@ class Flagger:
                                                 flagged_file[assay_col] = flagged_file[assay_col].astype(str)
                                                 #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
                                                 flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
-                         
+                """    
                 for _, row in high_raw_ntc_signal_df.iterrows(): 
                     for col in high_raw_ntc_signal_df.columns: 
                         cont_ntc_sample = row['Sample'] # NEG NTC sample

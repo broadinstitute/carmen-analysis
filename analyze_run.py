@@ -260,9 +260,9 @@ t13_hit_output_copy6 = pd.DataFrame(t13_hit_output).copy() # make a copy of t13_
 # save t13_hit_output as Results_Summary after flags are added below in Flagger()
 
 ######################################################################################################################################################
- # instantiate NTC_Normalized from ntcnorm.py
+# instantiate NTC_Normalized from ntcnorm.py
 ntcNorm = Normalized()
- # apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
+# apply ntc_normalizr to the t13_dataframe to produce a new dataframe with all values divided by the mean NTC for that assay
 t13_quant_norm = ntcNorm.normalizr(t13_dataframe_copy2)
 # round the NTC normalized quantitative results file
 decimals = 5 # Define the number of decimals for rounding
@@ -832,33 +832,7 @@ except Exception as e:
         fail_nocrRNA_check_df.to_csv(fail_nocrRNA_check_df_file_path, index=True)
         print(f"CSV created with data at {fail_nocrRNA_check_df_file_path}")
 
-""" 
-flagged_file = t13_hit_output.copy()
-processed_samples = set()
-for _, row in high_raw_ntc_signal_df.iterrows():
-    for col in high_raw_ntc_signal_df.columns: # cols are Sample, Assay, t13 
-        cont_ntc_sample = row['Sample'] # NEG NTC sample
-        cont_ntc_assay = row['Assay'] # NTC assay
-        # now iterate over the flagged file
-        for idx, sample_row in flagged_file.iterrows(): 
-            if cont_ntc_sample == idx:
-                # add † to each cell value
-                for assay_col in flagged_file.columns:  
-                    if assay_col.upper() == cont_ntc_assay.upper():
-                        # check that the sample-assay pair has alr been processed
-                        if (cont_ntc_sample, cont_ntc_assay) not in processed_samples:
-                            processed_samples.add((cont_ntc_sample, cont_ntc_assay))
-                            # check if the value is NA (NaN)
-                            if pd.isna(sample_row[assay_col]) or sample_row[assay_col] == '':
-                                flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
-                            else:
-                                flagged_file[assay_col] = flagged_file[assay_col].astype(str)
-                                #flagged_file.at[idx, assay_col] = str(flagged_file.at[idx, assay_col])
-                                flagged_file.at[idx, assay_col] = f"{sample_row[assay_col]}†"  # add dagger to the value
-            
-
-
-"""  
+ 
 ###################################################################################################################################################### 
 # instantiate Flagger from flags.py
 flagger = Flagger()
@@ -1038,10 +1012,10 @@ if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
     # make copy of binary output file from RESULTS Excel sheet
     fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
 
-    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
-
-    redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
-    redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=True)
+    concat_redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
+    # concat_redcap_t13_hit_binary_output, samplesDF, controlsDF
+    concat_redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
+    concat_redcap_t13_hit_binary_output.to_csv(concat_redcap_t13_hit_binary_output_file_path, index=True)
     print("REDCAP file generated.")
     print("Operation complete.")
 
