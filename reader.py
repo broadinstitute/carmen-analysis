@@ -68,8 +68,8 @@ class DataReader:
         df = pd.read_csv(io.StringIO(content), nrows=0)  
         date_header = df.columns[7]
         date_str = date_header.split(' ')[0] # strip removes the character to concat rest and split breaks string at character
-        date_obj = datetime.strptime(date_str, "%d/%m/%Y")
-        date = date_obj.strftime("%m/%d/%Y")
+        #date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+        #date = date_obj.strftime("%m/%d/%Y")
         
         # Return a dictionary of the dataframes
-        return dataframes, date
+        return dataframes, date_str

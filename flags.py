@@ -86,11 +86,12 @@ class Flagger:
                             if cont_ntc_sample == idx:
                                 # add † to each cell value
                                 for assay_col in flagged_file.columns:  
-                                    if assay_col.strip().upper() == cont_ntc_assay:
+                                    stripped_assay_col = re.sub(r'[\*\|†\s]', '', assay_col) # strip the * from assay_col
+                                    if stripped_assay_col.upper() == cont_ntc_assay: # shld now be met
                                         # check that the sample-assay pair has alr been processed
                                         if (cont_ntc_sample, cont_ntc_assay) not in processed_samples:
                                             processed_samples.add((cont_ntc_sample, cont_ntc_assay))
-                                            # check if the value is NA (NaN)
+                                            # check if the value is NA (NaN) re.search(r'rnasep|no_crrna', col, re.IGNORECASE)
                                             if pd.isna(sample_row[assay_col]) or sample_row[assay_col] == '':
                                                 flagged_file.loc[idx, assay_col] = '†'  # only dagger if value is NA
                                             else:

@@ -52,7 +52,7 @@ from redcap_builder import RedCapper
 
 ######################################################################################################################################################
 # assign software version
-software_version = '5.1.0'
+software_version = '5.2.0'
 
 ######################################################################################################################################################
 # data loading
@@ -116,7 +116,8 @@ if len(sys.argv) < 2:
     print("Please include the command line arguments when running analyze_run.py")
 else:
     # Proceed with your script logic
-    print("Threshold provided:", sys.argv[1:])
+    print("Threshold provided:", CLI_arg[1])
+    #print("Threshold provided:", sys.argv[1:])
 
 
 ## Set up structure of the output folder - simplify into RESUTLS, QUALITY CONTROL, R&D
@@ -1012,10 +1013,12 @@ if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
     # make copy of binary output file from RESULTS Excel sheet
     fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
 
-    concat_redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
-    # concat_redcap_t13_hit_binary_output, samplesDF, controlsDF
-    concat_redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
-    concat_redcap_t13_hit_binary_output.to_csv(concat_redcap_t13_hit_binary_output_file_path, index=True)
+    # apply redcapper to fl_t13_hit_binary_output_2 df
+    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
+    
+    # save REDCAP file
+    redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
+    redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=False)
     print("REDCAP file generated.")
     print("Operation complete.")
 
