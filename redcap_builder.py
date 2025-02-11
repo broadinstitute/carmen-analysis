@@ -106,10 +106,10 @@ class RedCapper:
         ### add columns for the assay that wasn't run with since REDCAP format needs all assays (RVP and BBP) headers in 
         # define assays
         bbp_P1_assays = ['CCHFV','EBOV','HIV_1','HIV_2','LASV', 'MBV','MPOX_DNA','PF_3_DNA','WNV','YFV']
-        bbp_P2_assays = ['CHI', 'DENV','HBV_DNA','HCV', 'HTV', 'MMV', 'ONN','RBV','RVFV','SYPH_DNA','ZIKV']
+        bbp_P2_assays = ['CHI', 'DENV','HBV_DNA','HCV', 'HTV', 'MMV', 'ONN','RBV','RVFV','SYPH_DNA','ZIKV', 'NPV']
         rvp_assays = ['SARS_COV-2', 'HCOV_HKU1', 'HCOV_NL63', 'HCOV_OC43', 'FLUAV', 'FLUBV', 'HMPV', 'HRSV', 'HPIV_3']
         bbp_assays = ['CCHFV', 'CHI', 'DENV', 'EBOV', 'HBV_DNA', 'HCV', 'HIV_1', 'HIV_2', 'HTV', 'LASV', 'MBV', 'MMV', 
-                    'MPOX_DNA', 'ONN', 'PF_3_DNA', 'RBV', 'RVFV', 'SYPH_DNA', 'WNV', 'YFV', 'ZIKV']
+                    'MPOX_DNA', 'NPV','ONN', 'PF_3_DNA', 'RBV', 'RVFV', 'SYPH_DNA', 'WNV', 'YFV', 'ZIKV']
     
         # set column order
         column_order = bbp_assays + rvp_assays + ['RNASEP_P1','RNASEP_P2', 'RNASEP_RVP']
