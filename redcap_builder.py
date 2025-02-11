@@ -97,7 +97,10 @@ class RedCapper:
         ### strip all _ and asterisks from the column names
         for i, col in enumerate(redcap_t13_hit_binary_output.columns):
             if not re.search(r'rnasep', col, re.IGNORECASE):
-                new_col = re.split(r'[_*]', col)[0] # remove _ and * from all col names for assays
+                new_col = re.split(r'[*]', col)[0] # remove _ and * from all col names for assays
+                new_col = "_".join(new_col.split("_")[:-1])
+                    #record_id = record_id.split("_")[:-1] 
+                    #record_id = "_".join(record_id) 
                 redcap_t13_hit_binary_output.columns.values[i] = new_col
             if  re.search(r'rnasep', col, re.IGNORECASE):
                 new_col = re.split(r'[*]', col)[0] # we don't want to remove the _P1 or _RVP or _P2 part from RNASEP column header
