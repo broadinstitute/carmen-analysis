@@ -184,6 +184,12 @@ class RedCapper:
 
         ### add the thresold in as the second col
         redcap_t13_hit_binary_output.insert(1, "threshold", threshold)
+        if threshold == "1.8_Mean":
+            redcap_t13_hit_binary_output["threshold"] = 0
+        elif threshold == "3_SD":
+            redcap_t13_hit_binary_output["threshold"] = 1
+        else:
+            redcap_t13_hit_binary_output["threshold"] = 2
 
         ### add the software version in as the third col
         redcap_t13_hit_binary_output.insert(2, "software_version", software_version)
