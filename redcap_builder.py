@@ -198,7 +198,7 @@ class RedCapper:
         redcap_t13_hit_binary_output.columns = redcap_t13_hit_binary_output.columns.str.lower()
 
         ### concatenate the threshold to the end of record_id
-        redcap_t13_hit_binary_output["record_id"] = redcap_t13_hit_binary_output.apply(lambda row: f"{row.record_id}_{row.threshold}", axis=1)
+        redcap_t13_hit_binary_output["record_id"] = redcap_t13_hit_binary_output.apply(lambda row: f"{row.record_id}_{threshold}", axis=1)
         
 
         ### reset index
