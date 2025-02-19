@@ -223,6 +223,6 @@ class Plotter:
                 # Save the figure to the dictionary
                 fig_timepoints[i] = fig
 
-        return fig_timepoints
+        return fig_timepoints, frame2, second_half_samples
     
     

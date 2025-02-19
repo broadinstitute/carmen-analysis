@@ -10,7 +10,7 @@ class RedCapper:
         pass
     
     # method
-    def build_redcap(self, fl_t13_hit_binary_output_2, date, barcode_assignment):
+    def build_redcap(self, fl_t13_hit_binary_output_2, date, barcode_assignment, threshold, software_version):
 
         # legend
         # 1 = pos, 2 = neg, 3 = pending, 4 = not run, 5 = invalid, 6 = NTC contaminated
@@ -181,9 +181,19 @@ class RedCapper:
         
         # drop sample_prefix_id
         redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.drop(columns=['sampleid_prefix'])
+
+        ### add the thresold in as the second col
+        redcap_t13_hit_binary_output.insert(1, "threshold", threshold)
+
+        ### add the software version in as the third col
+        redcap_t13_hit_binary_output.insert(2, "software_version", software_version)
         
         ### lowercase all columns in redcap_t13_hit_binary_output for REDCAP data entry
         redcap_t13_hit_binary_output.columns = redcap_t13_hit_binary_output.columns.str.lower()
+
+        ### concatenate the threshold to the end of record_id
+        redcap_t13_hit_binary_output["record_id"] = redcap_t13_hit_binary_output.apply(lambda row: f"{row.record_id}_{row.threshold}", axis=1)
+        
 
         ### reset index
         redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.reset_index(drop=True)

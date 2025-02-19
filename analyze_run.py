@@ -52,7 +52,7 @@ from redcap_builder import RedCapper
 
 ######################################################################################################################################################
 # assign software version
-software_version = '5.2.2'
+software_version = '5.3.0'
 
 ######################################################################################################################################################
 # data loading
@@ -117,7 +117,6 @@ if len(sys.argv) < 2:
 else:
     # Proceed with your script logic
     print("Threshold provided:", CLI_arg[1])
-    #print("Threshold provided:", sys.argv[1:])
 
 
 ## Set up structure of the output folder - simplify into RESUTLS, QUALITY CONTROL, R&D
@@ -975,7 +974,7 @@ tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 imag
 # tp = list of timepoints (t1, t2, etc)
 #unique_crRNA_assays = list(set(crRNA_assays))
 unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
-heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
+heatmap, frame2, second_half_samples = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
 # Make subfolder in the output folder in your path's wd if it hasn't been made already
 heatmaps_subfolder = os.path.join(rd_subfolder, f'Heatmaps_by_Timepoint_{barcode_assignment}')
@@ -1014,7 +1013,8 @@ if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
     fl_t13_hit_binary_output_2 = fl_t13_hit_binary_output.copy()
 
     # apply redcapper to fl_t13_hit_binary_output_2 df
-    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment)
+    threshold = CLI_arg[1]
+    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment,threshold, software_version)
     
     # save REDCAP file
     redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
