@@ -1020,7 +1020,7 @@ if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
     redcap_t13_hit_binary_output, samplesDF  = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment,threshold, software_version)
     
     # save REDCAP file
-    redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')
+    redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}_{CLI_arg[1]}.csv')
     redcap_t13_hit_binary_output.to_csv(redcap_t13_hit_binary_output_file_path, index=False)
     print("REDCAP file generated.")
     print("Operation complete.")
