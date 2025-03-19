@@ -52,7 +52,7 @@ from redcap_builder import RedCapper
 
 ######################################################################################################################################################
 # assign software version
-software_version = '5.3.0'
+software_version = '5.4.0'
 
 ######################################################################################################################################################
 # data loading
@@ -173,7 +173,7 @@ assigned_norms['ref_norm_raw'].to_csv(os.path.join(rd_subfolder, 'assigned_ref_n
 
 # collect the assays/samples from the layout assays/samples in the assignment sheet (this extraction is done in matcher.py)
 crRNA_assays = assigned_lists['assay_list']
-samples_list = assigned_lists['samples_list']
+#samples_list = assigned_lists['samples_list']
 
 ######################################################################################################################################################
 # instantiate ntcContaminationChecker from ntc_con_check.py
@@ -183,6 +183,9 @@ ntcCheck = ntcContaminationChecker()
 assigned_signal_norm = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # make a copy of assigned_signal_norm dataframe
 # create df of filtered assigned_signal_norm by applying the NTC check to remove any NTCs whose raw signal suggests contamination
 assigned_signal_norm_with_NTC_check = ntcCheck.ntc_cont(assigned_signal_norm) # feed this into MedianSort
+
+# collect the samples_list after running NTC Contamination Check, in case NTCs were removed
+samples_list = assigned_signal_norm_with_NTC_check['sample'].unique()
 
 # temporarily save assigned_signal_norm_with_NTC_check
 assigned_signal_norm_with_NTC_check.to_csv(os.path.join(rd_subfolder, 'assigned_signal_norm_with_NTC_check.csv'), index=True)
@@ -865,7 +868,7 @@ dataframes = [
     fl_t13_hit_binary_output
 ]
 
-output_file_path = os.path.join(res_subfolder, f"RESULTS_{barcode_assignment}.xlsx") #
+output_file_path = os.path.join(res_subfolder, f"RESULTS_{barcode_assignment}_{CLI_arg[1]}.xlsx") #
 
 try: 
     # save all DataFrames to a single Excel file
@@ -974,7 +977,7 @@ tgap = 3 # time gap between mixing of reagents (end of chip loading) and t0 imag
 # tp = list of timepoints (t1, t2, etc)
 #unique_crRNA_assays = list(set(crRNA_assays))
 unique_crRNA_assays = list(OrderedDict.fromkeys(crRNA_assays))
-heatmap, frame2, second_half_samples = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
+heatmap = heatmap_generator.plt_heatmap(tgap, barcode_assignment,final_med_frames, samples_list, unique_crRNA_assays, timepoints)
 
 # Make subfolder in the output folder in your path's wd if it hasn't been made already
 heatmaps_subfolder = os.path.join(rd_subfolder, f'Heatmaps_by_Timepoint_{barcode_assignment}')
@@ -1014,7 +1017,7 @@ if len(CLI_arg) > 2 and CLI_arg[2] == 'REDCAP':
 
     # apply redcapper to fl_t13_hit_binary_output_2 df
     threshold = CLI_arg[1]
-    redcap_t13_hit_binary_output = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment,threshold, software_version)
+    redcap_t13_hit_binary_output, samplesDF  = redcapper.build_redcap(fl_t13_hit_binary_output_2, date, barcode_assignment,threshold, software_version)
     
     # save REDCAP file
     redcap_t13_hit_binary_output_file_path = os.path.join(res_subfolder, f'REDCAP_{barcode_assignment}.csv')

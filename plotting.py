@@ -155,17 +155,23 @@ class Plotter:
         else: 
             for i in tqdm(tp):
                 df_dict[i] = df_dict[i].transpose()
-                
+
                 # Do not split heatmap into two subplots (2-row, 1-column layout)
-                fig, axes = plt.subplots(1, 1, figsize=(len(frame.columns.values)*0.5,len(frame.index.values)*0.5 * 2))
+                fig, axes = plt.subplots(1, 1, figsize=(len(sample_list)*0.5,len(assay_list)*0.5)) # fig, axes = plt.subplots(1, 1, figsize=(len(sample_list)*0.5,len(sample_list)*0.5 * 2))
                 # Add space between the two subplots (vertical spacing)
                 plt.subplots_adjust(hspace=1)
+                # add space to the bottom of the figure (adjust the bottom margin)
+                plt.subplots_adjust(top=0.8, bottom=0.3)  
 
                 # Plot heatmap (all samples)
                 frame = df_dict[i][sample_list].reindex(assay_list)
                 annot1 = frame.map(lambda x: 'X' if (pd.isna(x) or x == 'NaN' or x is None) else '')
-                ax = sns.heatmap(frame, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, ax=axes[0], 
+                ax = sns.heatmap(frame, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, 
                                   linewidths = 1, linecolor = "black")
+                # set colorbar format
+                cbar = ax.collections[0].colorbar
+                cbar.outline.set_edgecolor('black')  # Set the color of the edge (outline)
+                cbar.outline.set_linewidth(2)  
                 
                 # calculate the real timing of the image
                 rt = time_assign[i]
@@ -199,7 +205,7 @@ class Plotter:
                     # Place the legend below the first heatmap
                     left, right = ax.get_xlim()
                     top, bottom = ax.get_ylim() 
-                    ax.text(left, top + 7, 
+                    ax.text(left, top + 10, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
                                 ha='left', fontsize=12, style='italic')
                                
@@ -223,6 +229,6 @@ class Plotter:
                 # Save the figure to the dictionary
                 fig_timepoints[i] = fig
 
-        return fig_timepoints, frame2, second_half_samples
+        return fig_timepoints
     
     

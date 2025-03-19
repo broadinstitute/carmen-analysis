@@ -76,10 +76,18 @@ class Thresholder:
             raw_thresholds_df = pd.concat([ntc_mean_df, ntc_sd_df, ntc_3sd_df, raw_thresholds_df], ignore_index=True, axis=0)
             raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold']
 
+            # If there is only 1 NTC for an assay, we cannot take the std dev and these rows remain blank in raw_thresholds_df
+            # So we resort to using the 1.8_Mean for these instances.
+            for col in raw_thresholds_df.columns:
+                if pd.isna(raw_thresholds_df.at['NTC Threshold', col]):
+                    ntc_mean = raw_thresholds_df.at['NTC Mean', col]
+                    raw_thresholds_df.at['NTC Threshold', col] = 1.8 * ntc_mean
+
             # Calculate the Normalized NTC threshold too
             norm_thresholds_df = raw_thresholds_df.loc['NTC Threshold'] / ntc_mean_df
             raw_thresholds_df = pd.concat([raw_thresholds_df, norm_thresholds_df], ignore_index=True, axis=0)
             raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold', 'Normalized NTC Threshold']
+
      
         else:
             print("Consult ReadME and input appropriate command-line arguments to specify thresholding method.")

@@ -308,19 +308,21 @@ class t13_Plotter:
 
             else: 
                 # Do not split heatmap into two subplots (2-row, 1-column layout)
-                fig, axes = plt.subplots(1, 1, figsize=(len(frame.columns.values)*0.5,len(frame.index.values)*0.5 * 2))
+                fig, axes = plt.subplots(1, 1, figsize=(len(sample_list)*0.5,len(assay_list)*0.5))
                 # Add space between the two subplots (vertical spacing)
-                plt.subplots_adjust(hspace=1)
+                #plt.subplots_adjust(hspace=1)
+                plt.subplots_adjust(left=0.1, right=0.9, top=0.85, bottom=0.1)
 
                 # Plot heatmap (all samples)
                 df = df.transpose()
                 frame = df[sample_list].reindex(assay_list)
                 annot1 = frame.map(lambda x: 'X' if (pd.isna(x) or x == 'NaN' or x is None) else '')
-                ax = sns.heatmap(frame, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"}, ax=axes[0], 
+                ax = sns.heatmap(frame, cmap='Reds', square=True, cbar_kws={'pad': 0.002}, annot = None, fmt='', annot_kws={"size": 1000, "color": "black"},
                                     linewidths = 1, linecolor = "black")
-                
-                # calculate the real timing of the image
-                rt = time_assign[i]
+                # set colorbar format
+                cbar = ax.collections[0].colorbar
+                cbar.outline.set_edgecolor('black')  # Set the color of the edge (outline)
+                cbar.outline.set_linewidth(2)
                 
                 # Track x-axis labels that need a dagger
                 dagger_labels = set()
@@ -351,29 +353,29 @@ class t13_Plotter:
                     # Place the legend below the first heatmap
                     left, right = ax.get_xlim()
                     top, bottom = ax.get_ylim() 
-                    ax.text(left, top + 7, 
+                    ax.text(left, top + 10, 
                                 '†: The NTC sample for this assay was removed from the analysis due to potential contamination.', 
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot * on y-axis that contains Invalid Assays
                 if invalid_assays:
                     invalid_assays = [assay.upper() for assay in invalid_assays]
-                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame1.index]
+                    asterisk1_labels = [label + '*' if label in invalid_assays else label for label in frame.index]
                     ax.set_yticklabels(asterisk1_labels, rotation=0)
                     
                     ## add legend for * below the '†: ...' legend
-                    ax.text(left1, top1 + 9, 
+                    ax.text(left, top + 11, 
                                 '*: This assay is considered invalid due to failing Quality Control Test #3, which evaluates performance of the Combined Positive Control sample.', 
                                 ha='left', fontsize=12, style='italic')
                 
                 # plot *** on x-axis that contains Invalid Samples
                 if any(invalid_samples): # invalid_samples.size > 0
                     invalid_samples = [sample.upper() for sample in invalid_samples]
-                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame1.columns]
+                    asterisk3_labels = [label + '***' if label in invalid_samples else label for label in frame.columns]
                     ax.set_xticklabels(asterisk3_labels, rotation=90, ha='right')
 
                     ## add legend for * below the '†: ...' legend
-                    ax.text(left1, top1 + 10, 
+                    ax.text(left, top + 12, 
                                 '***: This sample is invalid due to testing positive against the no-crRNA assay, an included negative assay control.', 
                                 ha='left', fontsize=12, style='italic')
 
@@ -403,7 +405,7 @@ class t13_Plotter:
                                     ax.add_patch(rect)
                     
                 # Adjust layout
-                ax.set_title(f'NTC Normalized Heatmap for {barcode_number} at '+str(rt)+' minutes', size=28)
+                ax.set_title(f'NTC Normalized Heatmap for {barcode_number} at {time_assign[last_key]} minutes', size=28)
                 ax.set_xlabel('Samples', size=18)
                 ax.set_ylabel('Assays', size=18)
                 top, bottom = ax.get_ylim() 

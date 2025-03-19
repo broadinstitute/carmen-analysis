@@ -42,7 +42,7 @@ class RedCapper:
                             merged_row[col] = p1_value #p1_value[0]
                         elif col in bbp_P2_assays and len(p2_value) > 0:
                             merged_row[col] = p2_value #p2_value[0]
-                        elif col in rvp_assays and len(p2_value) > 0:
+                        elif col in rvp_assays and len(rvp_value) > 0:
                             merged_row[col] = rvp_value #rvp_value[0]
                         """  
                         else:
@@ -204,5 +204,5 @@ class RedCapper:
         ### reset index
         redcap_t13_hit_binary_output = redcap_t13_hit_binary_output.reset_index(drop=True)
 
-        return redcap_t13_hit_binary_output
+        return redcap_t13_hit_binary_output, samplesDF
 
