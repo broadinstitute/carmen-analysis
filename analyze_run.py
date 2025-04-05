@@ -121,7 +121,7 @@ else:
 
 ## Set up structure of the output folder - simplify into RESUTLS, QUALITY CONTROL, R&D
 # make an output folder in your path's wd if it hasn't been made already
-output_folder = f'output_{barcode_assignment}_[{CLI_arg[1]}]_v{software_version}'
+output_folder = f'output_{barcode_assignment}_{CLI_arg[1]}_v{software_version}'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 

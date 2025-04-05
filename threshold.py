@@ -87,7 +87,6 @@ class Thresholder:
             norm_thresholds_df = raw_thresholds_df.loc['NTC Threshold'] / ntc_mean_df
             raw_thresholds_df = pd.concat([raw_thresholds_df, norm_thresholds_df], ignore_index=True, axis=0)
             raw_thresholds_df.index = ['NTC Mean', 'NTC Standard Deviation', 'NTC 3*SD', 'NTC Threshold', 'Normalized NTC Threshold']
-
      
         else:
             print("Consult ReadME and input appropriate command-line arguments to specify thresholding method.")
