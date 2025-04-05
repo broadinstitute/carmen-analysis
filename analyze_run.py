@@ -440,7 +440,7 @@ try:
         # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
         if rnasep_df.empty:
             # If empty, create a DataFrame with the custom message and save it to CSV
-            empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all RNaseP samples test positive."]})
+            empty_message_df = pd.DataFrame({"Message": ["Please verify that you have included an RNaseP viral assay in your CARMEN experiment. If you have, all samples test postive for the RNaseP assay."]})
             empty_message_df.to_excel(writer, sheet_name=QC_sheet_names[2], index=False)
             print(f"File generated with message in {QC_sheet_names[2]} at {qc_output_file_path}")
         else:
@@ -684,7 +684,7 @@ except Exception as e:
     # When converting the cpc_negatives_df into a CSV, check if cpc_negatives_df is empty and, if so, modify the CSV produced 
     if rnasep_df.empty:
         # If empty, create a DataFrame with the custom message and save it to CSV
-        empty_message_df = pd.DataFrame({"Message": ["For all viral assays tested in this experiment, all RNaseP samples test positive."]})
+        empty_message_df = pd.DataFrame({"Message": ["Please verify that you have included an RNaseP viral assay in your CARMEN experiment. If you have, all samples test postive for the RNaseP assay."]})
         empty_message_df.to_csv(rnasep_df_file_path, index=False, header=False)
         print(f"CSV created with message at {rnasep_df_file_path}")
     else:

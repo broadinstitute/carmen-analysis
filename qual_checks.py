@@ -91,7 +91,7 @@ class Qual_Ctrl_Checks:
                     
         else:
             # for the rows containing CPC, collect the (row name, column name) for cells that are negative
-            negative_cpc_dict = {'error': 'issue'} 
+            negative_cpc_dict = {'Error': 'Unable to report negative CPCs. In your assignment sheet, verify that you have appended the appropriate panel suffixes to your sample and assay names.'} 
             """ 
             for row_name, row in cpc_rows.iterrows():
                 negative_cpc_assays = []
