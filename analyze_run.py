@@ -184,9 +184,6 @@ assigned_signal_norm = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # 
 # create df of filtered assigned_signal_norm by applying the NTC check to remove any NTCs whose raw signal suggests contamination
 assigned_signal_norm_with_NTC_check = ntcCheck.ntc_cont(assigned_signal_norm) # feed this into MedianSort
 
-# collect the samples_list after running NTC Contamination Check, in case NTCs were removed
-#samples_list = assigned_signal_norm_with_NTC_check['sample'].unique()
-
 # temporarily save assigned_signal_norm_with_NTC_check
 assigned_signal_norm_with_NTC_check.to_csv(os.path.join(rd_subfolder, 'assigned_signal_norm_with_NTC_check.csv'), index=True)
 
