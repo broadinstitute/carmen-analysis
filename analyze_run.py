@@ -52,7 +52,7 @@ from redcap_builder import RedCapper
 
 ######################################################################################################################################################
 # assign software version
-software_version = '5.4.1'
+software_version = '5.4.2'
 
 ######################################################################################################################################################
 # data loading
@@ -173,7 +173,7 @@ assigned_norms['ref_norm_raw'].to_csv(os.path.join(rd_subfolder, 'assigned_ref_n
 
 # collect the assays/samples from the layout assays/samples in the assignment sheet (this extraction is done in matcher.py)
 crRNA_assays = assigned_lists['assay_list']
-#samples_list = assigned_lists['samples_list']
+samples_list = assigned_lists['samples_list']
 
 ######################################################################################################################################################
 # instantiate ntcContaminationChecker from ntc_con_check.py
@@ -185,7 +185,7 @@ assigned_signal_norm = pd.DataFrame(assigned_norms['signal_norm_raw']).copy() # 
 assigned_signal_norm_with_NTC_check = ntcCheck.ntc_cont(assigned_signal_norm) # feed this into MedianSort
 
 # collect the samples_list after running NTC Contamination Check, in case NTCs were removed
-samples_list = assigned_signal_norm_with_NTC_check['sample'].unique()
+#samples_list = assigned_signal_norm_with_NTC_check['sample'].unique()
 
 # temporarily save assigned_signal_norm_with_NTC_check
 assigned_signal_norm_with_NTC_check.to_csv(os.path.join(rd_subfolder, 'assigned_signal_norm_with_NTC_check.csv'), index=True)
