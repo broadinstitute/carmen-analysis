@@ -33,6 +33,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
+# Pull security updates that haven't yet rolled into the upstream slim
+# image (Trivy gates the build on fixable HIGH/CRITICAL CVEs).
+RUN apt-get update \
+    && apt-get -y upgrade \
+    && rm -rf /var/lib/apt/lists/*
+
 # Streamlit needs no system libs beyond what slim provides; pandas/numpy
 # wheels ship with everything needed at runtime.
 RUN useradd --create-home --uid 1000 carmen
