@@ -1,12 +1,21 @@
 name: docker
 
 on:
+  # Push to any branch builds + scans + (for non-tag refs) deploys to staging.
+  # Push of a v* tag deploys to production. PRs only run build + scan (no
+  # secret access for fork PRs anyway).
   push:
-    branches: [main]
+    branches: ["**"]
     tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+# Push + pull_request both fire for same-repo branches with an open PR; this
+# collapses them so we don't double-build the same SHA.
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
