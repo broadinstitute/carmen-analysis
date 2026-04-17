@@ -240,11 +240,20 @@ jobs:
             EXTRA_FLAGS+=("--no-traffic")
           fi
 
+          # Resource sizing matches terraform/cloud_run.tf + staging.tf.
+          # The pipeline OOMs at the 512Mi default while generating the 13
+          # per-timepoint matplotlib heatmaps; 2Gi is comfortable headroom.
+          # CPU=2 keeps render times reasonable; concurrency=1 because the
+          # pipeline is CPU-bound and one upload per container is plenty.
           gcloud run deploy "${SERVICE}" \
             --image="${IMAGE}" \
             --region="${GAR_LOCATION}" \
             --project="${GAR_PROJECT}" \
             --port=8080 \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=600s \
+            --concurrency=1 \
             --quiet \
             "${EXTRA_FLAGS[@]}"
           BASE_URL=$(gcloud run services describe "${SERVICE}" \
