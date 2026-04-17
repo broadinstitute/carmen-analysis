@@ -204,16 +204,24 @@ jobs:
         id: tag
         run: |
           # Cloud Run revision tags must match [a-z0-9]([-a-z0-9]*[a-z0-9])?,
-          # max 63 chars. Sanitize the branch name accordingly.
+          # AND tag + service name combined must be <= 46 chars. With a
+          # 23-char service name (carmen-analysis-staging), that leaves 22
+          # chars for the tag (we use 14 of branch + 7 of SHA + dash for
+          # uniqueness when branch names share a prefix).
           SAFE=$(echo "${GITHUB_REF_NAME}" \
             | tr '[:upper:]' '[:lower:]' \
             | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' \
-            | cut -c1-63 \
+            | cut -c1-14 \
             | sed 's/-$//')
+          SHA7="${GITHUB_SHA::7}"
           if [ -z "$SAFE" ]; then
-            SAFE="rev-${GITHUB_SHA::12}"
+            TAG="rev-${SHA7}"
+          else
+            TAG="${SAFE}-${SHA7}"
           fi
-          echo "tag=${SAFE}" >> "$GITHUB_OUTPUT"
+          # Final safety: enforce <=22 chars and trim trailing dash.
+          TAG=$(echo "$TAG" | cut -c1-22 | sed 's/-$//')
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Deploy tagged revision to staging
         id: deploy
