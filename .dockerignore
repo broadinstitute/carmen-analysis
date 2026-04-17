@@ -1,0 +1,52 @@
+.git
+.github
+.gitignore
+.gitattributes
+.devcontainer
+.vscode
+.idea
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs
+build
+dist
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+coverage.xml
+htmlcov
+.venv
+venv
+env
+ENV
+.env
+.env.local
+
+# Local sample/test data — never bake user CSV/XLSX into the image.
+*.csv
+*.xlsx
+output_*
+**/output_*
+
+# Terraform/infra files unrelated to the runtime image
+terraform
+*.tfstate
+*.tfstate.*
+
+# Editor cruft
+*.swp
+.DS_Store
+
+# Docs/CI assets we don't want in the image (README is needed for pyproject)
+AGENTS.md
+CLAUDE.md
+docs
+tests
+
+# Keep the in-package resources (Assay-Level QC Test Explanation.pdf) — do not
+# ignore carmen_analysis/resources.

@@ -1,6 +1,7 @@
-import pandas as pd
 import io
-from datetime import datetime
+
+import pandas as pd
+
 
 class DataReader:
     def __init__(self):
@@ -19,7 +20,7 @@ class DataReader:
 
         # Rename column names with 't' prefix
         df.columns = ['t' + str(col) for col in df.columns]
-        
+
         return df
 
     def extract_dataframes_from_csv(self, file_like_object, phrases_to_find):
@@ -31,9 +32,9 @@ class DataReader:
         content = file_like_object.read().decode('utf-8') # bytesIO obj
 
         new_phrase = [
-            "ref_raw", 
+            "ref_raw",
             "probe_raw",
-            "ref_bkgd", 
+            "ref_bkgd",
             "probe_bkgd"
         ]
         phrase_mapping = dict(zip(phrases_to_find, new_phrase))
@@ -65,11 +66,11 @@ class DataReader:
             #print(phrase, len(df))
 
         # Collect the date
-        df = pd.read_csv(io.StringIO(content), nrows=0)  
+        df = pd.read_csv(io.StringIO(content), nrows=0)
         date_header = df.columns[7]
         date_str = date_header.split(' ')[0] # strip removes the character to concat rest and split breaks string at character
         #date_obj = datetime.strptime(date_str, "%d/%m/%Y")
         #date = date_obj.strftime("%m/%d/%Y")
-        
+
         # Return a dictionary of the dataframes
         return dataframes, date_str

@@ -1,7 +1,7 @@
-import pandas as pd 
+
 import numpy as np
-from os import path
-import io
+import pandas as pd
+
 
 class DataMatcher:
     def __init__(self):
@@ -15,7 +15,7 @@ class DataMatcher:
         stacked_array = np.stack(df[c_columns].values, axis=-1)
         flat_list = np.concatenate(stacked_array).tolist()
         return flat_list
-    
+
 
     def assign_assays(self,assignment_file,ref_norm,signal_norm):
         #content_io = io.StringIO(assignment_file)
@@ -40,20 +40,20 @@ class DataMatcher:
         assigned_norms = {}
         assigned_norms['signal_norm_raw'] = signal_norm
         assigned_norms['ref_norm_raw'] = ref_norm
-        
+
         assays = pd.read_excel(assignment_file,sheet_name='assays')
         samples = pd.read_excel(assignment_file,sheet_name='samples')
 
         # Create a list of all assays and samples
 
-        # matching layout assays to assays 
+        # matching layout assays to assays
         assay_list = self.extract_and_stack(assays)
-        # mathching layout samples to samples 
+        # mathching layout samples to samples
         samples_list = self.extract_and_stack(samples)
 
         assigned_lists = {}
-        assigned_lists['assay_list'] = assay_list 
-        assigned_lists['samples_list'] = samples_list 
+        assigned_lists['assay_list'] = assay_list
+        assigned_lists['samples_list'] = samples_list
 
 
         print(f"Number of crRNAs: {len(assay_list)}")

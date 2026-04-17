@@ -1,0 +1,276 @@
+name: docker
+
+on:
+  # Push to any branch builds + scans + (for non-tag refs) deploys to staging.
+  # Push of a v* tag deploys to production. PRs only run build + scan (no
+  # secret access for fork PRs anyway).
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Push + pull_request both fire for same-repo branches with an open PR; this
+# collapses them so we don't double-build the same SHA.
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write   # Workload Identity Federation
+  security-events: write   # upload Trivy SARIF
+
+env:
+  GAR_LOCATION: us-central1
+  GAR_PROJECT: sabeti-adapt
+  GAR_REPOSITORY: carmen-analysis
+  IMAGE_NAME: carmen-analysis
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.meta.outputs.image_uri }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute image metadata
+        id: meta
+        run: |
+          SHA_SHORT="${GITHUB_SHA::12}"
+          IMAGE="${GAR_LOCATION}-docker.pkg.dev/${GAR_PROJECT}/${GAR_REPOSITORY}/${IMAGE_NAME}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "image_uri=${IMAGE}:${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+          echo "sha_short=${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Build image (load locally for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: ${{ steps.meta.outputs.image_uri }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Scan once → JSON. JSON is the source of truth for both the SARIF
+      # upload (Code Scanning) and the human/agent-readable log output.
+      - name: Trivy scan (JSON)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ steps.meta.outputs.image_uri }}
+          format: json
+          output: trivy-results.json
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Convert Trivy JSON → SARIF
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: convert
+          scan-ref: trivy-results.json
+          format: sarif
+          output: trivy-results.sarif
+          skip-setup-trivy: true
+
+      - name: Render Trivy findings to log + step summary
+        if: always()
+        run: |
+          if [ ! -s trivy-results.json ]; then
+            echo "No Trivy JSON report produced." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # One row per (Target, Severity, PkgName, InstalledVersion, FixedVersion, VulnerabilityID).
+          jq -r '
+            ["Target","Severity","Package","Installed","FixedIn","CVE","Title"],
+            (.Results // []
+              | map(. as $r | (.Vulnerabilities // [])
+                  | map(. + {Target: $r.Target}))
+              | add // []
+              | .[]
+              | [ .Target, .Severity, .PkgName, .InstalledVersion,
+                  (.FixedVersion // ""), .VulnerabilityID,
+                  ((.Title // "") | gsub("[\\r\\n\\t]"; " ")) ])
+            | @tsv
+          ' trivy-results.json | column -t -s $'\t' | tee trivy-table.txt
+          {
+            echo "## Trivy findings (HIGH/CRITICAL, fixable only)"
+            echo ""
+            echo '```'
+            cat trivy-table.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Gate build on Trivy findings
+        run: |
+          COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' trivy-results.json)
+          echo "Fixable HIGH/CRITICAL findings: $COUNT"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "::error::Trivy found $COUNT fixable HIGH/CRITICAL vulnerabilities."
+            exit 1
+          fi
+
+      - name: Upload Trivy SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Upload Trivy JSON as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results-json
+          path: trivy-results.json
+          if-no-files-found: ignore
+
+      - name: Authenticate to Google Cloud (WIF)
+        if: github.event_name != 'pull_request'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Configure docker auth for Artifact Registry
+        if: github.event_name != 'pull_request'
+        run: gcloud auth configure-docker ${GAR_LOCATION}-docker.pkg.dev --quiet
+
+      - name: Push image (sha tag + latest on main + version tag on tag push)
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          SHA_TAG="${IMAGE}:${{ steps.meta.outputs.sha_short }}"
+          docker push "$SHA_TAG"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            docker tag "$SHA_TAG" "${IMAGE}:latest"
+            docker push "${IMAGE}:latest"
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            docker tag "$SHA_TAG" "${IMAGE}:${VERSION}"
+            docker push "${IMAGE}:${VERSION}"
+          fi
+
+  deploy:
+    needs: build-and-scan
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy tagged image to Cloud Run
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          IMAGE="${{ needs.build-and-scan.outputs.image-uri }}"
+          # Use the version tag we just pushed for traceability.
+          VERSIONED="${IMAGE%:*}:${VERSION}"
+          gcloud run deploy "${IMAGE_NAME}" \
+            --image="${VERSIONED}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --quiet
+
+  # Staging: every push to a branch (not tag) gets its own tagged revision on
+  # the public, unauth'd `${IMAGE_NAME}-staging` service so engineers can poke
+  # at the live container before merging. PRs from forks don't fire (no WIF
+  # secret access on fork pull_request events) — that's expected.
+  staging-deploy:
+    needs: build-and-scan
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Compute revision tag from branch name
+        id: tag
+        run: |
+          # Cloud Run revision tags must match [a-z0-9]([-a-z0-9]*[a-z0-9])?,
+          # AND tag + service name combined must be <= 46 chars. With a
+          # 23-char service name (carmen-analysis-staging), that leaves 22
+          # chars for the tag (we use 14 of branch + 7 of SHA + dash for
+          # uniqueness when branch names share a prefix).
+          SAFE=$(echo "${GITHUB_REF_NAME}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' \
+            | cut -c1-14 \
+            | sed 's/-$//')
+          SHA7="${GITHUB_SHA::7}"
+          if [ -z "$SAFE" ]; then
+            TAG="rev-${SHA7}"
+          else
+            TAG="${SAFE}-${SHA7}"
+          fi
+          # Final safety: enforce <=22 chars and trim trailing dash.
+          TAG=$(echo "$TAG" | cut -c1-22 | sed 's/-$//')
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy tagged revision to staging
+        id: deploy
+        run: |
+          IMAGE="${{ needs.build-and-scan.outputs.image-uri }}"
+          TAG="${{ steps.tag.outputs.tag }}"
+          SERVICE="${IMAGE_NAME}-staging"
+
+          # --no-traffic is rejected when the service doesn't exist yet
+          # (Cloud Run requires the first revision to take traffic). On the
+          # bootstrap deploy, omit it; subsequent per-branch revisions add it.
+          EXTRA_FLAGS=("--tag=${TAG}" "--allow-unauthenticated")
+          if gcloud run services describe "${SERVICE}" \
+              --region="${GAR_LOCATION}" --project="${GAR_PROJECT}" \
+              --format='value(name)' >/dev/null 2>&1; then
+            EXTRA_FLAGS+=("--no-traffic")
+          fi
+
+          # Resource sizing matches terraform/cloud_run.tf + staging.tf.
+          # The pipeline OOMs at the 512Mi default while generating the 13
+          # per-timepoint matplotlib heatmaps; 2Gi is comfortable headroom.
+          # Concurrency must be high enough that the long-lived Streamlit
+          # websocket can coexist with file-upload XHRs on the same instance
+          # (concurrency=1 routes the upload to a fresh, sessionless
+          # instance and the upload returns 400). Session affinity pins a
+          # browser to one instance so st.session_state survives across
+          # XHRs even though min_instance_count=0.
+          gcloud run deploy "${SERVICE}" \
+            --image="${IMAGE}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --port=8080 \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=600s \
+            --concurrency=80 \
+            --session-affinity \
+            --quiet \
+            "${EXTRA_FLAGS[@]}"
+          BASE_URL=$(gcloud run services describe "${SERVICE}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --format='value(uri)')
+          HOST="${BASE_URL#https://}"
+          TAGGED_URL="https://${TAG}---${HOST}"
+          {
+            echo "## Staging deploy"
+            echo ""
+            echo "- **Branch:** \`${GITHUB_REF_NAME}\`"
+            echo "- **Revision tag:** \`${TAG}\`"
+            echo "- **URL:** ${TAGGED_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"

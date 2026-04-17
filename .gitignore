@@ -1,6 +1,61 @@
+# OS
 .DS_Store
+
+# Editor / IDE
+.idea
+.vscode
+
+# Python build / install
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+.eggs/
+build/
+dist/
+.Python
+
+# Virtualenvs
+/carmen-env
+.venv/
+venv/
+env/
+ENV/
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local user data — never commit assignment sheets, instrument exports, or
+# pipeline outputs (they may contain PHI).
 *.csv
 *.xlsx
-*.pyc
-/carmen-env
 *.png
+output_*/
+**/output_*/
+
+# Allow committed test fixtures that live under tests/
+!tests/fixtures/**/*.csv
+!tests/fixtures/**/*.xlsx
+!tests/fixtures/**/*.png
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Secrets
+.env
+.env.local
+*.pem
+*.key
