@@ -243,8 +243,12 @@ jobs:
           # Resource sizing matches terraform/cloud_run.tf + staging.tf.
           # The pipeline OOMs at the 512Mi default while generating the 13
           # per-timepoint matplotlib heatmaps; 2Gi is comfortable headroom.
-          # CPU=2 keeps render times reasonable; concurrency=1 because the
-          # pipeline is CPU-bound and one upload per container is plenty.
+          # Concurrency must be high enough that the long-lived Streamlit
+          # websocket can coexist with file-upload XHRs on the same instance
+          # (concurrency=1 routes the upload to a fresh, sessionless
+          # instance and the upload returns 400). Session affinity pins a
+          # browser to one instance so st.session_state survives across
+          # XHRs even though min_instance_count=0.
           gcloud run deploy "${SERVICE}" \
             --image="${IMAGE}" \
             --region="${GAR_LOCATION}" \
@@ -253,7 +257,8 @@ jobs:
             --memory=2Gi \
             --cpu=2 \
             --timeout=600s \
-            --concurrency=1 \
+            --concurrency=80 \
+            --session-affinity \
             --quiet \
             "${EXTRA_FLAGS[@]}"
           BASE_URL=$(gcloud run services describe "${SERVICE}" \

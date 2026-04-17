@@ -13,6 +13,9 @@ resource "google_cloud_run_v2_service" "app" {
     service_account                  = google_service_account.runtime.email
     timeout                          = "${var.cloud_run_timeout_seconds}s"
     max_instance_request_concurrency = var.cloud_run_concurrency
+    # Streamlit's session_state lives in the Python process; pin a browser
+    # to one instance so XHRs and the websocket land together.
+    session_affinity = true
 
     scaling {
       min_instance_count = var.cloud_run_min_instances

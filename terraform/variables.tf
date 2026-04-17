@@ -77,9 +77,9 @@ variable "cloud_run_timeout_seconds" {
 }
 
 variable "cloud_run_concurrency" {
-  description = "Max concurrent requests per container. The pipeline is CPU-bound; one upload at a time."
+  description = "Max concurrent requests per container. Must be >1: Streamlit's persistent websocket plus file-upload XHRs are separate Cloud Run requests, and routing the upload to a fresh sessionless instance returns 400. Session affinity pins a browser to one instance so the pipeline still effectively serializes per-user."
   type        = number
-  default     = 1
+  default     = 80
 }
 
 variable "gar_repository_id" {

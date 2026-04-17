@@ -27,6 +27,7 @@ resource "google_cloud_run_v2_service" "staging" {
     service_account                  = google_service_account.runtime.email
     timeout                          = "${var.cloud_run_timeout_seconds}s"
     max_instance_request_concurrency = var.cloud_run_concurrency
+    session_affinity                 = true
 
     scaling {
       min_instance_count = 0
