@@ -53,19 +53,37 @@ variable "cloud_run_min_instances" {
 }
 
 variable "cloud_run_max_instances" {
-  description = "Maximum Cloud Run instances."
+  description = "Maximum Cloud Run instances. Caps blast radius of misuse."
   type        = number
-  default     = 4
+  default     = 5
 }
 
 variable "cloud_run_cpu" {
   description = "CPU per Cloud Run instance."
   type        = string
-  default     = "1"
+  default     = "2"
 }
 
 variable "cloud_run_memory" {
   description = "Memory per Cloud Run instance."
   type        = string
   default     = "2Gi"
+}
+
+variable "cloud_run_timeout_seconds" {
+  description = "Per-request timeout. Analyses run 2–5 min in practice; 600s gives headroom."
+  type        = number
+  default     = 600
+}
+
+variable "cloud_run_concurrency" {
+  description = "Max concurrent requests per container. The pipeline is CPU-bound; one upload at a time."
+  type        = number
+  default     = 1
+}
+
+variable "gar_repository_id" {
+  description = "Artifact Registry repository ID for the carmen-analysis Docker image."
+  type        = string
+  default     = "carmen-analysis"
 }

@@ -29,10 +29,16 @@ carmen_analysis/
 ├── redcap/builder.py          # REDCap CSV emission
 ├── resources/                 # bundled non-code data (e.g. QC explanation PDF)
 └── web/app.py                 # Streamlit UI; stateless, calls run_pipeline
+                                #   exposes `run()` for the carmen-web entry point
 ```
 
 The orchestration is **only** in `pipeline.py`. Sub-modules do not import each
 other; they're independent stages that `pipeline.py` wires together.
+
+## Console scripts
+
+- `carmen-analyze` → `carmen_analysis.cli:main` — argparse CLI.
+- `carmen-web`     → `carmen_analysis.web.app:run` — launches the Streamlit UI.
 
 ## Conventions
 
@@ -70,7 +76,14 @@ ruff check carmen_analysis tests
 carmen-analyze --help     # CLI smoke test
 ```
 
-CI (`.github/workflows/ci.yml`) enforces all three on every PR.
+CI (`.github/workflows/ci.yml`) enforces all four on every PR.
+
+Legacy modules (everything moved by `git mv` from the repo root into
+`io/`, `process/`, `qc/`, `viz/`, `redcap/`) carry per-file ruff ignores in
+`pyproject.toml` for cosmetic findings (whitespace, loop variables, zip
+strict). Don't churn those modules to clear the ignores in unrelated PRs.
+The new code (`pipeline.py`, `cli.py`, `errors.py`, `web/app.py`,
+`__init__.py`) has no per-file ignores and must stay clean.
 
 ## Build / deploy
 

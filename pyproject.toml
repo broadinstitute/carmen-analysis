@@ -39,10 +39,12 @@ dev = [
     "pytest>=8",
     "pytest-cov>=5",
     "ruff>=0.6",
+    "mypy>=1.10",
 ]
 
 [project.scripts]
 carmen-analyze = "carmen_analysis.cli:main"
+carmen-web = "carmen_analysis.web.app:run"
 
 [project.urls]
 Homepage = "https://github.com/broadinstitute/carmen-analysis"

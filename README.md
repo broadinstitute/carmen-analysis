@@ -9,7 +9,7 @@ heatmaps.
 The pipeline is pathogen-agnostic and works for any combination of viral
 assays validated for CARMEN.
 
-**Software version:** see `carmen_analysis.__version__`.
+**Software version:** 5.5.0 (also exposed as `carmen_analysis.__version__`).
 
 ---
 
@@ -65,14 +65,28 @@ Pick the threshold appropriate for your panel:
 
 ## Web app
 
-Open the deployed web app, drop the two files, pick the threshold, click
-**Run**, download the ZIP. No credentials are stored, no data is retained
-between sessions.
+Open the deployed web app, drop the two files, pick the panel, click
+**Analyze**, download the ZIP. The UI offers:
 
-To run the app locally:
+- A panel selector with friendly labels for RVP and BBP, plus a
+  **"Run both and compare"** option that runs both thresholding modes on the
+  same dataset and shows the results side-by-side (this is a common workflow
+  for the wet-lab team).
+- An optional REDCap export.
+- A prominent **binary results** table + one-click TSV download, formatted
+  for paste-into-GraphPad-Prism (so you don't have to manually replace
+  POSITIVE → 1 / NEGATIVE → 0).
+- Inline preview of the final NTC-normalized heatmap, with per-timepoint
+  heatmaps in a collapsed expander.
+
+No credentials are stored. No data is retained between sessions.
+
+To run the app locally (after `pip install -e ".[web]"` from a clone):
 
 ```bash
-pip install carmen-analysis[web]
+carmen-web                                       # console script (preferred)
+
+# Or, equivalently:
 streamlit run "$(python -c 'import carmen_analysis.web.app as a; print(a.__file__)')"
 ```
 
@@ -81,7 +95,11 @@ streamlit run "$(python -c 'import carmen_analysis.web.app as a; print(a.__file_
 ## CLI
 
 ```bash
-pip install carmen-analysis
+# From a clone (the package isn't on PyPI yet):
+git clone https://github.com/broadinstitute/carmen-analysis
+cd carmen-analysis
+pip install -e .
+
 carmen-analyze \
   --assignment 1740742241_192.24_assignment.xlsx \
   --data       1740742241.csv \
@@ -133,9 +151,11 @@ containing three subfolders:
   - `RESULTS_{barcode}_{panel}.xlsx` — 5-sheet workbook (hit calls, NTC-normalized quants, positives summary, NTC thresholds, binary results).
   - `NTC_Normalized_Heatmap_{barcode}.png` — final-timepoint heatmap.
   - `REDCAP_{barcode}_{panel}.csv` — REDCap-ready export, if `--redcap`.
-- **`QUALITY_CONTROL_{barcode}/`** — QC artifacts.
-  - `Quality_Control_Report_{barcode}.pdf` + `QC_{barcode}.xlsx`.
-  - `Assay_Performance_QC_Test_Results_{barcode}.csv` + the bundled `Assay-Level QC Test Explanation.pdf`.
+- **`QUALITY_CONTROL_{barcode}/`** — QC artifacts, in two subfolders:
+  - `QUALITY_CONTROL_OF_NEG_AND_POS_CONTROLS/`:
+    `Quality_Control_Report_{barcode}.pdf` + `QC_{barcode}.xlsx` (or per-check CSVs as a fallback).
+  - `QUALITY_CONTROL_OF_VIRAL_ASSAYS/`:
+    `Assay_Performance_QC_Test_Results_{barcode}.csv` + the bundled `Assay-Level QC Test Explanation.pdf`.
 - **`R&D_{barcode}/`** — intermediates for follow-up analysis (per-timepoint CSVs, per-timepoint heatmaps, normalization intermediates).
 
 ---

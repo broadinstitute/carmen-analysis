@@ -90,3 +90,29 @@ jobs:
             docker tag "$SHA_TAG" "${IMAGE}:${VERSION}"
             docker push "${IMAGE}:${VERSION}"
           fi
+
+  deploy:
+    needs: build-and-scan
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy tagged image to Cloud Run
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          IMAGE="${{ needs.build-and-scan.outputs.image-uri }}"
+          # Use the version tag we just pushed for traceability.
+          VERSIONED="${IMAGE%:*}:${VERSION}"
+          gcloud run deploy "${IMAGE_NAME}" \
+            --image="${VERSIONED}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --quiet
