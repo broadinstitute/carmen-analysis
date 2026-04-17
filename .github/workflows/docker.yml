@@ -221,13 +221,24 @@ jobs:
           IMAGE="${{ needs.build-and-scan.outputs.image-uri }}"
           TAG="${{ steps.tag.outputs.tag }}"
           SERVICE="${IMAGE_NAME}-staging"
+
+          # --no-traffic is rejected when the service doesn't exist yet
+          # (Cloud Run requires the first revision to take traffic). On the
+          # bootstrap deploy, omit it; subsequent per-branch revisions add it.
+          EXTRA_FLAGS=("--tag=${TAG}" "--allow-unauthenticated")
+          if gcloud run services describe "${SERVICE}" \
+              --region="${GAR_LOCATION}" --project="${GAR_PROJECT}" \
+              --format='value(name)' >/dev/null 2>&1; then
+            EXTRA_FLAGS+=("--no-traffic")
+          fi
+
           gcloud run deploy "${SERVICE}" \
             --image="${IMAGE}" \
             --region="${GAR_LOCATION}" \
             --project="${GAR_PROJECT}" \
-            --tag="${TAG}" \
-            --no-traffic \
-            --quiet
+            --port=8080 \
+            --quiet \
+            "${EXTRA_FLAGS[@]}"
           BASE_URL=$(gcloud run services describe "${SERVICE}" \
             --region="${GAR_LOCATION}" \
             --project="${GAR_PROJECT}" \
