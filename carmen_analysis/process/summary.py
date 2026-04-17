@@ -1,14 +1,14 @@
-import numpy as np
 import pandas as pd
 
-class Summarized: 
+
+class Summarized:
     def __init__(self):
         pass
 
     def summarizer(self, binary_t13_df):
         # Create a new row called 'Summary'
         binary_t13_df.loc['Summary'] = binary_t13_df.apply(lambda col: col.value_counts().get('POSITIVE', 0))
- 
+
         positive_samples_dict ={}
 
         for col_name, col_data in binary_t13_df.items():
@@ -27,12 +27,11 @@ class Summarized:
         totals_row = positive_samples_df.loc[['Totals']]
         positive_samples_df = positive_samples_df.drop('Totals')
         positive_samples_df = pd.concat([totals_row, positive_samples_df])
-        
+
         return positive_samples_df
 
 
 
-        
 
 
-  
+

@@ -1,0 +1,92 @@
+name: docker
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # Workload Identity Federation
+  security-events: write   # upload Trivy SARIF
+
+env:
+  GAR_LOCATION: us-central1
+  GAR_PROJECT: sabeti-adapt
+  GAR_REPOSITORY: carmen-analysis
+  IMAGE_NAME: carmen-analysis
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.meta.outputs.image_uri }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute image metadata
+        id: meta
+        run: |
+          SHA_SHORT="${GITHUB_SHA::12}"
+          IMAGE="${GAR_LOCATION}-docker.pkg.dev/${GAR_PROJECT}/${GAR_REPOSITORY}/${IMAGE_NAME}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "image_uri=${IMAGE}:${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+          echo "sha_short=${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Build image (load locally for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: ${{ steps.meta.outputs.image_uri }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy vulnerability scan (HIGH,CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.meta.outputs.image_uri }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Authenticate to Google Cloud (WIF)
+        if: github.event_name != 'pull_request'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Configure docker auth for Artifact Registry
+        if: github.event_name != 'pull_request'
+        run: gcloud auth configure-docker ${GAR_LOCATION}-docker.pkg.dev --quiet
+
+      - name: Push image (sha tag + latest on main + version tag on tag push)
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          SHA_TAG="${IMAGE}:${{ steps.meta.outputs.sha_short }}"
+          docker push "$SHA_TAG"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            docker tag "$SHA_TAG" "${IMAGE}:latest"
+            docker push "${IMAGE}:latest"
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            docker tag "$SHA_TAG" "${IMAGE}:${VERSION}"
+            docker push "${IMAGE}:${VERSION}"
+          fi

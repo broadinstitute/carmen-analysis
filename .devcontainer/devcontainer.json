@@ -1,33 +1,34 @@
 {
-  "name": "Python 3",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bullseye",
+  "name": "carmen-analysis",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
   "customizations": {
     "codespaces": {
       "openFiles": [
         "README.md",
-        "app.py"
+        "carmen_analysis/web/app.py"
       ]
     },
     "vscode": {
-      "settings": {},
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true
+      },
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
       ]
     }
   },
-  "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
+  "updateContentCommand": "pip install --user --upgrade pip && pip install --user -e '.[web,dev]' && echo '✅ carmen-analysis installed (editable, with web+dev extras)'",
   "postAttachCommand": {
-    "server": "streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false"
+    "server": "streamlit run --server.enableCORS false --server.enableXsrfProtection false $(python -c 'import carmen_analysis.web.app as a; print(a.__file__)')"
   },
   "portsAttributes": {
     "8501": {
-      "label": "Application",
+      "label": "CARMEN Analysis web app",
       "onAutoForward": "openPreview"
     }
   },
-  "forwardPorts": [
-    8501
-  ]
+  "forwardPorts": [8501]
 }

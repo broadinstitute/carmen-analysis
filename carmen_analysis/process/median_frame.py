@@ -1,16 +1,15 @@
-import pandas as pd
 
 class MedianSort:
      def __init__(self,crRNA_list ):
-       if crRNA_list is None: 
-         self.crRNA_list = ('SC2', 'HCoV-HKU1', 'HCoV-NL63', 'HCoV-OC43', 
+       if crRNA_list is None:
+         self.crRNA_list = ('SC2', 'HCoV-HKU1', 'HCoV-NL63', 'HCoV-OC43',
                   'FLUAV', 'FLUBV', 'HMPV', 'HRSV', 'HPIV-3', 'RnaseP', 'no-crRNA')
        else:
-         self.crRNA_list = crRNA_list 
-   
+         self.crRNA_list = crRNA_list
+
 
 # Display the rearranged DataFrame
-     
+
      def create_median(self, signal_norm):
          # create a list containing t1 thru t13
         t_names = [col for col in signal_norm.columns if col.startswith('t')]
@@ -18,7 +17,7 @@ class MedianSort:
         # initialize a dictionary
         med_frames = {}
         # for each timepoint
-        for name in t_names: 
+        for name in t_names:
             # groups signal_norm by assay and sample
             # in groupby, pandas automatically sorts the assay col in alpha order
             # selects the column for the specific timepoint
@@ -34,9 +33,9 @@ class MedianSort:
             med_frames[name] = time_med_transposed
 
         return med_frames
-      
-          
-     
+
+
+
 
 
 

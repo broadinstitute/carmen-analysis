@@ -1,5 +1,5 @@
-import numpy as np
 import pandas as pd
+
 
 class Normalized:
     def __init__(self):
@@ -9,7 +9,7 @@ class Normalized:
         # Filter rows containing 'NTC' in any column, produces df
         ntc_PerAssay = t13_df[t13_df.index.str.contains('NTC')]
 
-        # Collapse any columns that have the same name in the NTCs df 
+        # Collapse any columns that have the same name in the NTCs df
         ntc_PerAssay = ntc_PerAssay.T.groupby(by=ntc_PerAssay.columns).mean()
 
         # Calculate mean of each column
@@ -29,12 +29,12 @@ class Normalized:
                 # Divide the value by the NTC mean per assay
                 t13_df.at[index, col_name] = value/ntc_mean
 
-        t13_df = t13_df.apply(pd.to_numeric, errors = 'coerce')  
-        
-        return t13_df
-    
-    
+        t13_df = t13_df.apply(pd.to_numeric, errors = 'coerce')
 
-        
+        return t13_df
+
+
+
+
 
 
