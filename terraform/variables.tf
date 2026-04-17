@@ -20,7 +20,7 @@ variable "image" {
   description = "Fully-qualified container image to deploy. Override per-environment in tfvars."
   type        = string
   # The CI workflow pushes a :sha tag; for steady-state deploys we point at :latest.
-  default     = "us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/carmen-analysis:latest"
+  default = "us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/carmen-analysis:latest"
 }
 
 variable "domain" {

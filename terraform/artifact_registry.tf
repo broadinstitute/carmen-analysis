@@ -25,7 +25,7 @@ resource "google_artifact_registry_repository" "carmen_analysis" {
     action = "DELETE"
     condition {
       tag_state  = "UNTAGGED"
-      older_than = "604800s"  # 7 days
+      older_than = "604800s" # 7 days
     }
   }
 

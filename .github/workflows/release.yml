@@ -6,10 +6,9 @@ on:
 
 permissions:
   contents: write
-  id-token: write   # PyPI trusted publishing (OIDC)
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,44 +23,15 @@ jobs:
           python -m pip install --upgrade pip build
           python -m build
 
-      - name: Upload built distributions
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-  github-release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download built distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
           generate_release_notes: true
 
-  pypi-publish:
-    needs: build
-    runs-on: ubuntu-latest
-    # Trusted publisher must be configured on PyPI for this project +
-    # workflow + environment. Until then the job is a no-op gate that
-    # surfaces the missing configuration as a clear error rather than
-    # silently skipping. See: https://docs.pypi.org/trusted-publishers/
-    environment:
-      name: pypi
-      url: https://pypi.org/p/carmen-analysis
-    steps:
-      - name: Download built distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to PyPI (OIDC trusted publishing)
-        uses: pypa/gh-action-pypi-publish@release/v1
+# PyPI publishing intentionally deferred. When ready:
+#   1. Configure trusted publishing on pypi.org for this project +
+#      workflow=release.yml + environment=pypi.
+#   2. Add a `pypi-publish` job here that downloads dist/ and uses
+#      pypa/gh-action-pypi-publish@release/v1, plus `id-token: write`
+#      in permissions and an `environment: pypi` block on the job.

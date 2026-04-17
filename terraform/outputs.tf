@@ -16,3 +16,13 @@ output "managed_cert_name" {
   description = "Inspect provisioning state with: gcloud compute ssl-certificates describe <name>."
   value       = google_compute_managed_ssl_certificate.app.name
 }
+
+output "staging_service_name" {
+  description = "Cloud Run staging service. CI deploys per-branch tagged revisions to it."
+  value       = google_cloud_run_v2_service.staging.name
+}
+
+output "staging_base_url" {
+  description = "Base *.run.app URL of the staging service. Per-branch URLs prepend `<branch>---`."
+  value       = google_cloud_run_v2_service.staging.uri
+}

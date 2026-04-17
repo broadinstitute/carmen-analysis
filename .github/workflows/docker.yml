@@ -116,3 +116,63 @@ jobs:
             --region="${GAR_LOCATION}" \
             --project="${GAR_PROJECT}" \
             --quiet
+
+  # Staging: every push to a branch (not tag) gets its own tagged revision on
+  # the public, unauth'd `${IMAGE_NAME}-staging` service so engineers can poke
+  # at the live container before merging. PRs from forks don't fire (no WIF
+  # secret access on fork pull_request events) — that's expected.
+  staging-deploy:
+    needs: build-and-scan
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Compute revision tag from branch name
+        id: tag
+        run: |
+          # Cloud Run revision tags must match [a-z0-9]([-a-z0-9]*[a-z0-9])?,
+          # max 63 chars. Sanitize the branch name accordingly.
+          SAFE=$(echo "${GITHUB_REF_NAME}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' \
+            | cut -c1-63 \
+            | sed 's/-$//')
+          if [ -z "$SAFE" ]; then
+            SAFE="rev-${GITHUB_SHA::12}"
+          fi
+          echo "tag=${SAFE}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy tagged revision to staging
+        id: deploy
+        run: |
+          IMAGE="${{ needs.build-and-scan.outputs.image-uri }}"
+          TAG="${{ steps.tag.outputs.tag }}"
+          SERVICE="${IMAGE_NAME}-staging"
+          gcloud run deploy "${SERVICE}" \
+            --image="${IMAGE}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --tag="${TAG}" \
+            --no-traffic \
+            --quiet
+          BASE_URL=$(gcloud run services describe "${SERVICE}" \
+            --region="${GAR_LOCATION}" \
+            --project="${GAR_PROJECT}" \
+            --format='value(uri)')
+          HOST="${BASE_URL#https://}"
+          TAGGED_URL="https://${TAG}---${HOST}"
+          {
+            echo "## Staging deploy"
+            echo ""
+            echo "- **Branch:** \`${GITHUB_REF_NAME}\`"
+            echo "- **Revision tag:** \`${TAG}\`"
+            echo "- **URL:** ${TAGGED_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"

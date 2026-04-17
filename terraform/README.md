@@ -61,12 +61,33 @@ gcloud compute ssl-certificates describe carmen-analysis-cert \
 Status will move from `PROVISIONING` → `ACTIVE` once DNS is live (typically
 10–60 minutes).
 
+## Staging service
+
+`staging.tf` provisions a second Cloud Run service, `carmen-analysis-staging`,
+with the opposite security posture from production:
+
+- `ingress = INGRESS_TRAFFIC_ALL` (reachable directly at `*.run.app`)
+- `allUsers` granted `roles/run.invoker` (no auth)
+- `lifecycle.ignore_changes = [template]` — Terraform owns the service shell
+  and IAM only; CI owns the live revisions.
+
+Every push to a non-tag ref triggers `.github/workflows/docker.yml`'s
+`staging-deploy` job, which sanitizes the branch name into a Cloud Run
+revision tag and runs `gcloud run deploy --tag <branch> --no-traffic`. The
+URL is `https://<branch>---carmen-analysis-staging-<hash>.us-central1.run.app`
+and is surfaced in the workflow run's summary tab.
+
+This service is **deliberately public and unauth'd** — never deploy anything
+sensitive to it. Treat it as a throwaway sandbox. PRs from forks do not get a
+staging deploy (their workflow runs don't have access to the WIF secrets).
+
 ## Notes
 
-- Cloud Run ingress is set to `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`, so
+- Production Cloud Run ingress is `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`, so
   the service is unreachable except via the LB+IAP front door.
-- Only the IAP service principal has `roles/run.invoker`; end users hit IAP,
-  IAP forwards to Cloud Run, and IAP enforces the `iap_members` allow-list.
+- Only the IAP service principal has `roles/run.invoker` on production; end
+  users hit IAP, IAP forwards to Cloud Run, and IAP enforces the
+  `iap_members` allow-list.
 - `enable_cdn = false` — these are diagnostic outputs, not cacheable assets.
 - This stack mirrors the pattern from `sabeti-librechat-deployment` but uses
   `google_compute_managed_ssl_certificate` (free, GCP-managed, auto-renewing)

@@ -91,12 +91,18 @@ The new code (`pipeline.py`, `cli.py`, `errors.py`, `web/app.py`,
   (HIGH/CRITICAL, fail on findings), pushes to
   `us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/carmen-analysis`
   via Workload Identity Federation. No long-lived service-account keys.
+  - On `v*` tag push: deploys to the production Cloud Run service
+    (`carmen-analysis`), which sits behind the LB + IAP.
+  - On any other branch push: deploys a per-branch tagged revision to the
+    public staging service (`carmen-analysis-staging`). The URL is
+    `https://<sanitized-branch>---carmen-analysis-staging-<hash>.us-central1.run.app`
+    and is printed in the workflow run summary.
 - `.github/workflows/release.yml` builds sdist+wheel on `v*` tags and creates
-  the GitHub Release.
-- `terraform/` provisions the Cloud Run service, HTTPS LB, IAP, and the
-  GCP-managed SSL certificate. The static IP `carmen-analysis-ip` already
-  exists in the `sabeti-adapt` project; the BITS DNS ticket points
-  `carmen-analysis.broadinstitute.org` at it.
+  the GitHub Release. (PyPI publishing is intentionally deferred.)
+- `terraform/` provisions both Cloud Run services (production + staging),
+  the HTTPS LB, IAP, and the GCP-managed SSL certificate. The static IP
+  `carmen-analysis-ip` already exists in the `sabeti-adapt` project; the
+  BITS DNS ticket points `carmen-analysis.broadinstitute.org` at it.
 
 ## Things to avoid
 
