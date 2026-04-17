@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "carmen-analysis"
-version = "5.5.0"
+version = "6.0.0"
 description = "CARMEN analysis pipeline — Cas13-based multiplexed viral diagnostic data processing."
 readme = "README.md"
 license = { file = "LICENSE" }

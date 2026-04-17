@@ -9,7 +9,7 @@ heatmaps.
 The pipeline is pathogen-agnostic and works for any combination of viral
 assays validated for CARMEN.
 
-**Software version:** 5.5.0 (also exposed as `carmen_analysis.__version__`).
+**Software version:** 6.0.0 (also exposed as `carmen_analysis.__version__`).
 
 ---
 
