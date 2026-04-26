@@ -1,5 +1,8 @@
 terraform {
-  required_version = ">= 1.6"
+  # 1.5 is what Homebrew currently ships (Hashicorp's BUSL change blocked
+  # later versions from the formula). Bump only if we actually need a newer
+  # feature — none of this stack uses 1.6+ syntax.
+  required_version = ">= 1.5"
 
   required_providers {
     google = {

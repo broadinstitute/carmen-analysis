@@ -9,15 +9,19 @@ Internet
 Global External Application LB  (static IP: carmen-analysis-ip)
    │
    ▼
-IAP (broadinstitute.org members only)
-   │
-   ▼
-Serverless NEG  ──▶  Cloud Run service (carmen-analysis)
+Serverless NEG  ──▶  Cloud Run service (carmen-analysis, ingress=INTERNAL_LB)
                        └─ container image from Artifact Registry
                           us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/...
 ```
 
 Plus an HTTP (80) forwarding rule that 301-redirects to HTTPS.
+
+The site is **public** — no authentication. The data passing through the
+pipeline is on the user's laptop and nothing is retained server-side, so the
+auth tier wasn't load-bearing. The earlier IAP design was abandoned because
+Google deprecated the IAP OAuth Admin API in July 2025; a draft PR exists to
+migrate off the LB entirely (Cloud Run native domain mapping) — see the
+`infra/cloudrun-domain-mapping` branch.
 
 ## Prerequisites
 
@@ -28,27 +32,17 @@ Plus an HTTP (80) forwarding rule that 301-redirects to HTTPS.
    place. The GCP-managed cert will not finish provisioning until DNS
    resolves to the LB's IP.
 3. The container image has been built+pushed by `.github/workflows/docker.yml`.
-4. The Cloud OAuth consent screen ("brand") needs a support email — pass it
-   via `iap_support_email`. Use a group address you control.
 
 ## Apply
+
+`terraform.tfvars` can be empty — all variables have sensible defaults for the
+standard `sabeti-adapt` deployment. Override only what you need.
 
 ```bash
 cd terraform
 terraform init
-terraform plan -var "iap_support_email=carmen-eng@broadinstitute.org" \
-               -var 'iap_members=["group:sabeti-lab@broadinstitute.org"]'
-terraform apply -var "iap_support_email=carmen-eng@broadinstitute.org" \
-                -var 'iap_members=["group:sabeti-lab@broadinstitute.org"]'
-```
-
-Or write a `terraform.tfvars`:
-
-```hcl
-iap_support_email = "carmen-eng@broadinstitute.org"
-iap_members = [
-  "group:sabeti-lab@broadinstitute.org",
-]
+terraform plan
+terraform apply
 ```
 
 After apply, certificate provisioning is asynchronous. Watch it with:
@@ -84,10 +78,9 @@ staging deploy (their workflow runs don't have access to the WIF secrets).
 ## Notes
 
 - Production Cloud Run ingress is `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`, so
-  the service is unreachable except via the LB+IAP front door.
-- Only the IAP service principal has `roles/run.invoker` on production; end
-  users hit IAP, IAP forwards to Cloud Run, and IAP enforces the
-  `iap_members` allow-list.
+  the service is unreachable except via the LB front door. The `allUsers`
+  `run.invoker` binding only takes effect for traffic the LB has already
+  routed in, since direct `*.run.app` access is blocked at the network layer.
 - `enable_cdn = false` — these are diagnostic outputs, not cacheable assets.
 - This stack mirrors the pattern from `sabeti-librechat-deployment` but uses
   `google_compute_managed_ssl_certificate` (free, GCP-managed, auto-renewing)
