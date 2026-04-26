@@ -67,10 +67,9 @@ Legacy modules (everything moved by `git mv` from the repo root into `io/`, `pro
 ## Build / deploy
 
 - `.github/workflows/docker.yml` builds the image, runs Trivy (HIGH/CRITICAL, fail on findings), pushes to `us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/carmen-analysis` via Workload Identity Federation. No long-lived service-account keys.
-  - On `v*` tag push: deploys to the production Cloud Run service (`carmen-analysis`), which sits behind the LB + IAP.
-  - On any other branch push: deploys a per-branch tagged revision to the public staging service (`carmen-analysis-staging`). The URL is `https://<sanitized-branch>---carmen-analysis-staging-<hash>.us-central1.run.app` and is printed in the workflow run summary.
-- `.github/workflows/release.yml` builds sdist+wheel on `v*` tags and creates the GitHub Release. (PyPI publishing is intentionally deferred.)
-- `terraform/` provisions both Cloud Run services (production + staging), the HTTPS LB, IAP, and the GCP-managed SSL certificate. The static IP `carmen-analysis-ip` already exists in the `sabeti-adapt` project; the BITS DNS ticket points `carmen-analysis.broadinstitute.org` at it.
+  - On `v*` tag push: deploys to the production Cloud Run service (`carmen-analysis`), which sits behind a public HTTPS LB (no auth — the data is on the user's laptop and nothing is retained server-side; the original IAP design was abandoned because Google deprecated the IAP OAuth Admin API in July 2025).
+  - On any other branch push: deploys a per-branch tagged revision to the staging service (`carmen-analysis-staging`). The URL is `https://<sanitized-branch>---carmen-analysis-staging-<hash>.us-central1.run.app` and is printed in the workflow run summary.
+- `terraform/` provisions both Cloud Run services (production + staging), the HTTPS LB, and the GCP-managed SSL certificate. The static IP `carmen-analysis-ip` already exists in the `sabeti-adapt` project; the BITS DNS ticket points `carmen-analysis.broadinstitute.org` at it. A draft PR (`infra/cloudrun-domain-mapping`) tracks migrating off the LB to Cloud Run native domain mapping; gated on a follow-up BITS DNS change.
 
 ## Things to avoid
 

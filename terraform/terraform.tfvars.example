@@ -1,18 +1,10 @@
-# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
-
-# REQUIRED.
-# Email shown on the IAP OAuth consent screen. Use a group address you control,
-# not a personal email.
-iap_support_email = "carmen-eng@broadinstitute.org"
-
-# REQUIRED for anyone to actually log in once IAP is in front of the app.
-# Add Google Groups (preferred) or individual user accounts.
-iap_members = [
-  "group:sabeti-lab@broadinstitute.org",
-  # "user:dpark@broadinstitute.org",
-]
-
-# Optional overrides — defaults in variables.tf are appropriate for production.
+# Copy to terraform.tfvars and fill in only what you need to override.
+# terraform.tfvars is gitignored.
+#
+# All variables currently have suitable defaults in variables.tf — the file can
+# be empty for the standard sabeti-adapt deployment. Override per-environment
+# values here as needed:
+#
 # project_id              = "sabeti-adapt"
 # region                  = "us-central1"
 # domain                  = "carmen-analysis.broadinstitute.org"

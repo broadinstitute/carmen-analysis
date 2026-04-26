@@ -43,16 +43,13 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [google_project_service.services]
 }
 
-# IAP fronts the LB; only the IAP service principal needs run.invoker on the
-# Cloud Run service itself.
-resource "google_cloud_run_v2_service_iam_member" "iap_invoker" {
+# Public site: anyone routed through the LB can invoke. ingress=INTERNAL_LB on
+# the service above means the *.run.app URL is unreachable, so this binding
+# only takes effect for traffic coming through the LB front door.
+resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
   project  = google_cloud_run_v2_service.app.project
   location = google_cloud_run_v2_service.app.location
   name     = google_cloud_run_v2_service.app.name
   role     = "roles/run.invoker"
-  member   = "serviceAccount:service-${data.google_project.this.number}@gcp-sa-iap.iam.gserviceaccount.com"
-}
-
-data "google_project" "this" {
-  project_id = var.project_id
+  member   = "allUsers"
 }

@@ -35,17 +35,6 @@ variable "static_ip_name" {
   default     = "carmen-analysis-ip"
 }
 
-variable "iap_members" {
-  description = "Principals (user:foo@broadinstitute.org, group:bar@broadinstitute.org) granted IAP access to the web app."
-  type        = list(string)
-  default     = []
-}
-
-variable "iap_support_email" {
-  description = "Support email shown on the IAP consent screen. Must be a Group or the deploying user."
-  type        = string
-}
-
 variable "cloud_run_min_instances" {
   description = "Minimum Cloud Run instances. 0 = scale to zero."
   type        = number

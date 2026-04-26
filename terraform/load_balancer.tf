@@ -1,8 +1,15 @@
 ###############################################################################
-# HTTPS External Application LB → Serverless NEG → Cloud Run, with IAP and a   #
-# GCP-managed SSL certificate. Mirrors the pattern in sabeti-librechat-         #
-# deployment but uses a GCP-managed cert (free, auto-renewing) rather than a    #
-# BITS-issued cert.                                                             #
+# HTTPS External Application LB → Serverless NEG → Cloud Run, with a GCP-       #
+# managed SSL certificate. Public (no auth) — the LB just terminates TLS and    #
+# fronts a Cloud Run service that's locked to ingress=INTERNAL_LB so direct     #
+# *.run.app access is blocked.                                                  #
+#                                                                               #
+# Why no IAP: Google deprecated the IAP OAuth Admin API in July 2025, which     #
+# orphaned the google_iap_brand / google_iap_client resources. The data this    #
+# pipeline processes is on the user's laptop and nothing is retained server-    #
+# side, so the auth tier wasn't load-bearing. A draft PR exists to migrate off  #
+# the LB entirely (Cloud Run native domain mapping); see infra/cloudrun-domain- #
+# mapping branch.                                                               #
 ###############################################################################
 
 # --- Serverless NEG --------------------------------------------------------- #
@@ -19,18 +26,7 @@ resource "google_compute_region_network_endpoint_group" "app" {
   }
 }
 
-# --- Backend service (with IAP) -------------------------------------------- #
-
-resource "google_iap_brand" "this" {
-  project           = data.google_project.this.number
-  support_email     = var.iap_support_email
-  application_title = "CARMEN Analysis"
-}
-
-resource "google_iap_client" "app" {
-  display_name = "${var.service_name}-iap-client"
-  brand        = google_iap_brand.this.name
-}
+# --- Backend service ------------------------------------------------------- #
 
 resource "google_compute_backend_service" "app" {
   name                  = "${var.service_name}-backend"
@@ -43,25 +39,10 @@ resource "google_compute_backend_service" "app" {
     group = google_compute_region_network_endpoint_group.app.id
   }
 
-  iap {
-    enabled              = true
-    oauth2_client_id     = google_iap_client.app.client_id
-    oauth2_client_secret = google_iap_client.app.secret
-  }
-
   log_config {
     enable      = true
     sample_rate = 1.0
   }
-}
-
-# Grant configured principals access through IAP.
-resource "google_iap_web_backend_service_iam_member" "users" {
-  for_each            = toset(var.iap_members)
-  project             = var.project_id
-  web_backend_service = google_compute_backend_service.app.name
-  role                = "roles/iap.httpsResourceAccessor"
-  member              = each.value
 }
 
 # --- URL map / target proxy ------------------------------------------------ #
