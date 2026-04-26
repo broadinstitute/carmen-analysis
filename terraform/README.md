@@ -4,33 +4,44 @@ Provisions the public web entry point for the CARMEN Analysis Streamlit app:
 
 ```
 Internet
-   │ HTTPS (443) — GCP-managed cert for carmen-analysis.broadinstitute.org
+   │ HTTPS (443) — Google-managed cert (auto-provisioned by Cloud Run)
    ▼
-Global External Application LB  (static IP: carmen-analysis-ip)
+Cloud Run domain mapping  (carmen-analysis.broadinstitute.org)
    │
    ▼
-Serverless NEG  ──▶  Cloud Run service (carmen-analysis, ingress=INTERNAL_LB)
-                       └─ container image from Artifact Registry
-                          us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/...
+Cloud Run service (carmen-analysis, ingress=ALL, allUsers run.invoker)
+   └─ container image from Artifact Registry
+      us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/...
 ```
-
-Plus an HTTP (80) forwarding rule that 301-redirects to HTTPS.
 
 The site is **public** — no authentication. The data passing through the
 pipeline is on the user's laptop and nothing is retained server-side, so the
 auth tier wasn't load-bearing. The earlier IAP design was abandoned because
-Google deprecated the IAP OAuth Admin API in July 2025; a draft PR exists to
-migrate off the LB entirely (Cloud Run native domain mapping) — see the
-`infra/cloudrun-domain-mapping` branch.
+Google deprecated the IAP OAuth Admin API in July 2025.
+
+The previous LB+cert front door is gone; Cloud Run's native domain mapping
+terminates TLS itself, provisions and renews the managed cert under the hood,
+and routes traffic directly to the service. No load balancer, no serverless
+NEG, no static IP, no managed-cert resource.
 
 ## Prerequisites
 
-1. `carmen-analysis-ip` (global external static IP) already exists in
-   `sabeti-adapt`. Created out-of-band so the BITS DNS A-record ticket
-   could be filed in parallel.
-2. The DNS A record `carmen-analysis.broadinstitute.org → <static-ip>` is in
-   place. The GCP-managed cert will not finish provisioning until DNS
-   resolves to the LB's IP.
+1. **Domain verification.** `broadinstitute.org` must be verified for the
+   `sabeti-adapt` GCP project (or for an org/Workspace it belongs to). Check:
+   ```bash
+   gcloud domains list-user-verified
+   ```
+   If absent, run the verification flow at
+   https://console.cloud.google.com/run/domains?project=sabeti-adapt — Google
+   gives you a TXT record to publish via BITS.
+2. **DNS.** `carmen-analysis.broadinstitute.org` must resolve to one of
+   Google's frontend IPs. Either:
+   - `CNAME ghs.googlehosted.com.` (preferred for subdomains), or
+   - A records to `216.239.32.21`, `216.239.34.21`, `216.239.36.21`,
+     `216.239.38.21` plus the corresponding AAAA records.
+   The previous LB static IP (`carmen-analysis-ip` / `35.241.20.121`) does
+   **not** work — Cloud Run domain mappings only accept the shared frontend
+   pool. The cert will not provision until DNS resolves.
 3. The container image has been built+pushed by `.github/workflows/docker.yml`.
 
 ## Apply
@@ -48,17 +59,22 @@ terraform apply
 After apply, certificate provisioning is asynchronous. Watch it with:
 
 ```bash
-gcloud compute ssl-certificates describe carmen-analysis-cert \
-  --global --project sabeti-adapt --format='value(managed.status)'
+gcloud beta run domain-mappings describe \
+  --domain=carmen-analysis.broadinstitute.org \
+  --region=us-central1 \
+  --project=sabeti-adapt \
+  --format='value(status.conditions)'
 ```
 
-Status will move from `PROVISIONING` → `ACTIVE` once DNS is live (typically
-10–60 minutes).
+The mapping reports `Ready: False` until DNS resolves and the cert is in
+place; once both are good, it flips to `Ready: True` (typically 10–60 min
+after DNS lands).
 
 ## Staging service
 
 `staging.tf` provisions a second Cloud Run service, `carmen-analysis-staging`,
-with the opposite security posture from production:
+on the same posture as production (public, no auth) but with no domain
+mapping — it's reached via its `*.run.app` URL only:
 
 - `ingress = INGRESS_TRAFFIC_ALL` (reachable directly at `*.run.app`)
 - `allUsers` granted `roles/run.invoker` (no auth)
@@ -77,11 +93,9 @@ staging deploy (their workflow runs don't have access to the WIF secrets).
 
 ## Notes
 
-- Production Cloud Run ingress is `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`, so
-  the service is unreachable except via the LB front door. The `allUsers`
-  `run.invoker` binding only takes effect for traffic the LB has already
-  routed in, since direct `*.run.app` access is blocked at the network layer.
-- `enable_cdn = false` — these are diagnostic outputs, not cacheable assets.
-- This stack mirrors the pattern from `sabeti-librechat-deployment` but uses
-  `google_compute_managed_ssl_certificate` (free, GCP-managed, auto-renewing)
-  rather than a BITS-issued cert.
+- The production service's `*.run.app` URL is also publicly reachable
+  (ingress=ALL), but the FQDN is the canonical entry point.
+- The previous BITS-managed DNS A record to `carmen-analysis-ip` /
+  `35.241.20.121` should be replaced with a CNAME (or A records to the
+  Google frontend pool) before this terraform will fully come up. The
+  static IP can be released after migration.

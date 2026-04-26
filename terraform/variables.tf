@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "GCP project that owns the Cloud Run service, LB, and managed cert."
+  description = "GCP project that owns the Cloud Run service and the domain mapping."
   type        = string
   default     = "sabeti-adapt"
 }
@@ -24,15 +24,9 @@ variable "image" {
 }
 
 variable "domain" {
-  description = "FQDN that the GCP-managed cert is provisioned for. The BITS-managed DNS A record must point at the static IP referenced below."
+  description = "FQDN to map to the Cloud Run service. Cloud Run provisions and renews the managed cert automatically. The BITS DNS record for this name must point at one of Google's frontend IPs (CNAME to ghs.googlehosted.com or A records to the documented anycast pool) — the previous LB static IP does not work."
   type        = string
   default     = "carmen-analysis.broadinstitute.org"
-}
-
-variable "static_ip_name" {
-  description = "Name of the global external static IP already created in this project."
-  type        = string
-  default     = "carmen-analysis-ip"
 }
 
 variable "cloud_run_min_instances" {

@@ -67,9 +67,9 @@ Legacy modules (everything moved by `git mv` from the repo root into `io/`, `pro
 ## Build / deploy
 
 - `.github/workflows/docker.yml` builds the image, runs Trivy (HIGH/CRITICAL, fail on findings), pushes to `us-central1-docker.pkg.dev/sabeti-adapt/carmen-analysis/carmen-analysis` via Workload Identity Federation. No long-lived service-account keys.
-  - On `v*` tag push: deploys to the production Cloud Run service (`carmen-analysis`), which sits behind a public HTTPS LB (no auth — the data is on the user's laptop and nothing is retained server-side; the original IAP design was abandoned because Google deprecated the IAP OAuth Admin API in July 2025).
+  - On `v*` tag push: deploys to the production Cloud Run service (`carmen-analysis`), which is reached via Cloud Run's native domain mapping at `https://carmen-analysis.broadinstitute.org` (no LB, no IAP — the data is on the user's laptop and nothing is retained server-side; the original IAP design was abandoned because Google deprecated the IAP OAuth Admin API in July 2025).
   - On any other branch push: deploys a per-branch tagged revision to the staging service (`carmen-analysis-staging`). The URL is `https://<sanitized-branch>---carmen-analysis-staging-<hash>.us-central1.run.app` and is printed in the workflow run summary.
-- `terraform/` provisions both Cloud Run services (production + staging), the HTTPS LB, and the GCP-managed SSL certificate. The static IP `carmen-analysis-ip` already exists in the `sabeti-adapt` project; the BITS DNS ticket points `carmen-analysis.broadinstitute.org` at it. A draft PR (`infra/cloudrun-domain-mapping`) tracks migrating off the LB to Cloud Run native domain mapping; gated on a follow-up BITS DNS change.
+- `terraform/` provisions both Cloud Run services (production + staging) and the production domain mapping. Cloud Run terminates TLS itself for the mapped FQDN and provisions/renews the managed cert under the hood. DNS for `carmen-analysis.broadinstitute.org` must point at Google's frontend pool (CNAME `ghs.googlehosted.com.` or A records to `216.239.32.21` and friends).
 
 ## Things to avoid
 
