@@ -24,7 +24,7 @@ variable "image" {
 }
 
 variable "domain" {
-  description = "FQDN to map to the Cloud Run service. Cloud Run provisions and renews the managed cert automatically. The BITS DNS record for this name must point at one of Google's frontend IPs (CNAME to ghs.googlehosted.com or A records to the documented anycast pool) — the previous LB static IP does not work."
+  description = "FQDN to map to the Cloud Run service. DNS is managed in dns.tf via a Cloud DNS zone that BITS NS-delegates to us; A/AAAA records point at Google's anycast pool."
   type        = string
   default     = "carmen-analysis.broadinstitute.org"
 }

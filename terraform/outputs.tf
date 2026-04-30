@@ -21,3 +21,8 @@ output "staging_base_url" {
   description = "Base *.run.app URL of the staging service. Per-branch URLs prepend `<branch>---`."
   value       = google_cloud_run_v2_service.staging.uri
 }
+
+output "dns_nameservers" {
+  description = "NS servers to give BITS for delegation of the carmen-analysis.broadinstitute.org zone."
+  value       = google_dns_managed_zone.carmen_analysis.name_servers
+}

@@ -26,22 +26,18 @@ NEG, no static IP, no managed-cert resource.
 
 ## Prerequisites
 
-1. **Domain verification.** `broadinstitute.org` must be verified for the
-   `sabeti-adapt` GCP project (or for an org/Workspace it belongs to). Check:
+1. **Domain verification.** `carmen-analysis.broadinstitute.org` must be
+   verified for the `sabeti-adapt` GCP project. The TXT record is already in
+   `dns.tf`; once BITS sets up NS delegation, verify with:
    ```bash
+   gcloud domains verify carmen-analysis.broadinstitute.org --project=sabeti-adapt
    gcloud domains list-user-verified
    ```
-   If absent, run the verification flow at
-   https://console.cloud.google.com/run/domains?project=sabeti-adapt — Google
-   gives you a TXT record to publish via BITS.
-2. **DNS.** `carmen-analysis.broadinstitute.org` must resolve to one of
-   Google's frontend IPs. Either:
-   - `CNAME ghs.googlehosted.com.` (preferred for subdomains), or
-   - A records to `216.239.32.21`, `216.239.34.21`, `216.239.36.21`,
-     `216.239.38.21` plus the corresponding AAAA records.
-   The previous LB static IP (`carmen-analysis-ip` / `35.241.20.121`) does
-   **not** work — Cloud Run domain mappings only accept the shared frontend
-   pool. The cert will not provision until DNS resolves.
+2. **DNS.** `carmen-analysis.broadinstitute.org` is backed by a Cloud DNS
+   managed zone (`dns.tf`). BITS NS-delegates the subdomain to our zone; we
+   own all records. The zone apex uses A/AAAA records (`216.239.32.21` etc.)
+   pointing at Google's anycast pool — CNAME is not allowed at a zone apex.
+   The cert will not provision until DNS resolves and delegation is live.
 3. The container image has been built+pushed by `.github/workflows/docker.yml`.
 
 ## Apply
@@ -95,7 +91,7 @@ staging deploy (their workflow runs don't have access to the WIF secrets).
 
 - The production service's `*.run.app` URL is also publicly reachable
   (ingress=ALL), but the FQDN is the canonical entry point.
-- The previous BITS-managed DNS A record to `carmen-analysis-ip` /
-  `35.241.20.121` should be replaced with a CNAME (or A records to the
-  Google frontend pool) before this terraform will fully come up. The
-  static IP can be released after migration.
+- DNS for the FQDN is now self-managed in Cloud DNS (`dns.tf`). The old
+  BITS-managed records (A to `35.241.20.121`, CNAME to `ghs.googlehosted.com`)
+  are superseded by our zone once BITS adds NS delegation. The static IP
+  `carmen-analysis-ip` can be released after the LB is torn down.

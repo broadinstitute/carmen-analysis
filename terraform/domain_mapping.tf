@@ -6,15 +6,14 @@
 # routes traffic directly to the service. No serverless NEG, no backend         #
 # service, no URL maps, no forwarding rules.                                    #
 #                                                                               #
-# DNS prerequisite: carmen-analysis.broadinstitute.org must resolve to one of   #
-# Google's frontend IPs (CNAME to ghs.googlehosted.com or A records to the      #
-# documented anycast pool). The previous LB IP (35.241.20.121) does NOT work   #
-# — Cloud Run domain mappings only use the shared frontend pool. A BITS DNS    #
-# ticket is required before the cert will provision.                            #
+# DNS prerequisite: carmen-analysis.broadinstitute.org must resolve to Google's  #
+# anycast pool via A/AAAA records (managed in dns.tf). CNAME is not possible    #
+# because the name is a Cloud DNS zone apex. BITS NS-delegates the subdomain    #
+# to our Cloud DNS zone; we own all records under it.                           #
 #                                                                               #
-# Domain verification prerequisite: broadinstitute.org must be verified in     #
-# the GCP project (or in an org/Workspace the project belongs to). Check with #
-#   gcloud domains list-user-verified                                           #
+# Domain verification prerequisite: carmen-analysis.broadinstitute.org must be  #
+# verified in the GCP project. TXT record is in dns.tf; verify with:            #
+#   gcloud domains verify carmen-analysis.broadinstitute.org                    #
 ###############################################################################
 
 resource "google_cloud_run_domain_mapping" "app" {
