@@ -6,7 +6,7 @@ resource "google_cloud_run_v2_service" "app" {
   name                = var.service_name
   project             = var.project_id
   location            = var.region
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 
   template {
@@ -43,9 +43,10 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [google_project_service.services]
 }
 
-# Public site: anyone routed through the LB can invoke. ingress=INTERNAL_LB on
-# the service above means the *.run.app URL is unreachable, so this binding
-# only takes effect for traffic coming through the LB front door.
+# Public site: ingress=ALL above lets anyone reach the service over the
+# *.run.app URL or the mapped FQDN; this binding lets anyone invoke. There's
+# no auth tier — the data the pipeline processes lives on the user's laptop
+# and nothing is retained server-side.
 resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
   project  = google_cloud_run_v2_service.app.project
   location = google_cloud_run_v2_service.app.location
