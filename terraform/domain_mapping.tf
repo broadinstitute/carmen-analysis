@@ -6,14 +6,14 @@
 # routes traffic directly to the service. No serverless NEG, no backend         #
 # service, no URL maps, no forwarding rules.                                    #
 #                                                                               #
-# DNS prerequisite: carmen-analysis.sabeti.broadinstitute.org must resolve to   #
-# Google's anycast pool via A/AAAA records. DNS is managed in the               #
-# sabeti.broadinstitute.org Cloud DNS zone (different GCP project). See the     #
-# domain_mapping_dns_records output for the exact records to create.            #
+# DNS prerequisite: carmen-analysis.sabeti.broadinstitute.org must resolve via  #
+# CNAME to ghs.googlehosted.com. DNS is managed in the sabeti.broadinstitute.org#
+# Cloud DNS zone (different GCP project).                                       #
 #                                                                               #
 # Domain verification prerequisite: carmen-analysis.sabeti.broadinstitute.org   #
-# must be verified in the GCP project. Verify with:                             #
-#   gcloud domains verify carmen-analysis.sabeti.broadinstitute.org             #
+# (or its parent sabeti.broadinstitute.org) must be verified in THIS project    #
+# (sabeti-adapt), not just the project hosting the DNS zone. Verify with:       #
+#   gcloud domains verify sabeti.broadinstitute.org --project=sabeti-adapt      #
 ###############################################################################
 
 resource "google_cloud_run_domain_mapping" "app" {

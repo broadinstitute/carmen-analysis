@@ -26,17 +26,23 @@ NEG, no static IP, no managed-cert resource.
 
 ## Prerequisites
 
-1. **Domain verification.** `carmen-analysis.sabeti.broadinstitute.org` must be
-   verified for the `sabeti-adapt` GCP project. Verify with:
+1. **Domain verification.** `sabeti.broadinstitute.org` (or the specific subdomain)
+   must be verified in the `sabeti-adapt` GCP project — even if the DNS zone is
+   managed in a different project. Verifying the parent domain covers all subdomains:
    ```bash
-   gcloud domains verify carmen-analysis.sabeti.broadinstitute.org --project=sabeti-adapt
-   gcloud domains list-user-verified
+   gcloud domains verify sabeti.broadinstitute.org --project=sabeti-adapt
+   gcloud domains list-user-verified --project=sabeti-adapt
    ```
-2. **DNS.** `carmen-analysis.sabeti.broadinstitute.org` is a subdomain under
-   the `sabeti.broadinstitute.org` Cloud DNS zone (managed in a different GCP
-   project). After `terraform apply`, the `domain_mapping_dns_records` output
-   will show the A/AAAA records that need to be created in that zone. The cert
-   will not provision until DNS resolves correctly.
+2. **DNS.** `carmen-analysis.sabeti.broadinstitute.org` is managed in the
+   `sabeti.broadinstitute.org` Cloud DNS zone (different GCP project). Create a
+   CNAME record pointing to `ghs.googlehosted.com`:
+   ```
+   Name: carmen-analysis.sabeti.broadinstitute.org
+   Type: CNAME
+   TTL: 300
+   Data: ghs.googlehosted.com.
+   ```
+   The cert will not provision until DNS resolves correctly.
 3. The container image has been built+pushed by `.github/workflows/docker.yml`.
 
 ## Apply
@@ -91,5 +97,5 @@ staging deploy (their workflow runs don't have access to the WIF secrets).
 - The production service's `*.run.app` URL is also publicly reachable
   (ingress=ALL), but the FQDN is the canonical entry point.
 - DNS for the FQDN is managed in the `sabeti.broadinstitute.org` Cloud DNS
-  zone (different GCP project). Use the `domain_mapping_dns_records` Terraform
-  output to see what A/AAAA records need to be created there.
+  zone (different GCP project). A single CNAME record pointing to
+  `ghs.googlehosted.com` is all that's needed.
