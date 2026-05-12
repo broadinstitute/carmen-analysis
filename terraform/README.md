@@ -6,7 +6,7 @@ Provisions the public web entry point for the CARMEN Analysis Streamlit app:
 Internet
    │ HTTPS (443) — Google-managed cert (auto-provisioned by Cloud Run)
    ▼
-Cloud Run domain mapping  (carmen-analysis.broadinstitute.org)
+Cloud Run domain mapping  (carmen-analysis.sabeti.broadinstitute.org)
    │
    ▼
 Cloud Run service (carmen-analysis, ingress=ALL, allUsers run.invoker)
@@ -26,18 +26,23 @@ NEG, no static IP, no managed-cert resource.
 
 ## Prerequisites
 
-1. **Domain verification.** `carmen-analysis.broadinstitute.org` must be
-   verified for the `sabeti-adapt` GCP project. The TXT record is already in
-   `dns.tf`; once BITS sets up NS delegation, verify with:
+1. **Domain verification.** `sabeti.broadinstitute.org` (or the specific subdomain)
+   must be verified in the `sabeti-adapt` GCP project — even if the DNS zone is
+   managed in a different project. Verifying the parent domain covers all subdomains:
    ```bash
-   gcloud domains verify carmen-analysis.broadinstitute.org --project=sabeti-adapt
-   gcloud domains list-user-verified
+   gcloud domains verify sabeti.broadinstitute.org --project=sabeti-adapt
+   gcloud domains list-user-verified --project=sabeti-adapt
    ```
-2. **DNS.** `carmen-analysis.broadinstitute.org` is backed by a Cloud DNS
-   managed zone (`dns.tf`). BITS NS-delegates the subdomain to our zone; we
-   own all records. The zone apex uses A/AAAA records (`216.239.32.21` etc.)
-   pointing at Google's anycast pool — CNAME is not allowed at a zone apex.
-   The cert will not provision until DNS resolves and delegation is live.
+2. **DNS.** `carmen-analysis.sabeti.broadinstitute.org` is managed in the
+   `sabeti.broadinstitute.org` Cloud DNS zone (different GCP project). Create a
+   CNAME record pointing to `ghs.googlehosted.com`:
+   ```
+   Name: carmen-analysis.sabeti.broadinstitute.org
+   Type: CNAME
+   TTL: 300
+   Data: ghs.googlehosted.com.
+   ```
+   The cert will not provision until DNS resolves correctly.
 3. The container image has been built+pushed by `.github/workflows/docker.yml`.
 
 ## Apply
@@ -56,7 +61,7 @@ After apply, certificate provisioning is asynchronous. Watch it with:
 
 ```bash
 gcloud beta run domain-mappings describe \
-  --domain=carmen-analysis.broadinstitute.org \
+  --domain=carmen-analysis.sabeti.broadinstitute.org \
   --region=us-central1 \
   --project=sabeti-adapt \
   --format='value(status.conditions)'
@@ -91,7 +96,6 @@ staging deploy (their workflow runs don't have access to the WIF secrets).
 
 - The production service's `*.run.app` URL is also publicly reachable
   (ingress=ALL), but the FQDN is the canonical entry point.
-- DNS for the FQDN is now self-managed in Cloud DNS (`dns.tf`). The old
-  BITS-managed records (A to `35.241.20.121`, CNAME to `ghs.googlehosted.com`)
-  are superseded by our zone once BITS adds NS delegation. The static IP
-  `carmen-analysis-ip` can be released after the LB is torn down.
+- DNS for the FQDN is managed in the `sabeti.broadinstitute.org` Cloud DNS
+  zone (different GCP project). A single CNAME record pointing to
+  `ghs.googlehosted.com` is all that's needed.
