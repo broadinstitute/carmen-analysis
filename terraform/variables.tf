@@ -24,9 +24,9 @@ variable "image" {
 }
 
 variable "domain" {
-  description = "FQDN to map to the Cloud Run service. DNS is managed in dns.tf via a Cloud DNS zone that BITS NS-delegates to us; A/AAAA records point at Google's anycast pool."
+  description = "FQDN to map to the Cloud Run service. DNS is managed externally in the sabeti.broadinstitute.org Cloud DNS zone; A/AAAA records point at Google's anycast pool."
   type        = string
-  default     = "carmen-analysis.broadinstitute.org"
+  default     = "carmen-analysis.sabeti.broadinstitute.org"
 }
 
 variable "cloud_run_min_instances" {

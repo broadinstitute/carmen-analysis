@@ -12,7 +12,7 @@ The pipeline is pathogen-agnostic and works for any combination of viral assays 
 
 | Audience | Use this |
 |---|---|
-| Wet-lab tech with two files in hand | The web app (`carmen-analysis.broadinstitute.org`, once the DNS record is live) |
+| Wet-lab tech with two files in hand | The web app (`carmen-analysis.sabeti.broadinstitute.org`, once the DNS record is live) |
 | Bioinformatician analyzing many runs | The `carmen-analyze` CLI |
 | Pipeline integrator | `from carmen_analysis import run_pipeline` |
 
